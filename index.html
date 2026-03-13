@@ -199,6 +199,12 @@
   .email-header-label { min-width: 44px; font-weight: 600; color: var(--text-primary); }
   .email-body-wrap { border: 1px solid var(--border); border-radius: 0 0 8px 8px; }
 
+  /* Language selector pills */
+  .lang-pills { display: flex; gap: 5px; flex-wrap: wrap; }
+  .lang-pill { padding: 5px 11px; border-radius: 20px; border: 1px solid var(--border); font-size: 11px; cursor: pointer; color: var(--text-secondary); transition: all 0.15s; white-space: nowrap; }
+  .lang-pill:hover { border-color: var(--info); color: var(--info); }
+  .lang-pill.active { border-color: var(--info); color: var(--info); background: #e8f0fa; font-weight: 600; }
+
   /* Birthday preview channel tabs */
   .bday-ch-tabs { display: flex; gap: 4px; }
   .bday-ch-tab { padding: 4px 14px; border-radius: 5px; border: 1px solid var(--border); font-size: 12px; cursor: pointer; color: var(--text-secondary); background: transparent; font-family: inherit; transition: all 0.15s; }
@@ -467,6 +473,15 @@
               <label class="form-label">追加情報・特記事項（任意）</label>
               <textarea class="form-textarea" id="line-extra" placeholder="例：早割10%OFF、露天風呂リニューアル、チェックアウト12時まで延長可..." style="min-height:70px"></textarea>
             </div>
+            <div class="form-group">
+              <label class="form-label">配信言語</label>
+              <div class="lang-pills" id="line-lang-pills">
+                <div class="lang-pill active" onclick="selectLang(this,'line-lang-pills')" data-lang="ja">🇯🇵 日本語</div>
+                <div class="lang-pill" onclick="selectLang(this,'line-lang-pills')" data-lang="en">🇺🇸 英語</div>
+                <div class="lang-pill" onclick="selectLang(this,'line-lang-pills')" data-lang="zh">🇨🇳 中国語</div>
+                <div class="lang-pill" onclick="selectLang(this,'line-lang-pills')" data-lang="ko">🇰🇷 韓国語</div>
+              </div>
+            </div>
             <button class="btn btn-gold" style="width:100%;padding:12px;" onclick="generateLine()">✨ AIでメッセージを生成する</button>
           </div>
           <div class="ai-panel">
@@ -537,6 +552,15 @@
             <div class="form-group">
               <label class="form-label">追加情報・特記事項（任意）</label>
               <textarea class="form-textarea" id="email-extra" placeholder="例：早割10%OFF、露天風呂リニューアル、チェックアウト12時まで延長可..." style="min-height:70px"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">配信言語</label>
+              <div class="lang-pills" id="email-lang-pills">
+                <div class="lang-pill active" onclick="selectLang(this,'email-lang-pills')" data-lang="ja">🇯🇵 日本語</div>
+                <div class="lang-pill" onclick="selectLang(this,'email-lang-pills')" data-lang="en">🇺🇸 英語</div>
+                <div class="lang-pill" onclick="selectLang(this,'email-lang-pills')" data-lang="zh">🇨🇳 中国語</div>
+                <div class="lang-pill" onclick="selectLang(this,'email-lang-pills')" data-lang="ko">🇰🇷 韓国語</div>
+              </div>
             </div>
             <button class="btn btn-gold" style="width:100%;padding:12px;" onclick="generateEmail()">✨ AIでメール文章を生成する</button>
           </div>
@@ -613,6 +637,15 @@
             <div class="form-group">
               <label class="form-label">追加情報・特記事項（任意）</label>
               <textarea class="form-textarea" id="both-extra" placeholder="例：早割10%OFF..." style="min-height:70px"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">配信言語</label>
+              <div class="lang-pills" id="both-lang-pills">
+                <div class="lang-pill active" onclick="selectLang(this,'both-lang-pills')" data-lang="ja">🇯🇵 日本語</div>
+                <div class="lang-pill" onclick="selectLang(this,'both-lang-pills')" data-lang="en">🇺🇸 英語</div>
+                <div class="lang-pill" onclick="selectLang(this,'both-lang-pills')" data-lang="zh">🇨🇳 中国語</div>
+                <div class="lang-pill" onclick="selectLang(this,'both-lang-pills')" data-lang="ko">🇰🇷 韓国語</div>
+              </div>
             </div>
             <button class="btn btn-gold" style="width:100%;padding:12px;" id="both-gen-btn" onclick="generateBoth()">✨ LINE＋メール両方を生成する</button>
           </div>
@@ -781,6 +814,21 @@
             </div>
           </div>
 
+          <div class="form-group">
+            <label class="form-label">返信言語</label>
+            <div class="lang-pills" id="review-lang-pills">
+              <div class="lang-pill active" onclick="selectLang(this,'review-lang-pills')" data-lang="auto">🌐 自動判定</div>
+              <div class="lang-pill" onclick="selectLang(this,'review-lang-pills')" data-lang="ja">🇯🇵 日本語</div>
+              <div class="lang-pill" onclick="selectLang(this,'review-lang-pills')" data-lang="en">🇺🇸 英語</div>
+              <div class="lang-pill" onclick="selectLang(this,'review-lang-pills')" data-lang="zh">🇨🇳 中国語</div>
+              <div class="lang-pill" onclick="selectLang(this,'review-lang-pills')" data-lang="ko">🇰🇷 韓国語</div>
+              <div class="lang-pill" onclick="selectLang(this,'review-lang-pills')" data-lang="other">その他</div>
+            </div>
+            <div id="review-lang-note" style="font-size:11px;color:var(--info);margin-top:6px">
+              🌐 自動判定：口コミの言語を検出し、同じ言語で返信します
+            </div>
+          </div>
+
           <button class="btn btn-gold" style="width:100%;padding:12px;" onclick="generateReview()">
             ✨ AIで返信文を生成する
           </button>
@@ -942,6 +990,31 @@ function selectTone(el, group) {
   el.classList.add('active');
 }
 
+// ---- Language pills ----
+function selectLang(el, groupId) {
+  document.getElementById(groupId).querySelectorAll('.lang-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  // 自動判定選択時の説明文を更新（口コミ返信のみ）
+  const note = document.getElementById('review-lang-note');
+  if (note) {
+    const lang = el.dataset.lang;
+    const notes = {
+      auto:  '🌐 自動判定：口コミの言語を検出し、同じ言語で返信します',
+      ja:    '🇯🇵 日本語で返信文を生成します',
+      en:    '🇺🇸 Generates the reply in English',
+      zh:    '🇨🇳 用中文生成回复',
+      ko:    '🇰🇷 한국어로 답변을 생성합니다',
+      other: '🌐 口コミの言語を判定して同じ言語で返信します',
+    };
+    note.textContent = notes[lang] || notes['auto'];
+  }
+}
+
+function getSelectedLang(groupId) {
+  const el = document.getElementById(groupId)?.querySelector('.lang-pill.active');
+  return el?.dataset.lang || 'ja';
+}
+
 // ---- Gemini API 呼び出し ----
 async function callGeminiAPI(endpoint, body) {
   const response = await fetch(endpoint, {
@@ -970,8 +1043,9 @@ function setLoading(outEl, btnEl, loading) {
 async function generateLine() {
   const purpose = document.getElementById('line-purpose').value;
   const segment = document.getElementById('line-segment').value;
-  const tone = document.querySelector('#tab-line .tone-pill.active').textContent;
+  const tone = document.querySelector('#channel-line .tone-pill.active').textContent;
   const extra = document.getElementById('line-extra').value;
+  const language = getSelectedLang('line-lang-pills');
   const out = document.getElementById('line-output');
   const copyBtn = document.getElementById('line-copy-btn');
   const genBtn = document.querySelector('#tab-line .btn-gold');
@@ -980,7 +1054,7 @@ async function generateLine() {
   copyBtn.style.display = 'none';
 
   try {
-    const text = await callGeminiAPI('/api/generate-line', { segment, purpose, tone, extra });
+    const text = await callGeminiAPI('/api/generate-line', { segment, purpose, tone, extra, language });
     out.textContent = '';
     copyBtn.style.display = 'block';
     typeWriter(out, text, copyBtn);
@@ -999,6 +1073,7 @@ async function generateReview() {
   const platform = document.getElementById('review-platform').value;
   const tone = document.querySelector('#tab-review .tone-pill.active').textContent;
   const reviewerName = document.getElementById('reviewer-name').value.trim() || 'お客様';
+  const language = getSelectedLang('review-lang-pills');
   const out = document.getElementById('review-output');
   const copyBtn = document.getElementById('review-copy-btn');
   const genBtn = document.querySelector('#tab-review .btn-gold[onclick="generateReview()"]');
@@ -1014,7 +1089,8 @@ async function generateReview() {
       rating: currentRating,
       reviewText,
       tone,
-      reviewerName
+      reviewerName,
+      language
     });
     out.textContent = '';
     copyBtn.style.display = 'block';
@@ -1064,6 +1140,7 @@ async function generateEmail() {
   const purpose = document.getElementById('email-purpose').value;
   const tone = document.querySelector('#channel-email .tone-pill.active').textContent;
   const extra = document.getElementById('email-extra').value;
+  const language = getSelectedLang('email-lang-pills');
   const out = document.getElementById('email-output');
   const copyBtn = document.getElementById('email-copy-btn');
   const subjectEl = document.getElementById('email-subject-display');
@@ -1079,7 +1156,7 @@ async function generateEmail() {
     const response = await fetch('/api/generate-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ segment, purpose, tone, extra })
+      body: JSON.stringify({ segment, purpose, tone, extra, language })
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || '生成に失敗しました。');
@@ -1104,6 +1181,7 @@ async function generateBoth() {
   const purpose = document.getElementById('both-purpose').value;
   const tone = document.querySelector('#channel-both .tone-pill.active').textContent;
   const extra = document.getElementById('both-extra').value;
+  const language = getSelectedLang('both-lang-pills');
   const genBtn = document.getElementById('both-gen-btn');
   const lineOut = document.getElementById('both-line-output');
   const emailOut = document.getElementById('both-email-output');
@@ -1122,11 +1200,11 @@ async function generateBoth() {
     const [lineRes, emailRes] = await Promise.all([
       fetch('/api/generate-line', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ segment, purpose, tone, extra })
+        body: JSON.stringify({ segment, purpose, tone, extra, language })
       }),
       fetch('/api/generate-email', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ segment, purpose, tone, extra })
+        body: JSON.stringify({ segment, purpose, tone, extra, language })
       })
     ]);
 

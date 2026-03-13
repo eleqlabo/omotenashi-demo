@@ -1,5 +1,12 @@
 const GEMINI_MODEL = 'gemini-2.5-flash';
 
+const LANG_MAP = {
+  ja: { subjectKey: '件名', instruction: '件名と本文を日本語で生成してください。' },
+  en: { subjectKey: 'Subject', instruction: 'Generate the subject line and email body in English. Use "Subject:" format.' },
+  zh: { subjectKey: '主题', instruction: '请用中文（简体字）生成邮件主题和正文。使用「主题:」格式。' },
+  ko: { subjectKey: '제목', instruction: '이메일 제목과 본문을 한국어로 작성해 주세요。「제목:」 형식을 사용해 주세요。' },
+};
+
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
 
@@ -12,34 +19,33 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'APIキーが設定されていません。' });
   }
 
-  const { segment, purpose, tone, extra } = req.body || {};
+  const { segment, purpose, tone, extra, language } = req.body || {};
 
   if (!purpose) {
     return res.status(400).json({ error: 'purpose は必須です。' });
   }
 
+  const lang = LANG_MAP[language] || LANG_MAP['ja'];
+
   const prompt = `あなたは高級ホテル「プレミアムホテル東京」のマーケティング担当です。
-顧客へ一斉配信するHTMLメールの件名と本文を日本語で生成してください。
+顧客へ一斉配信するメールの件名と本文を生成してください。
+
+【出力言語の指示】${lang.instruction}
 
 【配信対象セグメント】${segment || '全顧客'}
 【配信目的・プラン】${purpose}
 【トーン】${tone || '丁寧・格調'}
 【追加情報】${extra || 'なし'}
 
-【文体のルール】
-- 現代的で読みやすい丁寧語を使う
-- 「ごきげんよう」などの古風な表現は使わない
-- メールらしい丁寧な書き出しにする
-
 【出力形式】必ず以下の形式で出力すること：
-件名: [件名をここに書く]
+${lang.subjectKey}: [件名をここに書く]
 ===
 [メール本文をここに書く]
 
 【本文の要件】
-- 書き出しは「いつもプレミアムホテル東京をご利用いただきありがとうございます。」
+- 自然な書き出しで始める
 - 必ず最後まで文章を完結させること
-- ホテル名「プレミアムホテル東京」を使用
+- ホテル名「プレミアムホテル東京」（英語表記: Premium Hotel Tokyo）を適切に使用
 - 予約URLは「https://omotenashi-cloud.jp/reserve」を含める
 - 本文のみ出力し、余計な説明は不要`;
 
@@ -70,10 +76,10 @@ module.exports = async function handler(req, res) {
       return res.status(500).json({ error: 'AIからの応答が空でした。再度お試しください。' });
     }
 
-    // 件名と本文をパース
-    const subjectMatch = text.match(/^件名[:：]\s*(.+)/m);
+    // 言語に対応した件名キーでパース（件名: / Subject: / 主题: / 제목:）
+    const subjectMatch = text.match(/^(?:件名|Subject|主题|제목)[:：]\s*(.+)/im);
     const subject = subjectMatch ? subjectMatch[1].trim() : purpose;
-    const body = text.replace(/^件名[:：]\s*.+\n?={3,}\n?/m, '').trim();
+    const body = text.replace(/^(?:件名|Subject|主题|제목)[:：]\s*.+\n?={3,}\n?/im, '').trim();
 
     res.json({ subject, body });
   } catch (err) {

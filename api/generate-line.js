@@ -1,5 +1,12 @@
 const GEMINI_MODEL = 'gemini-2.5-flash';
 
+const LANG_MAP = {
+  ja: { label: '日本語', instruction: '日本語でメッセージを生成してください。' },
+  en: { label: 'English', instruction: 'Generate the LINE message in English.' },
+  zh: { label: '中文', instruction: '请用中文（简体字）生成消息。' },
+  ko: { label: '한국어', instruction: '메시지를 한국어로 작성해 주세요.' },
+};
+
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
 
@@ -12,14 +19,18 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'APIキーが設定されていません。VercelのEnvironment VariablesにGEMINI_API_KEYを設定してください。' });
   }
 
-  const { segment, purpose, tone, extra } = req.body || {};
+  const { segment, purpose, tone, extra, language } = req.body || {};
 
   if (!purpose) {
     return res.status(400).json({ error: 'purpose は必須です。' });
   }
 
+  const lang = LANG_MAP[language] || LANG_MAP['ja'];
+
   const prompt = `あなたは高級ホテル「プレミアムホテル東京」のマーケティング担当です。
-LINEで配信するメッセージを日本語で生成してください。
+LINEで配信するメッセージを生成してください。
+
+【出力言語の指示】${lang.instruction}
 
 【配信対象セグメント】${segment || '全顧客'}
 【配信目的・プラン】${purpose}
@@ -27,14 +38,13 @@ LINEで配信するメッセージを日本語で生成してください。
 【追加情報】${extra || 'なし'}
 
 【文体のルール】
-- 現代的で読みやすい丁寧語を使うこと
-- 「ごきげんよう」「いかがお過ごしでいらっしゃいますでしょうか」などの古風・過剰な敬語は使わない
-- 「いつもありがとうございます」など自然な書き出しにすること
+- 現代的で読みやすい自然な表現を使うこと
+- 古風・過剰な敬語は使わない
 
 【要件】
-- 最大500文字以内で、必ず文章を最後まで完結させること（途中で切らない）
+- 最大500文字以内で、必ず文章を最後まで完結させること
 - LINEらしい改行・絵文字を適切に使用
-- ホテル名「プレミアムホテル東京」を使用
+- ホテル名「プレミアムホテル東京」（英語表記: Premium Hotel Tokyo）を適切に使用
 - 予約URLは「https://omotenashi-cloud.jp/reserve」を使用
 - メッセージ本文のみを出力し、余計な説明は不要`;
 
