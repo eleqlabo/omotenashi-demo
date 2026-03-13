@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>おもてなしクラウド</title>
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #e4c97a;
+    --gold-dark: #8b6914;
+    --bg-dark: #0f0f0f;
+    --bg-card: #1a1a1a;
+    --bg-sidebar: #111111;
+    --bg-hover: #222222;
+    --text-primary: #f0e6c8;
+    --text-secondary: #a89060;
+    --text-muted: #666;
+    --border: #2a2a2a;
+    --border-gold: #3a2e10;
+    --success: #4caf82;
+    --danger: #c94c4c;
+    --info: #4c8bc9;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif; background: var(--bg-dark); color: var(--text-primary); display: flex; height: 100vh; overflow: hidden; }
+
+  /* Sidebar */
+  #sidebar {
+    width: 220px; min-width: 220px; background: var(--bg-sidebar);
+    border-right: 1px solid var(--border-gold);
+    display: flex; flex-direction: column;
+  }
+  .sidebar-logo {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--border-gold);
+  }
+  .sidebar-logo h1 {
+    font-size: 15px; font-weight: 700; color: var(--gold);
+    letter-spacing: 0.05em; line-height: 1.4;
+  }
+  .sidebar-logo span { font-size: 10px; color: var(--text-secondary); display: block; margin-top: 2px; }
+  .sidebar-nav { flex: 1; padding: 12px 0; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 20px; cursor: pointer; font-size: 13px;
+    color: var(--text-secondary); transition: all 0.15s;
+    border-left: 3px solid transparent;
+  }
+  .nav-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+  .nav-item.active { background: var(--border-gold); color: var(--gold); border-left-color: var(--gold); }
+  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+  .sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border-gold); font-size: 11px; color: var(--text-muted); }
+
+  /* Main */
+  #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar {
+    height: 52px; background: var(--bg-card); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; flex-shrink: 0;
+  }
+  .topbar-title { font-size: 16px; font-weight: 600; color: var(--gold-light); }
+  .topbar-right { display: flex; align-items: center; gap: 16px; font-size: 12px; color: var(--text-secondary); }
+  .badge { background: var(--gold-dark); color: var(--gold-light); padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+
+  .content { flex: 1; overflow-y: auto; padding: 24px; }
+
+  /* Tabs */
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* KPI Cards */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .kpi-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 20px;
+    border-top: 2px solid var(--gold-dark);
+  }
+  .kpi-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 8px; letter-spacing: 0.05em; }
+  .kpi-value { font-size: 28px; font-weight: 700; color: var(--gold-light); line-height: 1; }
+  .kpi-sub { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+  .kpi-trend { font-size: 11px; margin-top: 4px; }
+  .kpi-trend.up { color: var(--success); }
+  .kpi-trend.down { color: var(--danger); }
+
+  /* Charts row */
+  .charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 20px;
+  }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--gold); margin-bottom: 16px; }
+
+  /* Bar chart mock */
+  .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 120px; }
+  .bar-group { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+  .bar { width: 100%; background: linear-gradient(to top, var(--gold-dark), var(--gold)); border-radius: 3px 3px 0 0; transition: opacity 0.2s; }
+  .bar:hover { opacity: 0.8; }
+  .bar-label { font-size: 10px; color: var(--text-muted); }
+
+  /* Donut mock */
+  .donut-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .donut { width: 100px; height: 100px; border-radius: 50%; background: conic-gradient(var(--gold) 0% 42%, #4c8bc9 42% 65%, #4caf82 65% 82%, #666 82% 100%); position: relative; }
+  .donut::after { content: ''; position: absolute; top: 20%; left: 20%; width: 60%; height: 60%; background: var(--bg-card); border-radius: 50%; }
+  .donut-legend { width: 100%; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Table */
+  .table-wrap { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .table-header { padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+  .table-search { background: var(--bg-dark); border: 1px solid var(--border); border-radius: 6px; padding: 7px 12px; color: var(--text-primary); font-size: 13px; width: 240px; }
+  .table-search:focus { outline: none; border-color: var(--gold-dark); }
+  .btn { padding: 7px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 12px; font-family: inherit; transition: all 0.15s; }
+  .btn-gold { background: var(--gold); color: #111; font-weight: 600; }
+  .btn-gold:hover { background: var(--gold-light); }
+  .btn-outline { background: transparent; border: 1px solid var(--gold-dark); color: var(--gold); }
+  .btn-outline:hover { background: var(--border-gold); }
+  table { width: 100%; border-collapse: collapse; }
+  th { padding: 10px 16px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.05em; border-bottom: 1px solid var(--border); background: #161616; }
+  td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg-hover); }
+  .rank-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .rank-vip { background: #3a2e10; color: var(--gold); }
+  .rank-gold { background: #2a3010; color: #a0c040; }
+  .rank-silver { background: #1a2030; color: #80a0c0; }
+  .rank-normal { background: #222; color: #888; }
+  .status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; }
+
+  /* AI Tabs */
+  .ai-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .ai-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+  .ai-panel-title { font-size: 14px; font-weight: 600; color: var(--gold); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .ai-badge { font-size: 10px; background: var(--gold-dark); color: var(--gold-light); padding: 2px 6px; border-radius: 4px; }
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; display: block; }
+  .form-select, .form-input {
+    width: 100%; background: var(--bg-dark); border: 1px solid var(--border);
+    border-radius: 6px; padding: 9px 12px; color: var(--text-primary);
+    font-size: 13px; font-family: inherit;
+  }
+  .form-select:focus, .form-input:focus { outline: none; border-color: var(--gold-dark); }
+  .form-textarea {
+    width: 100%; background: var(--bg-dark); border: 1px solid var(--border);
+    border-radius: 6px; padding: 10px 12px; color: var(--text-primary);
+    font-size: 13px; font-family: inherit; resize: vertical; min-height: 100px;
+  }
+  .form-textarea:focus { outline: none; border-color: var(--gold-dark); }
+  .ai-output {
+    background: var(--bg-dark); border: 1px solid var(--border-gold);
+    border-radius: 6px; padding: 14px; font-size: 13px; line-height: 1.8;
+    color: var(--text-primary); min-height: 160px; white-space: pre-wrap;
+    position: relative;
+  }
+  .ai-output.empty { color: var(--text-muted); font-style: italic; }
+  .generating { color: var(--gold); }
+  .copy-btn { position: absolute; top: 8px; right: 8px; background: var(--border-gold); border: none; color: var(--gold); border-radius: 4px; padding: 4px 10px; font-size: 11px; cursor: pointer; }
+  .copy-btn:hover { background: var(--gold-dark); }
+  .tone-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .tone-pill { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); font-size: 12px; cursor: pointer; color: var(--text-secondary); transition: all 0.15s; }
+  .tone-pill.active { border-color: var(--gold); color: var(--gold); background: var(--border-gold); }
+  .star { color: var(--gold); }
+  .star.empty { color: var(--border); }
+
+  /* Recent activity */
+  .activity-list { display: flex; flex-direction: column; gap: 0; }
+  .activity-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .activity-body { flex: 1; }
+  .activity-name { font-size: 13px; font-weight: 500; }
+  .activity-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+  .activity-time { font-size: 11px; color: var(--text-muted); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg-dark); }
+  ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 3px; }
+
+  /* Notification toast */
+  #toast { position: fixed; bottom: 24px; right: 24px; background: var(--bg-card); border: 1px solid var(--gold-dark); border-radius: 8px; padding: 12px 20px; font-size: 13px; color: var(--gold-light); opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 999; }
+  #toast.show { opacity: 1; }
+
+  .section-title { font-size: 13px; font-weight: 600; color: var(--gold); margin-bottom: 12px; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div id="sidebar">
+  <div class="sidebar-logo">
+    <h1>おもてなし<br>クラウド</h1>
+    <span>OMOTENASHI CLOUD v2.4</span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-item active" onclick="switchTab('dashboard', this)">
+      <span class="nav-icon">📊</span> ダッシュボード
+    </div>
+    <div class="nav-item" onclick="switchTab('customers', this)">
+      <span class="nav-icon">👥</span> 顧客管理
+    </div>
+    <div class="nav-item" onclick="switchTab('line', this)">
+      <span class="nav-icon">💬</span> LINE配信AI
+    </div>
+    <div class="nav-item" onclick="switchTab('review', this)">
+      <span class="nav-icon">⭐</span> 口コミ返信AI
+    </div>
+    <div class="nav-item" onclick="switchTab('reservation', this)">
+      <span class="nav-icon">📅</span> 予約管理
+    </div>
+    <div class="nav-item" onclick="switchTab('analytics', this)">
+      <span class="nav-icon">📈</span> アナリティクス
+    </div>
+    <div class="nav-item" onclick="switchTab('settings', this)">
+      <span class="nav-icon">⚙️</span> 設定
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    🏨 プレミアムホテル東京<br>
+    <span style="color: var(--gold); font-size: 10px;">● オンライン</span>
+  </div>
+</div>
+
+<!-- Main -->
+<div id="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">ダッシュボード</div>
+    <div class="topbar-right">
+      <span>2026年3月13日（金）</span>
+      <span class="badge">通知 3件</span>
+      <span style="color: var(--gold);">👤 山田 管理者</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- Dashboard -->
+    <div id="tab-dashboard" class="tab-pane active">
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">今月の稼働率</div>
+          <div class="kpi-value">87<span style="font-size:16px">%</span></div>
+          <div class="kpi-sub">客室 142/164室</div>
+          <div class="kpi-trend up">▲ 前月比 +4.2%</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">月間宿泊売上</div>
+          <div class="kpi-value">¥<span style="font-size:20px">12.4M</span></div>
+          <div class="kpi-sub">目標 ¥11.0M</div>
+          <div class="kpi-trend up">▲ 目標比 +12.7%</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">顧客満足度 (NPS)</div>
+          <div class="kpi-value">72</div>
+          <div class="kpi-sub">回答数 384件</div>
+          <div class="kpi-trend up">▲ 前月比 +3pt</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">LINE開封率</div>
+          <div class="kpi-value">68<span style="font-size:16px">%</span></div>
+          <div class="kpi-sub">配信数 1,247件</div>
+          <div class="kpi-trend down">▼ 前月比 -1.1%</div>
+        </div>
+      </div>
+
+      <div class="charts-row">
+        <div class="card">
+          <div class="card-title">月別宿泊者数推移（直近6ヶ月）</div>
+          <div class="bar-chart">
+            <div class="bar-group"><div class="bar" style="height:60%"></div><div class="bar-label">10月</div></div>
+            <div class="bar-group"><div class="bar" style="height:72%"></div><div class="bar-label">11月</div></div>
+            <div class="bar-group"><div class="bar" style="height:55%"></div><div class="bar-label">12月</div></div>
+            <div class="bar-group"><div class="bar" style="height:48%"></div><div class="bar-label">1月</div></div>
+            <div class="bar-group"><div class="bar" style="height:80%"></div><div class="bar-label">2月</div></div>
+            <div class="bar-group"><div class="bar" style="height:95%"></div><div class="bar-label">3月</div></div>
+          </div>
+          <div style="display:flex;gap:16px;margin-top:12px;font-size:11px;color:var(--text-muted);">
+            <span>10月: 2,840名</span><span>11月: 3,120名</span><span>12月: 2,650名</span>
+            <span>1月: 2,410名</span><span>2月: 3,390名</span><span>3月: 3,870名</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">宿泊者属性（国籍別）</div>
+          <div class="donut-wrap">
+            <div class="donut"></div>
+            <div class="donut-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:var(--gold)"></div>日本 42%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#4c8bc9"></div>中国・台湾 23%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#4caf82"></div>欧米 17%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#666"></div>その他 18%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="card">
+          <div class="card-title">最近のアクティビティ</div>
+          <div class="activity-list">
+            <div class="activity-item">
+              <div class="activity-icon" style="background:#2a2a10">🌟</div>
+              <div class="activity-body">
+                <div class="activity-name">田中 美咲 様 チェックイン</div>
+                <div class="activity-desc">スイートルーム 301号室 ／ VIP顧客</div>
+              </div>
+              <div class="activity-time">14:23</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon" style="background:#102a10">💬</div>
+              <div class="activity-body">
+                <div class="activity-name">LINE配信 完了</div>
+                <div class="activity-desc">春の特別プラン案内 ／ 送信 847件</div>
+              </div>
+              <div class="activity-time">13:05</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon" style="background:#10202a">⭐</div>
+              <div class="activity-body">
+                <div class="activity-name">新規口コミ 5件</div>
+                <div class="activity-desc">Google ★4.6 ／ 楽天 ★4.8</div>
+              </div>
+              <div class="activity-time">11:40</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon" style="background:#2a1010">📅</div>
+              <div class="activity-body">
+                <div class="activity-name">予約キャンセル</div>
+                <div class="activity-desc">佐藤様 ／ 3/20-22 ／ 自動メール送信済</div>
+              </div>
+              <div class="activity-time">10:18</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">今週のタスク</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;gap:10px;font-size:13px;">
+              <span style="color:var(--success)">✓</span>
+              <span style="text-decoration:line-through;color:var(--text-muted)">3月LINE配信メッセージ作成</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:13px;">
+              <span style="color:var(--success)">✓</span>
+              <span style="text-decoration:line-through;color:var(--text-muted)">VIP顧客リスト更新</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:13px;">
+              <span style="color:var(--gold)">◎</span>
+              <span>口コミ返信（楽天 12件 未返信）</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:13px;">
+              <span style="color:var(--border)">○</span>
+              <span style="color:var(--text-secondary)">春の特別プラン販促ページ更新</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:13px;">
+              <span style="color:var(--border)">○</span>
+              <span style="color:var(--text-secondary)">4月スタッフ研修資料準備</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:13px;">
+              <span style="color:var(--danger)">!</span>
+              <span style="color:var(--danger)">GW期間 料金設定確認（要対応）</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customers -->
+    <div id="tab-customers" class="tab-pane">
+      <div class="table-wrap">
+        <div class="table-header">
+          <div>
+            <div class="card-title" style="margin-bottom:4px">顧客一覧</div>
+            <div style="font-size:12px;color:var(--text-muted)">総顧客数 2,847名 ／ 今月新規 38名</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <input class="table-search" type="text" placeholder="🔍 顧客名・電話番号で検索..." oninput="filterCustomers(this.value)">
+            <button class="btn btn-outline">エクスポート</button>
+            <button class="btn btn-gold">＋ 新規登録</button>
+          </div>
+        </div>
+        <table id="customer-table">
+          <thead>
+            <tr>
+              <th>顧客名</th>
+              <th>ランク</th>
+              <th>累計宿泊</th>
+              <th>最終宿泊日</th>
+              <th>連絡先</th>
+              <th>誕生月</th>
+              <th>LTV</th>
+              <th>ステータス</th>
+              <th>アクション</th>
+            </tr>
+          </thead>
+          <tbody id="customer-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- LINE AI -->
+    <div id="tab-line" class="tab-pane">
+      <div class="ai-layout">
+        <div class="ai-panel">
+          <div class="ai-panel-title">💬 LINE配信メッセージ生成 <span class="ai-badge">AI</span></div>
+
+          <div class="form-group">
+            <label class="form-label">配信対象セグメント</label>
+            <select class="form-select" id="line-segment">
+              <option>全顧客（2,847名）</option>
+              <option>VIP顧客（89名）</option>
+              <option>ゴールド会員（342名）</option>
+              <option>過去1年以内に宿泊（1,203名）</option>
+              <option>誕生月顧客（3月：47名）</option>
+              <option>休眠顧客（1年以上未宿泊：892名）</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">配信目的・プラン</label>
+            <select class="form-select" id="line-purpose">
+              <option>春の特別プランのご案内</option>
+              <option>誕生日特典のご案内</option>
+              <option>GWお早め予約キャンペーン</option>
+              <option>再来館特別割引</option>
+              <option>新メニュー・サービスのご紹介</option>
+              <option>周年感謝セール</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">トーン</label>
+            <div class="tone-pills">
+              <div class="tone-pill active" onclick="selectTone(this, 'line')">丁寧・格調</div>
+              <div class="tone-pill" onclick="selectTone(this, 'line')">親しみやすい</div>
+              <div class="tone-pill" onclick="selectTone(this, 'line')">緊急感・限定感</div>
+              <div class="tone-pill" onclick="selectTone(this, 'line')">季節感重視</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">追加情報・特記事項（任意）</label>
+            <textarea class="form-textarea" id="line-extra" placeholder="例：早割10%OFF、露天風呂リニューアル、チェックアウト12時まで延長可..." style="min-height:70px"></textarea>
+          </div>
+
+          <button class="btn btn-gold" style="width:100%;padding:12px;" onclick="generateLine()">
+            ✨ AIでメッセージを生成する
+          </button>
+        </div>
+
+        <div class="ai-panel">
+          <div class="ai-panel-title">📤 生成結果</div>
+          <div style="margin-bottom:10px;font-size:12px;color:var(--text-secondary)">LINEメッセージ（最大500文字）</div>
+          <div class="ai-output empty" id="line-output">
+            <button class="copy-btn" onclick="copyText('line-output')" style="display:none" id="line-copy-btn">コピー</button>
+            配信目的とセグメントを選択して「生成」を押してください。
+          </div>
+          <div style="margin-top:16px;">
+            <div class="section-title">📊 配信スケジュール</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div>
+                <label class="form-label">配信日時</label>
+                <input class="form-input" type="datetime-local" value="2026-03-15T10:00">
+              </div>
+              <div>
+                <label class="form-label">配信方法</label>
+                <select class="form-select">
+                  <option>即時配信</option>
+                  <option selected>スケジュール配信</option>
+                  <option>A/Bテスト配信</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-outline" style="width:100%;margin-top:12px;padding:10px;" onclick="showToast('配信スケジュールを設定しました')">📅 配信予約する</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;" class="card">
+        <div class="card-title">📋 配信履歴</div>
+        <table style="width:100%">
+          <thead>
+            <tr>
+              <th>配信日時</th><th>メッセージ概要</th><th>対象</th><th>送信数</th><th>開封率</th><th>予約転換</th><th>ステータス</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>2026/03/01 10:00</td><td>春の特別プランご案内</td><td>全顧客</td><td>2,847</td><td style="color:var(--success)">72.3%</td><td>4.1%</td><td><span class="badge">完了</span></td></tr>
+            <tr><td>2026/02/14 09:00</td><td>バレンタイン特別ディナー</td><td>カップル層</td><td>623</td><td style="color:var(--success)">68.9%</td><td>6.8%</td><td><span class="badge">完了</span></td></tr>
+            <tr><td>2026/02/01 10:00</td><td>2月誕生日特典のご案内</td><td>誕生月顧客</td><td>51</td><td style="color:var(--gold)">81.2%</td><td>12.4%</td><td><span class="badge">完了</span></td></tr>
+            <tr><td>2026/01/15 11:00</td><td>春節・GW早割キャンペーン</td><td>VIP+ゴールド</td><td>431</td><td style="color:var(--success)">75.6%</td><td>8.2%</td><td><span class="badge">完了</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Review AI -->
+    <div id="tab-review" class="tab-pane">
+      <div class="ai-layout">
+        <div class="ai-panel">
+          <div class="ai-panel-title">⭐ 口コミ返信AI <span class="ai-badge">AI</span></div>
+
+          <div class="form-group">
+            <label class="form-label">プラットフォーム</label>
+            <select class="form-select" id="review-platform">
+              <option>Google マップ</option>
+              <option>楽天トラベル</option>
+              <option>じゃらん</option>
+              <option>一休.com</option>
+              <option>TripAdvisor</option>
+              <option>Booking.com</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">評価</label>
+            <div style="display:flex;gap:6px;margin-top:4px;" id="star-rating">
+              <span class="star" style="font-size:22px;cursor:pointer" onclick="setRating(1)">★</span>
+              <span class="star" style="font-size:22px;cursor:pointer" onclick="setRating(2)">★</span>
+              <span class="star" style="font-size:22px;cursor:pointer" onclick="setRating(3)">★</span>
+              <span class="star" style="font-size:22px;cursor:pointer" onclick="setRating(4)">★</span>
+              <span class="star empty" style="font-size:22px;cursor:pointer" onclick="setRating(5)">★</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">口コミ内容</label>
+            <textarea class="form-textarea" id="review-text" placeholder="お客様の口コミをここに貼り付けてください...">部屋からの夜景が最高でした。スタッフの方もとても親切で、チェックイン時に丁寧にご案内いただきました。朝食のビュッフェも種類が豊富で美味しかったです。ただ、バスルームの換気扇が少し気になりました。また必ず宿泊したいと思います。</textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">返信トーン</label>
+            <div class="tone-pills">
+              <div class="tone-pill active" onclick="selectTone(this, 'review')">丁寧・格調高く</div>
+              <div class="tone-pill" onclick="selectTone(this, 'review')">温かみのある</div>
+              <div class="tone-pill" onclick="selectTone(this, 'review')">簡潔に</div>
+            </div>
+          </div>
+
+          <button class="btn btn-gold" style="width:100%;padding:12px;" onclick="generateReview()">
+            ✨ AIで返信文を生成する
+          </button>
+        </div>
+
+        <div class="ai-panel">
+          <div class="ai-panel-title">📝 生成された返信文</div>
+          <div class="ai-output empty" id="review-output" style="min-height:220px">
+            <button class="copy-btn" onclick="copyText('review-output')" style="display:none" id="review-copy-btn">コピー</button>
+            口コミ内容を入力して「生成」を押してください。
+          </div>
+          <div style="margin-top:12px;display:flex;gap:8px;">
+            <button class="btn btn-gold" style="flex:1" onclick="showToast('返信を投稿しました')">投稿する</button>
+            <button class="btn btn-outline" onclick="generateReview()">再生成</button>
+            <button class="btn btn-outline" onclick="copyText('review-output')">コピー</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;" class="card">
+        <div class="card-title">📋 未返信の口コミ <span style="color:var(--danger);font-size:12px">● 12件</span></div>
+        <table style="width:100%">
+          <thead>
+            <tr><th>日付</th><th>プラットフォーム</th><th>評価</th><th>口コミ抜粋</th><th>アクション</th></tr>
+          </thead>
+          <tbody id="review-list"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Reservation placeholder -->
+    <div id="tab-reservation" class="tab-pane">
+      <div class="card" style="text-align:center;padding:60px 20px;">
+        <div style="font-size:48px;margin-bottom:16px">📅</div>
+        <div style="font-size:18px;font-weight:600;color:var(--gold);margin-bottom:8px">予約管理</div>
+        <div style="color:var(--text-secondary)">このセクションでは予約の一覧、変更、キャンセル管理ができます。</div>
+      </div>
+    </div>
+
+    <!-- Analytics placeholder -->
+    <div id="tab-analytics" class="tab-pane">
+      <div class="card" style="text-align:center;padding:60px 20px;">
+        <div style="font-size:48px;margin-bottom:16px">📈</div>
+        <div style="font-size:18px;font-weight:600;color:var(--gold);margin-bottom:8px">アナリティクス</div>
+        <div style="color:var(--text-secondary)">詳細な分析レポート・グラフを表示します。</div>
+      </div>
+    </div>
+
+    <!-- Settings placeholder -->
+    <div id="tab-settings" class="tab-pane">
+      <div class="card" style="text-align:center;padding:60px 20px;">
+        <div style="font-size:48px;margin-bottom:16px">⚙️</div>
+        <div style="font-size:18px;font-weight:600;color:var(--gold);margin-bottom:8px">設定</div>
+        <div style="color:var(--text-secondary)">ホテル情報・通知・連携サービスの設定ができます。</div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<div id="toast">✓ 操作が完了しました</div>
+
+<script>
+// ---- Navigation ----
+const tabTitles = {
+  dashboard: 'ダッシュボード',
+  customers: '顧客管理',
+  line: 'LINE配信AI',
+  review: '口コミ返信AI',
+  reservation: '予約管理',
+  analytics: 'アナリティクス',
+  settings: '設定'
+};
+function switchTab(name, el) {
+  document.querySelectorAll('.tab-pane').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  el.classList.add('active');
+  document.getElementById('topbar-title').textContent = tabTitles[name];
+}
+
+// ---- Customer Data ----
+const customers = [
+  { name:'田中 美咲', rank:'VIP', stays:47, last:'2026/03/13', tel:'090-1234-5678', birth:'3月', ltv:'¥2,840,000', status:'チェックイン中' },
+  { name:'山本 健太郎', rank:'GOLD', stays:23, last:'2026/02/28', tel:'080-2345-6789', birth:'7月', ltv:'¥980,000', status:'在宅' },
+  { name:'佐藤 由美', rank:'VIP', stays:61, last:'2026/03/10', tel:'070-3456-7890', birth:'11月', ltv:'¥4,120,000', status:'在宅' },
+  { name:'鈴木 一郎', rank:'SILVER', stays:8, last:'2025/12/24', tel:'090-4567-8901', birth:'5月', ltv:'¥320,000', status:'在宅' },
+  { name:'高橋 さくら', rank:'GOLD', stays:19, last:'2026/01/15', tel:'080-5678-9012', birth:'3月', ltv:'¥760,000', status:'在宅' },
+  { name:'渡辺 雄大', rank:'NORMAL', stays:3, last:'2025/11/03', tel:'070-6789-0123', birth:'9月', ltv:'¥95,000', status:'在宅' },
+  { name:'伊藤 奈々', rank:'VIP', stays:38, last:'2026/03/08', tel:'090-7890-1234', birth:'1月', ltv:'¥1,970,000', status:'在宅' },
+  { name:'中村 翔太', rank:'GOLD', stays:14, last:'2026/02/10', tel:'080-8901-2345', birth:'8月', ltv:'¥540,000', status:'予約済' },
+  { name:'小林 恵美', rank:'SILVER', stays:6, last:'2026/01/30', tel:'070-9012-3456', birth:'12月', ltv:'¥215,000', status:'在宅' },
+  { name:'加藤 浩二', rank:'NORMAL', stays:2, last:'2025/08/15', tel:'090-0123-4567', birth:'4月', ltv:'¥68,000', status:'在宅' },
+];
+
+const rankClass = { VIP:'rank-vip', GOLD:'rank-gold', SILVER:'rank-silver', NORMAL:'rank-normal' };
+const statusColor = { 'チェックイン中':'var(--success)', '予約済':'var(--gold)', '在宅':'var(--text-muted)' };
+
+function renderCustomers(data) {
+  const tbody = document.getElementById('customer-tbody');
+  tbody.innerHTML = data.map(c => `
+    <tr>
+      <td><strong>${c.name}</strong></td>
+      <td><span class="rank-badge ${rankClass[c.rank]}">${c.rank}</span></td>
+      <td>${c.stays}泊</td>
+      <td>${c.last}</td>
+      <td style="color:var(--text-secondary)">${c.tel}</td>
+      <td>${c.birth}</td>
+      <td style="color:var(--gold-light)">${c.ltv}</td>
+      <td><span class="status-dot" style="background:${statusColor[c.status]}"></span>${c.status}</td>
+      <td><button class="btn btn-outline" style="padding:4px 10px;font-size:11px" onclick="showToast('${c.name}様の詳細を開きました')">詳細</button></td>
+    </tr>
+  `).join('');
+}
+renderCustomers(customers);
+
+function filterCustomers(val) {
+  const filtered = customers.filter(c => c.name.includes(val) || c.tel.includes(val));
+  renderCustomers(filtered);
+}
+
+// ---- Review list ----
+const reviews = [
+  { date:'2026/03/12', platform:'Google', rating:5, text:'スタッフの接客が素晴らしく、また来たいと思います。' },
+  { date:'2026/03/11', platform:'楽天', rating:4, text:'お部屋は綺麗で広かったです。朝食は少し種類が少なめ。' },
+  { date:'2026/03/10', platform:'じゃらん', rating:5, text:'記念日に利用しました。サプライズ演出をしていただき感動。' },
+  { date:'2026/03/09', platform:'一休', rating:3, text:'立地は最高ですが、アメニティが少し古い印象でした。' },
+  { date:'2026/03/08', platform:'Google', rating:4, text:'チェックインがスムーズでとても助かりました。' },
+];
+const stars = r => '★'.repeat(r) + '☆'.repeat(5-r);
+document.getElementById('review-list').innerHTML = reviews.map(r => `
+  <tr>
+    <td>${r.date}</td>
+    <td>${r.platform}</td>
+    <td style="color:var(--gold)">${stars(r.rating)}</td>
+    <td style="color:var(--text-secondary)">${r.text.substring(0,30)}...</td>
+    <td><button class="btn btn-gold" style="padding:4px 12px;font-size:11px" onclick="loadReview(\`${r.text}\`, ${r.rating})">返信作成</button></td>
+  </tr>
+`).join('');
+
+function loadReview(text, rating) {
+  switchTab('review', document.querySelectorAll('.nav-item')[3]);
+  document.getElementById('review-text').value = text;
+  setRating(rating);
+}
+
+// ---- Star rating ----
+let currentRating = 4;
+function setRating(n) {
+  currentRating = n;
+  document.querySelectorAll('#star-rating .star').forEach((s, i) => {
+    s.classList.toggle('empty', i >= n);
+  });
+}
+
+// ---- Tone pills ----
+function selectTone(el, group) {
+  el.closest('.ai-panel').querySelectorAll('.tone-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ---- LINE AI mock responses ----
+const lineTemplates = {
+  '春の特別プランのご案内': {
+    '丁寧・格調': `【おもてなしクラウドより春のご案内】
+
+{name}様
+
+日頃より格別のご愛顧を賜り、誠にありがとうございます。
+
+桜の季節に合わせた「春彩プレミアムプラン」のご案内をさせていただきます。
+
+🌸 春彩プレミアムプラン 特典
+・桜ビュー特別客室のご提供
+・旬の食材を使った春懐石コース
+・チェックアウト12時まで延長（無料）
+・館内スパ30分無料体験
+
+ご予約受付期間：3/15（日）〜4/10（木）
+対象ご宿泊：3/20〜4/20
+
+ご予約・詳細はこちら👇
+https://omotenashi-cloud.jp/spring2026
+
+皆様のお越しをスタッフ一同、心よりお待ち申し上げております。`,
+    '親しみやすい': `こんにちは😊 おもてなしクラウドです！
+
+いつもありがとうございます✨
+
+春の特別プランが始まりました🌸
+
+【春彩プラン】
+🌸 桜ビュー客室
+🍱 春の特別懐石コース
+⏰ レイトチェックアウト無料
+💆 スパ体験30分プレゼント
+
+今なら早割10%OFF中！
+ご予約はお早めに👇
+
+詳細・ご予約 ▶ https://omotenashi-cloud.jp/spring2026
+
+ご来館お待ちしております😊`,
+    '緊急感・限定感': `⚠️【残りわずか】春の特別プラン
+
+{name}様、こんにちは。
+
+桜シーズンの人気客室、残りわずかです！
+
+🌸 春彩プレミアムプラン
+早割価格：¥28,000〜/人（通常¥32,000）
+
+▶ 残室：桜ビュー 3室のみ
+
+期間：3/20〜4/20
+締切：3/15（日）23:59まで
+
+今すぐ予約する👇
+https://omotenashi-cloud.jp/spring2026
+
+売切れ次第終了です！`,
+  },
+  '誕生日特典のご案内': {
+    '丁寧・格調': `【おもてなしクラウドより 誕生日のお祝い】
+
+{name}様
+
+お誕生月を迎えられるにあたり、心よりお祝い申し上げます。
+
+日頃のご愛顧への感謝を込め、お誕生月限定の特別特典をご用意いたしました。
+
+🎂 バースデー特典
+・ご宿泊料金15%割引
+・ウェルカムケーキのご用意
+・記念写真撮影サービス
+・アーリーチェックイン（13時〜）
+
+有効期間はお誕生月のご宿泊に限ります。
+
+ご予約の際は「バースデープラン」をご選択ください。
+
+素晴らしい一年となりますよう、スタッフ一同お祈り申し上げます。`,
+  }
+};
+
+function generateLine() {
+  const purpose = document.getElementById('line-purpose').value;
+  const tone = document.querySelector('#tab-line .tone-pill.active').textContent;
+  const extra = document.getElementById('line-extra').value;
+  const out = document.getElementById('line-output');
+  const copyBtn = document.getElementById('line-copy-btn');
+
+  out.classList.remove('empty');
+  out.textContent = '';
+  copyBtn.style.display = 'block';
+
+  let text = (lineTemplates[purpose] && lineTemplates[purpose][tone])
+    ? lineTemplates[purpose][tone]
+    : generateGenericLine(purpose, tone);
+
+  if (extra) text += `\n\n※ ${extra}`;
+
+  typeWriter(out, text, copyBtn);
+}
+
+function generateGenericLine(purpose, tone) {
+  return `【おもてなしクラウドよりご案内】
+
+いつもご利用いただきありがとうございます。
+
+この度、${purpose}をご用意いたしました。
+
+期間限定の特別なご案内となっております。ぜひこの機会にご利用くださいませ。
+
+詳細・ご予約はこちら👇
+https://omotenashi-cloud.jp/info
+
+皆様のお越しをお待ちしております。`;
+}
+
+// ---- Review AI mock responses ----
+const reviewResponses = {
+  5: [
+    `{name}様
+
+この度は、プレミアムホテル東京をご利用いただき、誠にありがとうございます。また、温かいお言葉をお寄せいただき、スタッフ一同大変嬉しく拝見いたしました。
+
+お客様にご満足いただけましたこと、何よりの励みとなっております。またのご来館の際も、最高のおもてなしでお迎えできますよう、精進してまいります。
+
+引き続き変わらぬご愛顧を賜りますよう、よろしくお願い申し上げます。
+
+プレミアムホテル東京
+支配人 山田 太郎`,
+  ],
+  4: [
+    `{name}様
+
+この度はプレミアムホテル東京にご宿泊いただき、誠にありがとうございました。また、貴重なご感想をお寄せいただき、心より感謝申し上げます。
+
+ご満足いただけた点についてはスタッフ一同の励みとなり、またご指摘いただいた点につきましては、真摯に受け止め改善に取り組んでまいります。
+
+今後ともより良いサービスの提供に努めてまいりますので、またの機会にぜひご利用くださいませ。
+
+プレミアムホテル東京
+スタッフ一同`,
+  ],
+  3: [
+    `{name}様
+
+この度はプレミアムホテル東京をご利用いただき、誠にありがとうございます。ご宿泊中にご不便をおかけしてしまいましたこと、深くお詫び申し上げます。
+
+いただきましたご意見を真摯に受け止め、施設・サービスの改善に活かしてまいります。お客様のご期待に沿えるよう、スタッフ一同さらなる向上に努める所存でございます。
+
+またの機会がございましたら、改善されたおもてなしでお迎えできますよう努力してまいります。
+
+プレミアムホテル東京
+支配人`,
+  ],
+};
+
+function generateReview() {
+  const text = document.getElementById('review-text').value;
+  const out = document.getElementById('review-output');
+  const copyBtn = document.getElementById('review-copy-btn');
+
+  if (!text.trim()) { showToast('口コミ内容を入力してください'); return; }
+
+  out.classList.remove('empty');
+  out.textContent = '';
+  copyBtn.style.display = 'block';
+
+  const responses = reviewResponses[currentRating] || reviewResponses[4];
+  const base = responses[Math.floor(Math.random() * responses.length)];
+
+  typeWriter(out, base, copyBtn);
+}
+
+// ---- Typewriter effect ----
+function typeWriter(el, text, copyBtn) {
+  el.classList.add('generating');
+  let i = 0;
+  el.textContent = '';
+  const iv = setInterval(() => {
+    el.textContent += text[i];
+    i++;
+    if (i >= text.length) {
+      clearInterval(iv);
+      el.classList.remove('generating');
+      if (copyBtn) copyBtn.style.display = 'block';
+    }
+  }, 12);
+}
+
+// ---- Copy ----
+function copyText(id) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('クリップボードにコピーしました'));
+}
+
+// ---- Toast ----
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = '✓ ' + msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
