@@ -501,6 +501,11 @@
           <div class="ai-panel-title">⭐ 口コミ返信AI <span class="ai-badge">AI</span></div>
 
           <div class="form-group">
+            <label class="form-label">投稿者名（任意）</label>
+            <input class="form-input" id="reviewer-name" type="text" placeholder="例：田中様　※未入力の場合は「お客様」と表示されます">
+          </div>
+
+          <div class="form-group">
             <label class="form-label">プラットフォーム</label>
             <select class="form-select" id="review-platform">
               <option>Google マップ</option>
@@ -754,6 +759,7 @@ async function generateReview() {
   const reviewText = document.getElementById('review-text').value;
   const platform = document.getElementById('review-platform').value;
   const tone = document.querySelector('#tab-review .tone-pill.active').textContent;
+  const reviewerName = document.getElementById('reviewer-name').value.trim() || 'お客様';
   const out = document.getElementById('review-output');
   const copyBtn = document.getElementById('review-copy-btn');
   const genBtn = document.querySelector('#tab-review .btn-gold[onclick="generateReview()"]');
@@ -768,7 +774,8 @@ async function generateReview() {
       platform,
       rating: currentRating,
       reviewText,
-      tone
+      tone,
+      reviewerName
     });
     out.textContent = '';
     copyBtn.style.display = 'block';

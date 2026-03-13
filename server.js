@@ -20,10 +20,12 @@ app.post('/api/generate', async (req, res) => {
   let prompt = '';
 
   if (type === 'review') {
-    const { platform, rating, reviewText, tone } = params;
+    const { platform, rating, reviewText, tone, reviewerName } = params;
+    const nameLabel = reviewerName || 'お客様';
     prompt = `あなたは高級ホテル「プレミアムホテル東京」のカスタマーサービス担当です。
 以下のお客様の口コミに対して、ホテルとしての丁寧な返信文を日本語で生成してください。
 
+【投稿者名】${nameLabel}
 【プラットフォーム】${platform}
 【評価】${rating}星 / 5星
 【口コミ内容】
@@ -32,6 +34,7 @@ ${reviewText}
 【返信トーン】${tone}
 
 【要件】
+- 返信文の冒頭は必ず「${nameLabel}」という呼びかけで始めること（例：「${nameLabel}、この度は...」）
 - ホテル名「プレミアムホテル東京」を使用
 - 署名は「プレミアムホテル東京 スタッフ一同」
 - 評価が低い場合は誠実にお詫びし改善への意欲を示す
