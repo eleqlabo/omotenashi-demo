@@ -387,7 +387,7 @@
               <th>累計宿泊</th>
               <th>最終宿泊日</th>
               <th>連絡先</th>
-              <th>誕生月</th>
+              <th>誕生日</th>
               <th>LTV</th>
               <th>ステータス</th>
               <th>アクション</th>
@@ -473,6 +473,50 @@
             </div>
             <button class="btn btn-outline" style="width:100%;margin-top:12px;padding:10px;" onclick="showToast('配信スケジュールを設定しました')">📅 配信予約する</button>
           </div>
+        </div>
+      </div>
+
+      <!-- 誕生日自動送信 -->
+      <div style="margin-top:20px;" class="card">
+        <div class="card-title">🎂 誕生日自動送信 <span style="font-size:11px;font-weight:400;color:var(--text-muted);margin-left:8px">毎日09:00に自動チェック・送信</span></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+          <!-- 特典設定 -->
+          <div>
+            <div class="section-title">⚙️ 特典設定（施設側で設定）</div>
+            <div class="form-group">
+              <label class="form-label">クーポン内容</label>
+              <input class="form-input" id="birthday-coupon" type="text" placeholder="例：次回宿泊10%OFF">
+            </div>
+            <div class="form-group">
+              <label class="form-label">特典有効期限</label>
+              <input class="form-input" id="birthday-expiry" type="text" placeholder="例：お誕生月末まで">
+            </div>
+            <button class="btn btn-gold" style="width:100%" onclick="saveBirthdaySettings()">設定を保存する</button>
+          </div>
+
+          <!-- プレビューエリア -->
+          <div>
+            <div class="section-title">📋 生成メッセージ プレビュー</div>
+            <div class="ai-output empty" id="birthday-preview" style="min-height:130px;font-size:12px">
+              顧客リストの「送信プレビュー」ボタンを押すとここに表示されます。
+            </div>
+            <div style="margin-top:8px;display:flex;gap:8px;">
+              <button class="btn btn-gold" style="flex:1" id="birthday-send-btn" onclick="confirmBirthdaySend()" disabled>送信する</button>
+              <button class="btn btn-outline" onclick="copyText('birthday-preview')">コピー</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 本日の誕生日顧客 -->
+        <div>
+          <div class="section-title" id="birthday-list-title">🎉 本日の誕生日顧客</div>
+          <table style="width:100%">
+            <thead>
+              <tr><th>顧客名</th><th>ランク</th><th>誕生日</th><th>連絡先</th><th>ステータス</th><th>アクション</th></tr>
+            </thead>
+            <tbody id="birthday-tbody"></tbody>
+          </table>
         </div>
       </div>
 
@@ -625,16 +669,16 @@ function switchTab(name, el) {
 
 // ---- Customer Data ----
 const customers = [
-  { name:'田中 美咲', rank:'VIP', stays:47, last:'2026/03/13', tel:'090-1234-5678', birth:'3月', ltv:'¥2,840,000', status:'チェックイン中' },
-  { name:'山本 健太郎', rank:'GOLD', stays:23, last:'2026/02/28', tel:'080-2345-6789', birth:'7月', ltv:'¥980,000', status:'在宅' },
-  { name:'佐藤 由美', rank:'VIP', stays:61, last:'2026/03/10', tel:'070-3456-7890', birth:'11月', ltv:'¥4,120,000', status:'在宅' },
-  { name:'鈴木 一郎', rank:'SILVER', stays:8, last:'2025/12/24', tel:'090-4567-8901', birth:'5月', ltv:'¥320,000', status:'在宅' },
-  { name:'高橋 さくら', rank:'GOLD', stays:19, last:'2026/01/15', tel:'080-5678-9012', birth:'3月', ltv:'¥760,000', status:'在宅' },
-  { name:'渡辺 雄大', rank:'NORMAL', stays:3, last:'2025/11/03', tel:'070-6789-0123', birth:'9月', ltv:'¥95,000', status:'在宅' },
-  { name:'伊藤 奈々', rank:'VIP', stays:38, last:'2026/03/08', tel:'090-7890-1234', birth:'1月', ltv:'¥1,970,000', status:'在宅' },
-  { name:'中村 翔太', rank:'GOLD', stays:14, last:'2026/02/10', tel:'080-8901-2345', birth:'8月', ltv:'¥540,000', status:'予約済' },
-  { name:'小林 恵美', rank:'SILVER', stays:6, last:'2026/01/30', tel:'070-9012-3456', birth:'12月', ltv:'¥215,000', status:'在宅' },
-  { name:'加藤 浩二', rank:'NORMAL', stays:2, last:'2025/08/15', tel:'090-0123-4567', birth:'4月', ltv:'¥68,000', status:'在宅' },
+  { name:'田中 美咲', rank:'VIP', stays:47, last:'2026/03/13', tel:'090-1234-5678', birth:'3月', birthdayMD:'03-14', ltv:'¥2,840,000', status:'チェックイン中' },
+  { name:'山本 健太郎', rank:'GOLD', stays:23, last:'2026/02/28', tel:'080-2345-6789', birth:'7月', birthdayMD:'07-22', ltv:'¥980,000', status:'在宅' },
+  { name:'佐藤 由美', rank:'VIP', stays:61, last:'2026/03/10', tel:'070-3456-7890', birth:'11月', birthdayMD:'11-05', ltv:'¥4,120,000', status:'在宅' },
+  { name:'鈴木 一郎', rank:'SILVER', stays:8, last:'2025/12/24', tel:'090-4567-8901', birth:'5月', birthdayMD:'05-18', ltv:'¥320,000', status:'在宅' },
+  { name:'高橋 さくら', rank:'GOLD', stays:19, last:'2026/01/15', tel:'080-5678-9012', birth:'3月', birthdayMD:'03-14', ltv:'¥760,000', status:'在宅' },
+  { name:'渡辺 雄大', rank:'NORMAL', stays:3, last:'2025/11/03', tel:'070-6789-0123', birth:'9月', birthdayMD:'09-03', ltv:'¥95,000', status:'在宅' },
+  { name:'伊藤 奈々', rank:'VIP', stays:38, last:'2026/03/08', tel:'090-7890-1234', birth:'1月', birthdayMD:'01-27', ltv:'¥1,970,000', status:'在宅' },
+  { name:'中村 翔太', rank:'GOLD', stays:14, last:'2026/02/10', tel:'080-8901-2345', birth:'8月', birthdayMD:'08-15', ltv:'¥540,000', status:'予約済' },
+  { name:'小林 恵美', rank:'SILVER', stays:6, last:'2026/01/30', tel:'070-9012-3456', birth:'12月', birthdayMD:'12-08', ltv:'¥215,000', status:'在宅' },
+  { name:'加藤 浩二', rank:'NORMAL', stays:2, last:'2025/08/15', tel:'090-0123-4567', birth:'4月', birthdayMD:'04-20', ltv:'¥68,000', status:'在宅' },
 ];
 
 const rankClass = { VIP:'rank-vip', GOLD:'rank-gold', SILVER:'rank-silver', NORMAL:'rank-normal' };
@@ -649,7 +693,7 @@ function renderCustomers(data) {
       <td>${c.stays}泊</td>
       <td>${c.last}</td>
       <td style="color:var(--text-secondary)">${c.tel}</td>
-      <td>${c.birth}</td>
+      <td>${c.birthdayMD ? c.birthdayMD.replace('-', '/') : c.birth}</td>
       <td style="color:var(--gold-light)">${c.ltv}</td>
       <td><span class="status-dot" style="background:${statusColor[c.status]}"></span>${c.status}</td>
       <td><button class="btn btn-outline" style="padding:4px 10px;font-size:11px" onclick="showToast('${c.name}様の詳細を開きました')">詳細</button></td>
@@ -810,6 +854,108 @@ function copyText(id) {
   const text = document.getElementById(id).textContent;
   navigator.clipboard.writeText(text).then(() => showToast('クリップボードにコピーしました'));
 }
+
+// ---- Birthday Auto-Send ----
+const BIRTHDAY_STORAGE_KEY = 'omotenashi_birthday_settings';
+
+function getTodayMD() {
+  const d = new Date();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${mm}-${dd}`;
+}
+
+function loadBirthdaySettings() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(BIRTHDAY_STORAGE_KEY) || '{}');
+    document.getElementById('birthday-coupon').value = saved.coupon || '次回宿泊10%OFF';
+    document.getElementById('birthday-expiry').value = saved.expiry || 'お誕生月末まで';
+  } catch (_) {}
+}
+
+function saveBirthdaySettings() {
+  const coupon = document.getElementById('birthday-coupon').value.trim();
+  const expiry = document.getElementById('birthday-expiry').value.trim();
+  localStorage.setItem(BIRTHDAY_STORAGE_KEY, JSON.stringify({ coupon, expiry }));
+  showToast('特典設定を保存しました');
+}
+
+function renderBirthdayCustomers() {
+  const todayMD = getTodayMD();
+  const targets = customers.filter(c => c.birthdayMD === todayMD);
+  const tbody = document.getElementById('birthday-tbody');
+  const title = document.getElementById('birthday-list-title');
+
+  title.textContent = `🎉 本日の誕生日顧客（${targets.length}名 / ${todayMD.replace('-', '月')}日）`;
+
+  if (targets.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:20px">本日誕生日の顧客はいません</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = targets.map(c => `
+    <tr>
+      <td><strong>${c.name}</strong></td>
+      <td><span class="rank-badge ${rankClass[c.rank]}">${c.rank}</span></td>
+      <td>${c.birthdayMD.replace('-', '/')}</td>
+      <td style="color:var(--text-secondary)">${c.tel}</td>
+      <td><span class="status-dot" style="background:${statusColor[c.status]}"></span>${c.status}</td>
+      <td>
+        <button class="btn btn-outline" style="padding:4px 10px;font-size:11px"
+          onclick="previewBirthdayMessage('${c.name}', '${c.rank}')">送信プレビュー</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+let birthdayPreviewTarget = null;
+
+async function previewBirthdayMessage(customerName, rank) {
+  const settings = JSON.parse(localStorage.getItem(BIRTHDAY_STORAGE_KEY) || '{}');
+  const coupon = settings.coupon || '次回宿泊10%OFF';
+  const expiry = settings.expiry || 'お誕生月末まで';
+
+  const preview = document.getElementById('birthday-preview');
+  const sendBtn = document.getElementById('birthday-send-btn');
+
+  preview.classList.remove('empty');
+  preview.textContent = '✨ AIがメッセージを生成中...';
+  preview.classList.add('generating');
+  sendBtn.disabled = true;
+  birthdayPreviewTarget = null;
+
+  try {
+    const response = await fetch('/api/generate-birthday', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ customerName, rank, coupon, couponExpiry: expiry })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || '生成に失敗しました。');
+
+    preview.classList.remove('generating');
+    preview.textContent = '';
+    typeWriter(preview, data.text, null);
+    birthdayPreviewTarget = customerName;
+    sendBtn.disabled = false;
+  } catch (err) {
+    preview.classList.add('empty');
+    preview.classList.remove('generating');
+    preview.textContent = '❌ エラー: ' + err.message;
+    showToast('生成に失敗しました: ' + err.message);
+  }
+}
+
+function confirmBirthdaySend() {
+  if (!birthdayPreviewTarget) return;
+  showToast(`${birthdayPreviewTarget}さんへ誕生日メッセージを送信しました`);
+  document.getElementById('birthday-send-btn').disabled = true;
+  birthdayPreviewTarget = null;
+}
+
+// 初期化
+loadBirthdaySettings();
+renderBirthdayCustomers();
 
 // ---- Toast ----
 function showToast(msg) {
