@@ -703,12 +703,12 @@ function selectTone(el, group) {
   el.classList.add('active');
 }
 
-// ---- Gemini API 共通呼び出し ----
-async function callGeminiAPI(type, params) {
-  const response = await fetch('/api/generate', {
+// ---- Gemini API 呼び出し ----
+async function callGeminiAPI(endpoint, body) {
+  const response = await fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type, params })
+    body: JSON.stringify(body)
   });
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || 'AIの生成に失敗しました。');
@@ -741,7 +741,7 @@ async function generateLine() {
   copyBtn.style.display = 'none';
 
   try {
-    const text = await callGeminiAPI('line', { segment, purpose, tone, extra });
+    const text = await callGeminiAPI('/api/generate-line', { segment, purpose, tone, extra });
     out.textContent = '';
     copyBtn.style.display = 'block';
     typeWriter(out, text, copyBtn);
@@ -770,7 +770,7 @@ async function generateReview() {
   copyBtn.style.display = 'none';
 
   try {
-    const text = await callGeminiAPI('review', {
+    const text = await callGeminiAPI('/api/generate-reply', {
       platform,
       rating: currentRating,
       reviewText,
