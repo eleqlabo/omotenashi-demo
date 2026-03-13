@@ -7,15 +7,28 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_MODEL = 'gemini-2.5-flash';
 
 app.post('/api/generate', async (req, res) => {
-  const { type, params } = req.body;
+  res.setHeader('Content-Type', 'application/json');
 
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
   if (!GEMINI_API_KEY) {
-    return res.status(500).json({ error: 'APIキーが設定されていません。' });
+    return res.status(500).json({ error: 'APIキーが設定されていません。Render.comの環境変数にGEMINI_API_KEYを設定してください。' });
   }
+
+  let type, params;
+  try {
+    ({ type, params } = req.body);
+  } catch (e) {
+    return res.status(400).json({ error: 'リクエストの形式が正しくありません。' });
+  }
+
+  if (!type || !params) {
+    return res.status(400).json({ error: 'type と params は必須です。' });
+  }
+
+  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
   let prompt = '';
 
@@ -75,11 +88,16 @@ LINEで配信するメッセージを日本語で生成してください。
     });
 
     if (!response.ok) {
-      const errData = await response.json();
-      console.error('Gemini API error:', errData);
-      return res.status(response.status).json({
-        error: `Gemini APIエラー: ${errData.error?.message || '不明なエラーが発生しました。'}`
-      });
+      const raw = await response.text();
+      let message = '不明なエラーが発生しました。';
+      try {
+        const errData = JSON.parse(raw);
+        message = errData.error?.message || message;
+      } catch (_) {
+        message = raw.substring(0, 200);
+      }
+      console.error('Gemini API error:', message);
+      return res.status(response.status).json({ error: `Gemini APIエラー: ${message}` });
     }
 
     const data = await response.json();
