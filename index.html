@@ -698,180 +698,88 @@ function selectTone(el, group) {
   el.classList.add('active');
 }
 
-// ---- LINE AI mock responses ----
-const lineTemplates = {
-  '春の特別プランのご案内': {
-    '丁寧・格調': `【おもてなしクラウドより春のご案内】
+// ---- Gemini API 共通呼び出し ----
+async function callGeminiAPI(type, params) {
+  const response = await fetch('/api/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type, params })
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'AIの生成に失敗しました。');
+  return data.text;
+}
 
-{name}様
-
-日頃より格別のご愛顧を賜り、誠にありがとうございます。
-
-桜の季節に合わせた「春彩プレミアムプラン」のご案内をさせていただきます。
-
-🌸 春彩プレミアムプラン 特典
-・桜ビュー特別客室のご提供
-・旬の食材を使った春懐石コース
-・チェックアウト12時まで延長（無料）
-・館内スパ30分無料体験
-
-ご予約受付期間：3/15（日）〜4/10（木）
-対象ご宿泊：3/20〜4/20
-
-ご予約・詳細はこちら👇
-https://omotenashi-cloud.jp/spring2026
-
-皆様のお越しをスタッフ一同、心よりお待ち申し上げております。`,
-    '親しみやすい': `こんにちは😊 おもてなしクラウドです！
-
-いつもありがとうございます✨
-
-春の特別プランが始まりました🌸
-
-【春彩プラン】
-🌸 桜ビュー客室
-🍱 春の特別懐石コース
-⏰ レイトチェックアウト無料
-💆 スパ体験30分プレゼント
-
-今なら早割10%OFF中！
-ご予約はお早めに👇
-
-詳細・ご予約 ▶ https://omotenashi-cloud.jp/spring2026
-
-ご来館お待ちしております😊`,
-    '緊急感・限定感': `⚠️【残りわずか】春の特別プラン
-
-{name}様、こんにちは。
-
-桜シーズンの人気客室、残りわずかです！
-
-🌸 春彩プレミアムプラン
-早割価格：¥28,000〜/人（通常¥32,000）
-
-▶ 残室：桜ビュー 3室のみ
-
-期間：3/20〜4/20
-締切：3/15（日）23:59まで
-
-今すぐ予約する👇
-https://omotenashi-cloud.jp/spring2026
-
-売切れ次第終了です！`,
-  },
-  '誕生日特典のご案内': {
-    '丁寧・格調': `【おもてなしクラウドより 誕生日のお祝い】
-
-{name}様
-
-お誕生月を迎えられるにあたり、心よりお祝い申し上げます。
-
-日頃のご愛顧への感謝を込め、お誕生月限定の特別特典をご用意いたしました。
-
-🎂 バースデー特典
-・ご宿泊料金15%割引
-・ウェルカムケーキのご用意
-・記念写真撮影サービス
-・アーリーチェックイン（13時〜）
-
-有効期間はお誕生月のご宿泊に限ります。
-
-ご予約の際は「バースデープラン」をご選択ください。
-
-素晴らしい一年となりますよう、スタッフ一同お祈り申し上げます。`,
+function setLoading(outEl, btnEl, loading) {
+  if (loading) {
+    outEl.classList.remove('empty');
+    outEl.textContent = '✨ AIが生成中です...';
+    outEl.classList.add('generating');
+    if (btnEl) btnEl.disabled = true;
+  } else {
+    outEl.classList.remove('generating');
+    if (btnEl) btnEl.disabled = false;
   }
-};
+}
 
-function generateLine() {
+// ---- LINE AI ----
+async function generateLine() {
   const purpose = document.getElementById('line-purpose').value;
+  const segment = document.getElementById('line-segment').value;
   const tone = document.querySelector('#tab-line .tone-pill.active').textContent;
   const extra = document.getElementById('line-extra').value;
   const out = document.getElementById('line-output');
   const copyBtn = document.getElementById('line-copy-btn');
+  const genBtn = document.querySelector('#tab-line .btn-gold');
 
-  out.classList.remove('empty');
-  out.textContent = '';
-  copyBtn.style.display = 'block';
+  setLoading(out, genBtn, true);
+  copyBtn.style.display = 'none';
 
-  let text = (lineTemplates[purpose] && lineTemplates[purpose][tone])
-    ? lineTemplates[purpose][tone]
-    : generateGenericLine(purpose, tone);
-
-  if (extra) text += `\n\n※ ${extra}`;
-
-  typeWriter(out, text, copyBtn);
+  try {
+    const text = await callGeminiAPI('line', { segment, purpose, tone, extra });
+    out.textContent = '';
+    copyBtn.style.display = 'block';
+    typeWriter(out, text, copyBtn);
+  } catch (err) {
+    out.classList.add('empty');
+    out.textContent = '❌ エラー: ' + err.message;
+    showToast('生成に失敗しました: ' + err.message);
+  } finally {
+    setLoading(out, genBtn, false);
+  }
 }
 
-function generateGenericLine(purpose, tone) {
-  return `【おもてなしクラウドよりご案内】
-
-いつもご利用いただきありがとうございます。
-
-この度、${purpose}をご用意いたしました。
-
-期間限定の特別なご案内となっております。ぜひこの機会にご利用くださいませ。
-
-詳細・ご予約はこちら👇
-https://omotenashi-cloud.jp/info
-
-皆様のお越しをお待ちしております。`;
-}
-
-// ---- Review AI mock responses ----
-const reviewResponses = {
-  5: [
-    `{name}様
-
-この度は、プレミアムホテル東京をご利用いただき、誠にありがとうございます。また、温かいお言葉をお寄せいただき、スタッフ一同大変嬉しく拝見いたしました。
-
-お客様にご満足いただけましたこと、何よりの励みとなっております。またのご来館の際も、最高のおもてなしでお迎えできますよう、精進してまいります。
-
-引き続き変わらぬご愛顧を賜りますよう、よろしくお願い申し上げます。
-
-プレミアムホテル東京
-支配人 山田 太郎`,
-  ],
-  4: [
-    `{name}様
-
-この度はプレミアムホテル東京にご宿泊いただき、誠にありがとうございました。また、貴重なご感想をお寄せいただき、心より感謝申し上げます。
-
-ご満足いただけた点についてはスタッフ一同の励みとなり、またご指摘いただいた点につきましては、真摯に受け止め改善に取り組んでまいります。
-
-今後ともより良いサービスの提供に努めてまいりますので、またの機会にぜひご利用くださいませ。
-
-プレミアムホテル東京
-スタッフ一同`,
-  ],
-  3: [
-    `{name}様
-
-この度はプレミアムホテル東京をご利用いただき、誠にありがとうございます。ご宿泊中にご不便をおかけしてしまいましたこと、深くお詫び申し上げます。
-
-いただきましたご意見を真摯に受け止め、施設・サービスの改善に活かしてまいります。お客様のご期待に沿えるよう、スタッフ一同さらなる向上に努める所存でございます。
-
-またの機会がございましたら、改善されたおもてなしでお迎えできますよう努力してまいります。
-
-プレミアムホテル東京
-支配人`,
-  ],
-};
-
-function generateReview() {
-  const text = document.getElementById('review-text').value;
+// ---- Review AI ----
+async function generateReview() {
+  const reviewText = document.getElementById('review-text').value;
+  const platform = document.getElementById('review-platform').value;
+  const tone = document.querySelector('#tab-review .tone-pill.active').textContent;
   const out = document.getElementById('review-output');
   const copyBtn = document.getElementById('review-copy-btn');
+  const genBtn = document.querySelector('#tab-review .btn-gold[onclick="generateReview()"]');
 
-  if (!text.trim()) { showToast('口コミ内容を入力してください'); return; }
+  if (!reviewText.trim()) { showToast('口コミ内容を入力してください'); return; }
 
-  out.classList.remove('empty');
-  out.textContent = '';
-  copyBtn.style.display = 'block';
+  setLoading(out, genBtn, true);
+  copyBtn.style.display = 'none';
 
-  const responses = reviewResponses[currentRating] || reviewResponses[4];
-  const base = responses[Math.floor(Math.random() * responses.length)];
-
-  typeWriter(out, base, copyBtn);
+  try {
+    const text = await callGeminiAPI('review', {
+      platform,
+      rating: currentRating,
+      reviewText,
+      tone
+    });
+    out.textContent = '';
+    copyBtn.style.display = 'block';
+    typeWriter(out, text, copyBtn);
+  } catch (err) {
+    out.classList.add('empty');
+    out.textContent = '❌ エラー: ' + err.message;
+    showToast('生成に失敗しました: ' + err.message);
+  } finally {
+    setLoading(out, genBtn, false);
+  }
 }
 
 // ---- Typewriter effect ----
