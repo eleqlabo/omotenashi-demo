@@ -497,9 +497,24 @@
 
           <!-- プレビューエリア -->
           <div>
-            <div class="section-title">📋 生成メッセージ プレビュー</div>
-            <div class="ai-output empty" id="birthday-preview" style="min-height:130px;font-size:12px">
-              顧客リストの「送信プレビュー」ボタンを押すとここに表示されます。
+            <div class="section-title">📋 LINEメッセージ プレビュー</div>
+            <!-- LINEカード風プレビュー -->
+            <div style="border:1px solid var(--border-gold);border-radius:10px;overflow:hidden;background:var(--bg-dark);">
+              <!-- バラの花束画像エリア -->
+              <div id="birthday-preview-img" style="
+                background: linear-gradient(135deg, #fff0f3 0%, #ffc2d4 40%, #ff85a1 70%, #c9184a 100%);
+                padding: 20px 16px 16px;
+                text-align: center;
+                position: relative;
+              ">
+                <div style="font-size:52px;line-height:1;letter-spacing:4px;filter:drop-shadow(0 2px 6px rgba(180,0,60,0.25))">🌹🌹🌹</div>
+                <div style="font-size:11px;color:#c9184a;margin-top:8px;font-weight:600;letter-spacing:0.1em">BIRTHDAY BOUQUET</div>
+                <div style="position:absolute;top:8px;right:10px;font-size:10px;color:#e08099;background:rgba(255,255,255,0.6);border-radius:4px;padding:2px 6px">サンプル画像</div>
+              </div>
+              <!-- テキストエリア -->
+              <div class="ai-output empty" id="birthday-preview" style="min-height:110px;font-size:12px;border:none;border-radius:0;border-top:1px solid var(--border-gold)">
+                顧客リストの「送信プレビュー」ボタンを押すとここに表示されます。
+              </div>
             </div>
             <div style="margin-top:8px;display:flex;gap:8px;">
               <button class="btn btn-gold" style="flex:1" id="birthday-send-btn" onclick="confirmBirthdaySend()" disabled>送信する</button>
