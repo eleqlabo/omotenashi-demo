@@ -26,8 +26,13 @@ LINEで配信するメッセージを日本語で生成してください。
 【トーン】${tone || '丁寧・格調'}
 【追加情報】${extra || 'なし'}
 
+【文体のルール】
+- 現代的で読みやすい丁寧語を使うこと
+- 「ごきげんよう」「いかがお過ごしでいらっしゃいますでしょうか」などの古風・過剰な敬語は使わない
+- 「いつもありがとうございます」など自然な書き出しにすること
+
 【要件】
-- 最大500文字以内
+- 最大500文字以内で、必ず文章を最後まで完結させること（途中で切らない）
 - LINEらしい改行・絵文字を適切に使用
 - ホテル名「プレミアムホテル東京」を使用
 - 予約URLは「https://omotenashi-cloud.jp/reserve」を使用
@@ -41,7 +46,7 @@ LINEで配信するメッセージを日本語で生成してください。
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.7, maxOutputTokens: 1024 },
+          generationConfig: { temperature: 0.7, maxOutputTokens: 2048 },
         }),
       }
     );
