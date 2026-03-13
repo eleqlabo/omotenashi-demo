@@ -184,6 +184,25 @@
 
   .section-title { font-size: 13px; font-weight: 600; color: var(--gold); margin-bottom: 12px; }
   .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  /* Channel switcher (LINE / メール / 両方) */
+  .channel-switcher { display: flex; gap: 4px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 4px; margin-bottom: 16px; }
+  .ch-tab { flex: 1; padding: 8px 12px; border: none; border-radius: 7px; cursor: pointer; font-size: 13px; font-family: inherit; color: var(--text-secondary); background: transparent; transition: all 0.15s; font-weight: 500; }
+  .ch-tab:hover:not(.active) { background: var(--bg-hover); }
+  .ch-tab.active { background: var(--gold); color: #fff; font-weight: 700; }
+  .channel-pane { display: none; }
+  .channel-pane.active { display: block; }
+
+  /* Email preview */
+  .email-header { background: var(--bg-sidebar); border: 1px solid var(--border); border-bottom: none; border-radius: 8px 8px 0 0; padding: 12px 16px; font-size: 12px; line-height: 2; }
+  .email-header-row { display: flex; gap: 6px; color: var(--text-secondary); }
+  .email-header-label { min-width: 44px; font-weight: 600; color: var(--text-primary); }
+  .email-body-wrap { border: 1px solid var(--border); border-radius: 0 0 8px 8px; }
+
+  /* Birthday preview channel tabs */
+  .bday-ch-tabs { display: flex; gap: 4px; }
+  .bday-ch-tab { padding: 4px 14px; border-radius: 5px; border: 1px solid var(--border); font-size: 12px; cursor: pointer; color: var(--text-secondary); background: transparent; font-family: inherit; transition: all 0.15s; }
+  .bday-ch-tab.active { background: var(--gold); color: #fff; border-color: var(--gold); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -400,83 +419,223 @@
 
     <!-- LINE AI -->
     <div id="tab-line" class="tab-pane">
-      <div class="ai-layout">
-        <div class="ai-panel">
-          <div class="ai-panel-title">💬 LINE配信メッセージ生成 <span class="ai-badge">AI</span></div>
 
-          <div class="form-group">
-            <label class="form-label">配信対象セグメント</label>
-            <select class="form-select" id="line-segment">
-              <option>全顧客（2,847名）</option>
-              <option>VIP顧客（89名）</option>
-              <option>ゴールド会員（342名）</option>
-              <option>過去1年以内に宿泊（1,203名）</option>
-              <option>誕生月顧客（3月：47名）</option>
-              <option>休眠顧客（1年以上未宿泊：892名）</option>
-            </select>
-          </div>
+      <!-- ===== チャンネル切り替えタブ ===== -->
+      <div class="channel-switcher">
+        <button class="ch-tab active" onclick="switchChannel('line', this)">💬 LINE配信</button>
+        <button class="ch-tab" onclick="switchChannel('email', this)">✉️ メール配信</button>
+        <button class="ch-tab" onclick="switchChannel('both', this)">📤 LINE＋メール両方</button>
+      </div>
 
-          <div class="form-group">
-            <label class="form-label">配信目的・プラン</label>
-            <select class="form-select" id="line-purpose">
-              <option>春の特別プランのご案内</option>
-              <option>誕生日特典のご案内</option>
-              <option>GWお早め予約キャンペーン</option>
-              <option>再来館特別割引</option>
-              <option>新メニュー・サービスのご紹介</option>
-              <option>周年感謝セール</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">トーン</label>
-            <div class="tone-pills">
-              <div class="tone-pill active" onclick="selectTone(this, 'line')">丁寧・格調</div>
-              <div class="tone-pill" onclick="selectTone(this, 'line')">親しみやすい</div>
-              <div class="tone-pill" onclick="selectTone(this, 'line')">緊急感・限定感</div>
-              <div class="tone-pill" onclick="selectTone(this, 'line')">季節感重視</div>
+      <!-- ===== LINE パネル ===== -->
+      <div id="channel-line" class="channel-pane active">
+        <div class="ai-layout">
+          <div class="ai-panel">
+            <div class="ai-panel-title">💬 LINE配信メッセージ生成 <span class="ai-badge">AI</span></div>
+            <div class="form-group">
+              <label class="form-label">配信対象セグメント</label>
+              <select class="form-select" id="line-segment">
+                <option>全顧客（2,847名）</option>
+                <option>VIP顧客（89名）</option>
+                <option>ゴールド会員（342名）</option>
+                <option>過去1年以内に宿泊（1,203名）</option>
+                <option>誕生月顧客（3月：47名）</option>
+                <option>休眠顧客（1年以上未宿泊：892名）</option>
+              </select>
             </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">追加情報・特記事項（任意）</label>
-            <textarea class="form-textarea" id="line-extra" placeholder="例：早割10%OFF、露天風呂リニューアル、チェックアウト12時まで延長可..." style="min-height:70px"></textarea>
-          </div>
-
-          <button class="btn btn-gold" style="width:100%;padding:12px;" onclick="generateLine()">
-            ✨ AIでメッセージを生成する
-          </button>
-        </div>
-
-        <div class="ai-panel">
-          <div class="ai-panel-title">📤 生成結果</div>
-          <div style="margin-bottom:10px;font-size:12px;color:var(--text-secondary)">LINEメッセージ（最大500文字）</div>
-          <div class="ai-output empty" id="line-output">
-            <button class="copy-btn" onclick="copyText('line-output')" style="display:none" id="line-copy-btn">コピー</button>
-            配信目的とセグメントを選択して「生成」を押してください。
-          </div>
-          <div style="margin-top:16px;">
-            <div class="section-title">📊 配信スケジュール</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-              <div>
-                <label class="form-label">配信日時</label>
-                <input class="form-input" type="datetime-local" value="2026-03-15T10:00">
-              </div>
-              <div>
-                <label class="form-label">配信方法</label>
-                <select class="form-select">
-                  <option>即時配信</option>
-                  <option selected>スケジュール配信</option>
-                  <option>A/Bテスト配信</option>
-                </select>
+            <div class="form-group">
+              <label class="form-label">配信目的・プラン</label>
+              <select class="form-select" id="line-purpose">
+                <option>春の特別プランのご案内</option>
+                <option>誕生日特典のご案内</option>
+                <option>GWお早め予約キャンペーン</option>
+                <option>再来館特別割引</option>
+                <option>新メニュー・サービスのご紹介</option>
+                <option>周年感謝セール</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">トーン</label>
+              <div class="tone-pills">
+                <div class="tone-pill active" onclick="selectTone(this, 'line')">丁寧・格調</div>
+                <div class="tone-pill" onclick="selectTone(this, 'line')">親しみやすい</div>
+                <div class="tone-pill" onclick="selectTone(this, 'line')">緊急感・限定感</div>
+                <div class="tone-pill" onclick="selectTone(this, 'line')">季節感重視</div>
               </div>
             </div>
-            <button class="btn btn-outline" style="width:100%;margin-top:12px;padding:10px;" onclick="showToast('配信スケジュールを設定しました')">📅 配信予約する</button>
+            <div class="form-group">
+              <label class="form-label">追加情報・特記事項（任意）</label>
+              <textarea class="form-textarea" id="line-extra" placeholder="例：早割10%OFF、露天風呂リニューアル、チェックアウト12時まで延長可..." style="min-height:70px"></textarea>
+            </div>
+            <button class="btn btn-gold" style="width:100%;padding:12px;" onclick="generateLine()">✨ AIでメッセージを生成する</button>
+          </div>
+          <div class="ai-panel">
+            <div class="ai-panel-title">📤 生成結果</div>
+            <div style="margin-bottom:10px;font-size:12px;color:var(--text-secondary)">LINEメッセージ（最大500文字）</div>
+            <div class="ai-output empty" id="line-output">
+              <button class="copy-btn" onclick="copyText('line-output')" style="display:none" id="line-copy-btn">コピー</button>
+              配信目的とセグメントを選択して「生成」を押してください。
+            </div>
+            <div style="margin-top:16px;">
+              <div class="section-title">📊 配信スケジュール</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div>
+                  <label class="form-label">配信日時</label>
+                  <input class="form-input" type="datetime-local" value="2026-03-15T10:00">
+                </div>
+                <div>
+                  <label class="form-label">配信方法</label>
+                  <select class="form-select">
+                    <option>即時配信</option>
+                    <option selected>スケジュール配信</option>
+                    <option>A/Bテスト配信</option>
+                  </select>
+                </div>
+              </div>
+              <button class="btn btn-outline" style="width:100%;margin-top:12px;padding:10px;" onclick="showToast('配信スケジュールを設定しました')">📅 配信予約する</button>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- 誕生日自動送信 -->
+      <!-- ===== メール パネル ===== -->
+      <div id="channel-email" class="channel-pane">
+        <div class="ai-layout">
+          <div class="ai-panel">
+            <div class="ai-panel-title">✉️ メール配信文章生成 <span class="ai-badge">AI</span></div>
+            <div class="form-group">
+              <label class="form-label">配信対象セグメント</label>
+              <select class="form-select" id="email-segment">
+                <option>全顧客（2,847名）</option>
+                <option>VIP顧客（89名）</option>
+                <option>ゴールド会員（342名）</option>
+                <option>過去1年以内に宿泊（1,203名）</option>
+                <option>誕生月顧客（3月：47名）</option>
+                <option>休眠顧客（1年以上未宿泊：892名）</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">配信目的・プラン</label>
+              <select class="form-select" id="email-purpose">
+                <option>春の特別プランのご案内</option>
+                <option>誕生日特典のご案内</option>
+                <option>GWお早め予約キャンペーン</option>
+                <option>再来館特別割引</option>
+                <option>新メニュー・サービスのご紹介</option>
+                <option>周年感謝セール</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">トーン</label>
+              <div class="tone-pills">
+                <div class="tone-pill active" onclick="selectTone(this, 'email')">丁寧・格調</div>
+                <div class="tone-pill" onclick="selectTone(this, 'email')">親しみやすい</div>
+                <div class="tone-pill" onclick="selectTone(this, 'email')">緊急感・限定感</div>
+                <div class="tone-pill" onclick="selectTone(this, 'email')">季節感重視</div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">追加情報・特記事項（任意）</label>
+              <textarea class="form-textarea" id="email-extra" placeholder="例：早割10%OFF、露天風呂リニューアル、チェックアウト12時まで延長可..." style="min-height:70px"></textarea>
+            </div>
+            <button class="btn btn-gold" style="width:100%;padding:12px;" onclick="generateEmail()">✨ AIでメール文章を生成する</button>
+          </div>
+          <div class="ai-panel">
+            <div class="ai-panel-title">📧 メールプレビュー</div>
+            <div class="email-header">
+              <div class="email-header-row"><span class="email-header-label">差出人</span><span>info@premium-hotel-tokyo.jp</span></div>
+              <div class="email-header-row"><span class="email-header-label">宛先</span><span id="email-preview-to">—</span></div>
+              <div class="email-header-row"><span class="email-header-label">件名</span><span id="email-subject-display" style="font-weight:700;color:var(--text-primary)">—</span></div>
+            </div>
+            <div class="email-body-wrap">
+              <div class="ai-output empty" id="email-output" style="min-height:200px;border-radius:0 0 8px 8px;border:none">
+                <button class="copy-btn" onclick="copyText('email-output')" style="display:none" id="email-copy-btn">コピー</button>
+                配信目的とセグメントを選択して「生成」を押してください。
+              </div>
+            </div>
+            <div style="margin-top:16px;">
+              <div class="section-title">📊 配信スケジュール</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div>
+                  <label class="form-label">配信日時</label>
+                  <input class="form-input" type="datetime-local" value="2026-03-15T10:00">
+                </div>
+                <div>
+                  <label class="form-label">配信方法</label>
+                  <select class="form-select">
+                    <option>即時配信</option>
+                    <option selected>スケジュール配信</option>
+                  </select>
+                </div>
+              </div>
+              <button class="btn btn-outline" style="width:100%;margin-top:12px;padding:10px;" onclick="showToast('メール配信スケジュールを設定しました')">📅 配信予約する</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== LINE＋メール両方パネル ===== -->
+      <div id="channel-both" class="channel-pane">
+        <div class="ai-layout">
+          <div class="ai-panel">
+            <div class="ai-panel-title">📤 共通設定 <span class="ai-badge">AI</span></div>
+            <div class="form-group">
+              <label class="form-label">配信対象セグメント</label>
+              <select class="form-select" id="both-segment">
+                <option>全顧客（2,847名）</option>
+                <option>VIP顧客（89名）</option>
+                <option>ゴールド会員（342名）</option>
+                <option>過去1年以内に宿泊（1,203名）</option>
+                <option>誕生月顧客（3月：47名）</option>
+                <option>休眠顧客（1年以上未宿泊：892名）</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">配信目的・プラン</label>
+              <select class="form-select" id="both-purpose">
+                <option>春の特別プランのご案内</option>
+                <option>誕生日特典のご案内</option>
+                <option>GWお早め予約キャンペーン</option>
+                <option>再来館特別割引</option>
+                <option>新メニュー・サービスのご紹介</option>
+                <option>周年感謝セール</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">トーン</label>
+              <div class="tone-pills">
+                <div class="tone-pill active" onclick="selectTone(this, 'both')">丁寧・格調</div>
+                <div class="tone-pill" onclick="selectTone(this, 'both')">親しみやすい</div>
+                <div class="tone-pill" onclick="selectTone(this, 'both')">緊急感・限定感</div>
+                <div class="tone-pill" onclick="selectTone(this, 'both')">季節感重視</div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">追加情報・特記事項（任意）</label>
+              <textarea class="form-textarea" id="both-extra" placeholder="例：早割10%OFF..." style="min-height:70px"></textarea>
+            </div>
+            <button class="btn btn-gold" style="width:100%;padding:12px;" id="both-gen-btn" onclick="generateBoth()">✨ LINE＋メール両方を生成する</button>
+          </div>
+          <div class="ai-panel">
+            <div class="ai-panel-title">📋 生成結果</div>
+            <div style="margin-bottom:8px;">
+              <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px">💬 LINEメッセージ</div>
+              <div class="ai-output empty" id="both-line-output" style="min-height:120px;font-size:12px">—</div>
+            </div>
+            <hr class="divider">
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px">✉️ メール</div>
+              <div id="both-email-subject-wrap" style="font-size:12px;padding:8px 12px;background:var(--bg-sidebar);border:1px solid var(--border);border-radius:6px 6px 0 0;color:var(--text-secondary)">
+                件名: <span id="both-email-subject" style="font-weight:700;color:var(--text-primary)">—</span>
+              </div>
+              <div class="ai-output empty" id="both-email-output" style="min-height:120px;font-size:12px;border-radius:0 0 6px 6px;border-top:none">—</div>
+            </div>
+            <button class="btn btn-outline" style="width:100%;margin-top:12px;padding:10px;" onclick="showToast('LINE・メール配信スケジュールを設定しました')">📅 両方を配信予約する</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 誕生日自動送信 ===== -->
       <div style="margin-top:20px;" class="card">
         <div class="card-title">🎂 誕生日自動送信 <span style="font-size:11px;font-weight:400;color:var(--text-muted);margin-left:8px">毎日09:00に自動チェック・送信</span></div>
 
@@ -497,28 +656,49 @@
 
           <!-- プレビューエリア -->
           <div>
-            <div class="section-title">📋 LINEメッセージ プレビュー</div>
-            <!-- LINEカード風プレビュー -->
-            <div style="border:1px solid var(--border-gold);border-radius:10px;overflow:hidden;background:var(--bg-dark);">
-              <!-- バラの花束画像エリア -->
-              <div id="birthday-preview-img" style="
-                background: linear-gradient(135deg, #fff0f3 0%, #ffc2d4 40%, #ff85a1 70%, #c9184a 100%);
-                padding: 20px 16px 16px;
-                text-align: center;
-                position: relative;
-              ">
-                <div style="font-size:52px;line-height:1;letter-spacing:4px;filter:drop-shadow(0 2px 6px rgba(180,0,60,0.25))">🌹🌹🌹</div>
-                <div style="font-size:11px;color:#c9184a;margin-top:8px;font-weight:600;letter-spacing:0.1em">BIRTHDAY BOUQUET</div>
-                <div style="position:absolute;top:8px;right:10px;font-size:10px;color:#e08099;background:rgba(255,255,255,0.6);border-radius:4px;padding:2px 6px">サンプル画像</div>
-              </div>
-              <!-- テキストエリア -->
-              <div class="ai-output empty" id="birthday-preview" style="min-height:110px;font-size:12px;border:none;border-radius:0;border-top:1px solid var(--border-gold)">
-                顧客リストの「送信プレビュー」ボタンを押すとここに表示されます。
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <div class="section-title" style="margin-bottom:0">プレビュー</div>
+              <div class="bday-ch-tabs">
+                <button class="bday-ch-tab active" onclick="switchBdayChannel('line', this)">💬 LINE</button>
+                <button class="bday-ch-tab" onclick="switchBdayChannel('email', this)">✉️ メール</button>
               </div>
             </div>
+
+            <!-- LINE プレビュー -->
+            <div id="bday-preview-line">
+              <div style="border:1px solid var(--border-gold);border-radius:10px;overflow:hidden;background:var(--bg-dark);">
+                <div style="background:linear-gradient(135deg,#fff0f3 0%,#ffc2d4 40%,#ff85a1 70%,#c9184a 100%);padding:20px 16px 16px;text-align:center;position:relative;">
+                  <div style="font-size:52px;line-height:1;letter-spacing:4px;filter:drop-shadow(0 2px 6px rgba(180,0,60,0.25))">🌹🌹🌹</div>
+                  <div style="font-size:11px;color:#c9184a;margin-top:8px;font-weight:600;letter-spacing:0.1em">BIRTHDAY BOUQUET</div>
+                  <div style="position:absolute;top:8px;right:10px;font-size:10px;color:#e08099;background:rgba(255,255,255,0.6);border-radius:4px;padding:2px 6px">サンプル画像</div>
+                </div>
+                <div class="ai-output empty" id="birthday-preview" style="min-height:110px;font-size:12px;border:none;border-radius:0;border-top:1px solid var(--border-gold)">
+                  顧客リストの「送信プレビュー」ボタンを押すとここに表示されます。
+                </div>
+              </div>
+            </div>
+
+            <!-- メール プレビュー -->
+            <div id="bday-preview-email" style="display:none">
+              <div style="border:1px solid var(--border-gold);border-radius:10px;overflow:hidden;background:var(--bg-dark);">
+                <div style="background:linear-gradient(135deg,#fff0f3 0%,#ffc2d4 40%,#ff85a1 70%,#c9184a 100%);padding:16px;text-align:center;position:relative;">
+                  <div style="font-size:40px;line-height:1;letter-spacing:4px;filter:drop-shadow(0 2px 6px rgba(180,0,60,0.25))">🌹🌹🌹</div>
+                  <div style="font-size:10px;color:#c9184a;margin-top:6px;font-weight:600;letter-spacing:0.1em">BIRTHDAY BOUQUET</div>
+                  <div style="position:absolute;top:8px;right:10px;font-size:10px;color:#e08099;background:rgba(255,255,255,0.6);border-radius:4px;padding:2px 6px">サンプル画像</div>
+                </div>
+                <div style="background:var(--bg-sidebar);padding:8px 12px;font-size:11px;border-top:1px solid var(--border-gold);">
+                  <div class="email-header-row"><span class="email-header-label" style="min-width:40px">差出人</span><span>info@premium-hotel-tokyo.jp</span></div>
+                  <div class="email-header-row"><span class="email-header-label" style="min-width:40px">件名</span><span id="bday-email-subject" style="font-weight:700;color:var(--text-primary)">—</span></div>
+                </div>
+                <div class="ai-output empty" id="birthday-email-preview" style="min-height:110px;font-size:12px;border:none;border-radius:0;border-top:1px solid var(--border-gold)">
+                  顧客リストの「送信プレビュー」ボタンを押すとここに表示されます。
+                </div>
+              </div>
+            </div>
+
             <div style="margin-top:8px;display:flex;gap:8px;">
               <button class="btn btn-gold" style="flex:1" id="birthday-send-btn" onclick="confirmBirthdaySend()" disabled>送信する</button>
-              <button class="btn btn-outline" onclick="copyText('birthday-preview')">コピー</button>
+              <button class="btn btn-outline" onclick="copyBirthdayPreview()">コピー</button>
             </div>
           </div>
         </div>
@@ -870,8 +1050,113 @@ function copyText(id) {
   navigator.clipboard.writeText(text).then(() => showToast('クリップボードにコピーしました'));
 }
 
+// ---- Channel Switcher ----
+function switchChannel(name, el) {
+  document.querySelectorAll('#tab-line .ch-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#tab-line .channel-pane').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('channel-' + name).classList.add('active');
+}
+
+// ---- Email Broadcast ----
+async function generateEmail() {
+  const segment = document.getElementById('email-segment').value;
+  const purpose = document.getElementById('email-purpose').value;
+  const tone = document.querySelector('#channel-email .tone-pill.active').textContent;
+  const extra = document.getElementById('email-extra').value;
+  const out = document.getElementById('email-output');
+  const copyBtn = document.getElementById('email-copy-btn');
+  const subjectEl = document.getElementById('email-subject-display');
+  const toEl = document.getElementById('email-preview-to');
+  const genBtn = document.querySelector('#channel-email .btn-gold');
+
+  setLoading(out, genBtn, true);
+  copyBtn.style.display = 'none';
+  subjectEl.textContent = '生成中...';
+  toEl.textContent = segment;
+
+  try {
+    const response = await fetch('/api/generate-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ segment, purpose, tone, extra })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || '生成に失敗しました。');
+
+    subjectEl.textContent = data.subject || '—';
+    out.textContent = '';
+    copyBtn.style.display = 'block';
+    typeWriter(out, data.body || data.text || '', copyBtn);
+  } catch (err) {
+    out.classList.add('empty');
+    out.textContent = '❌ エラー: ' + err.message;
+    subjectEl.textContent = '—';
+    showToast('生成に失敗しました: ' + err.message);
+  } finally {
+    setLoading(out, genBtn, false);
+  }
+}
+
+// ---- Both (LINE + Email) ----
+async function generateBoth() {
+  const segment = document.getElementById('both-segment').value;
+  const purpose = document.getElementById('both-purpose').value;
+  const tone = document.querySelector('#channel-both .tone-pill.active').textContent;
+  const extra = document.getElementById('both-extra').value;
+  const genBtn = document.getElementById('both-gen-btn');
+  const lineOut = document.getElementById('both-line-output');
+  const emailOut = document.getElementById('both-email-output');
+  const subjectEl = document.getElementById('both-email-subject');
+
+  genBtn.disabled = true;
+  lineOut.classList.remove('empty');
+  lineOut.textContent = '✨ LINE生成中...';
+  lineOut.classList.add('generating');
+  emailOut.classList.remove('empty');
+  emailOut.textContent = '✨ メール生成中...';
+  emailOut.classList.add('generating');
+  subjectEl.textContent = '...';
+
+  try {
+    const [lineRes, emailRes] = await Promise.all([
+      fetch('/api/generate-line', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ segment, purpose, tone, extra })
+      }),
+      fetch('/api/generate-email', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ segment, purpose, tone, extra })
+      })
+    ]);
+
+    const lineData = await lineRes.json();
+    const emailData = await emailRes.json();
+
+    lineOut.classList.remove('generating');
+    lineOut.textContent = '';
+    if (!lineRes.ok) throw new Error(lineData.error || 'LINE生成失敗');
+    typeWriter(lineOut, lineData.text, null);
+
+    emailOut.classList.remove('generating');
+    emailOut.textContent = '';
+    if (!emailRes.ok) throw new Error(emailData.error || 'メール生成失敗');
+    subjectEl.textContent = emailData.subject || '—';
+    typeWriter(emailOut, emailData.body || '', null);
+  } catch (err) {
+    lineOut.classList.add('empty');
+    lineOut.classList.remove('generating');
+    emailOut.classList.add('empty');
+    emailOut.classList.remove('generating');
+    showToast('生成に失敗しました: ' + err.message);
+  } finally {
+    genBtn.disabled = false;
+  }
+}
+
 // ---- Birthday Auto-Send ----
 const BIRTHDAY_STORAGE_KEY = 'omotenashi_birthday_settings';
+let currentBdayChannel = 'line';
 
 function getTodayMD() {
   const d = new Date();
@@ -893,6 +1178,22 @@ function saveBirthdaySettings() {
   const expiry = document.getElementById('birthday-expiry').value.trim();
   localStorage.setItem(BIRTHDAY_STORAGE_KEY, JSON.stringify({ coupon, expiry }));
   showToast('特典設定を保存しました');
+}
+
+function switchBdayChannel(channel, el) {
+  currentBdayChannel = channel;
+  document.querySelectorAll('.bday-ch-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('bday-preview-line').style.display = channel === 'line' ? '' : 'none';
+  document.getElementById('bday-preview-email').style.display = channel === 'email' ? '' : 'none';
+  document.getElementById('birthday-send-btn').disabled = true;
+  birthdayPreviewTarget = null;
+}
+
+function copyBirthdayPreview() {
+  const id = currentBdayChannel === 'email' ? 'birthday-email-preview' : 'birthday-preview';
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('クリップボードにコピーしました'));
 }
 
 function renderBirthdayCustomers() {
@@ -929,41 +1230,67 @@ async function previewBirthdayMessage(customerName, rank) {
   const settings = JSON.parse(localStorage.getItem(BIRTHDAY_STORAGE_KEY) || '{}');
   const coupon = settings.coupon || '次回宿泊10%OFF';
   const expiry = settings.expiry || 'お誕生月末まで';
-
-  const preview = document.getElementById('birthday-preview');
   const sendBtn = document.getElementById('birthday-send-btn');
-
-  preview.classList.remove('empty');
-  preview.textContent = '✨ AIがメッセージを生成中...';
-  preview.classList.add('generating');
   sendBtn.disabled = true;
   birthdayPreviewTarget = null;
 
-  try {
-    const response = await fetch('/api/generate-birthday', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ customerName, rank, coupon, couponExpiry: expiry })
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || '生成に失敗しました。');
-
-    preview.classList.remove('generating');
-    preview.textContent = '';
-    typeWriter(preview, data.text, null);
-    birthdayPreviewTarget = customerName;
-    sendBtn.disabled = false;
-  } catch (err) {
-    preview.classList.add('empty');
-    preview.classList.remove('generating');
-    preview.textContent = '❌ エラー: ' + err.message;
-    showToast('生成に失敗しました: ' + err.message);
+  if (currentBdayChannel === 'line') {
+    const preview = document.getElementById('birthday-preview');
+    preview.classList.remove('empty');
+    preview.textContent = '✨ AIがメッセージを生成中...';
+    preview.classList.add('generating');
+    try {
+      const res = await fetch('/api/generate-birthday', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customerName, rank, coupon, couponExpiry: expiry, channel: 'line' })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || '生成に失敗しました。');
+      preview.classList.remove('generating');
+      preview.textContent = '';
+      typeWriter(preview, data.text, null);
+      birthdayPreviewTarget = customerName;
+      sendBtn.disabled = false;
+    } catch (err) {
+      preview.classList.add('empty');
+      preview.classList.remove('generating');
+      preview.textContent = '❌ エラー: ' + err.message;
+      showToast('生成に失敗しました: ' + err.message);
+    }
+  } else {
+    const preview = document.getElementById('birthday-email-preview');
+    const subjectEl = document.getElementById('bday-email-subject');
+    preview.classList.remove('empty');
+    preview.textContent = '✨ AIがメール文章を生成中...';
+    preview.classList.add('generating');
+    subjectEl.textContent = '生成中...';
+    try {
+      const res = await fetch('/api/generate-birthday', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customerName, rank, coupon, couponExpiry: expiry, channel: 'email' })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || '生成に失敗しました。');
+      subjectEl.textContent = data.subject || '—';
+      preview.classList.remove('generating');
+      preview.textContent = '';
+      typeWriter(preview, data.body || '', null);
+      birthdayPreviewTarget = customerName;
+      sendBtn.disabled = false;
+    } catch (err) {
+      preview.classList.add('empty');
+      preview.classList.remove('generating');
+      preview.textContent = '❌ エラー: ' + err.message;
+      subjectEl.textContent = '—';
+      showToast('生成に失敗しました: ' + err.message);
+    }
   }
 }
 
 function confirmBirthdaySend() {
   if (!birthdayPreviewTarget) return;
-  showToast(`${birthdayPreviewTarget}さんへ誕生日メッセージを送信しました`);
+  const ch = currentBdayChannel === 'email' ? 'メール' : 'LINE';
+  showToast(`${birthdayPreviewTarget}さんへ誕生日${ch}を送信しました`);
   document.getElementById('birthday-send-btn').disabled = true;
   birthdayPreviewTarget = null;
 }

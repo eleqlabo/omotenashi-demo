@@ -12,7 +12,7 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'APIキーが設定されていません。' });
   }
 
-  const { customerName, rank, coupon, couponExpiry } = req.body || {};
+  const { customerName, rank, coupon, couponExpiry, channel } = req.body || {};
 
   if (!customerName) {
     return res.status(400).json({ error: 'customerName は必須です。' });
@@ -20,8 +20,34 @@ module.exports = async function handler(req, res) {
 
   const couponText = coupon || '次回宿泊10%OFF';
   const expiryText = couponExpiry || 'お誕生月末まで';
+  const isEmail = channel === 'email';
 
-  const prompt = `あなたは高級ホテル「プレミアムホテル東京」のスタッフです。
+  const prompt = isEmail
+    ? `あなたは高級ホテル「プレミアムホテル東京」のスタッフです。
+お客様の誕生日に送る個別メールの件名と本文を日本語で生成してください。
+
+【お客様名】${customerName}
+【会員ランク】${rank || 'NORMAL'}
+【特典内容】${couponText}
+【特典有効期限】${expiryText}
+
+【文体のルール】
+- 現代的で読みやすい丁寧語を使う
+- 温かみのある自然なお祝いの言葉にする
+
+【出力形式】必ず以下の形式で出力すること：
+件名: [件名をここに書く]
+===
+[メール本文をここに書く]
+
+【本文の要件】
+- 宛先は「${customerName} 様」から始める
+- 必ず最後まで文章を完結させること
+- 特典（${couponText}）と有効期限（${expiryText}）を明記する
+- 予約URLは「https://omotenashi-cloud.jp/reserve」を含める
+- 署名は「プレミアムホテル東京 スタッフ一同」
+- 本文のみ出力し、余計な説明は不要`
+    : `あなたは高級ホテル「プレミアムホテル東京」のスタッフです。
 お客様のお誕生日に送るLINEメッセージを日本語で生成してください。
 
 【お客様名】${customerName}
@@ -68,6 +94,13 @@ module.exports = async function handler(req, res) {
 
     if (!text) {
       return res.status(500).json({ error: 'AIからの応答が空でした。再度お試しください。' });
+    }
+
+    if (isEmail) {
+      const subjectMatch = text.match(/^件名[:：]\s*(.+)/m);
+      const subject = subjectMatch ? subjectMatch[1].trim() : `${customerName}様 お誕生日おめでとうございます`;
+      const body = text.replace(/^件名[:：]\s*.+\n?={3,}\n?/m, '').trim();
+      return res.json({ subject, body });
     }
 
     res.json({ text });
