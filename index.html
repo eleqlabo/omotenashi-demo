@@ -2491,20 +2491,39 @@ function showRsvDetail(id) {
   document.getElementById('rd-email').textContent    = r.guest_email || '—';
   document.getElementById('rd-phone').textContent    = r.guest_phone || '—';
   document.getElementById('rd-notes').textContent    = r.notes || '（備考なし）';
-  document.getElementById('rd-line-btn').onclick = () => lineNotifyRsv(r.id);
+  const lineBtn = document.getElementById('rd-line-btn');
+  const hasLine = !!r.line_user_id;
+  lineBtn.disabled = !hasLine;
+  lineBtn.title    = hasLine ? '' : 'LINE未連携のためご利用いただけません';
+  lineBtn.style.opacity = hasLine ? '1' : '0.45';
+  lineBtn.onclick  = () => lineNotifyRsv(r.id);
+  // LINE連携なし案内
+  let lineNote = document.getElementById('rd-line-note');
+  if (!lineNote) {
+    lineNote = document.createElement('div');
+    lineNote.id = 'rd-line-note';
+    lineNote.style.cssText = 'font-size:11px;color:var(--text-muted);margin-top:6px';
+    lineBtn.parentNode.appendChild(lineNote);
+  }
+  lineNote.textContent = hasLine ? '' : '※ 顧客タブでLINE連携をすると通知送信が可能になります';
   document.getElementById('rsv-detail-modal').classList.add('open');
 }
 
 async function lineNotifyRsv(id) {
   if (!rsvToken) { showToast('ログインが必要です'); return; }
+  if (!requirePlan('standard')) { showUpgradeModal('LINE予約確認通知', 'standard'); return; }
   document.getElementById('rsv-detail-modal').classList.remove('open');
   try {
     const res = await rsvApi('/line/notify/reservation/' + id, { method: 'POST' });
-    if (res.ok) {
-      showToast('LINE予約確認通知を送信しました');
+    const data = await res.json().catch(() => ({}));
+    if (data.status === 'sent') {
+      showToast('✅ LINE予約確認通知を送信しました');
+    } else if (data.status === 'skipped') {
+      showToast('⚠️ LINE未連携のためスキップされました');
+    } else if (!res.ok) {
+      showToast('LINE通知失敗: ' + (data.detail || 'エラー'));
     } else {
-      const d = await res.json().catch(() => ({}));
-      showToast('LINE通知失敗: ' + (d.detail || 'エラー'));
+      showToast('LINE通知を送信しました');
     }
   } catch(e) {
     showToast('LINE通知失敗: ' + e.message);
@@ -2623,12 +2642,34 @@ function _fillAnalyticsLineTable() {
 
 // ======================================================
 // ---- Settings ----
-function loadHotelSettings() {
+async function loadHotelSettings() {
   const saved = JSON.parse(localStorage.getItem('hotel_settings') || '{}');
   document.getElementById('settings-hotel-name').value    = saved.name    || (localStorage.getItem('rsv_tenant_name') || '');
   document.getElementById('settings-hotel-email').value   = saved.email   || '';
   document.getElementById('settings-hotel-phone').value   = saved.phone   || '';
   document.getElementById('settings-hotel-address').value = saved.address || '';
+
+  // LINE接続状態を取得して表示
+  if (rsvToken) {
+    try {
+      const r = await rsvApi('/line/status');
+      const res = await r.json().catch(() => ({}));
+      const badge = document.getElementById('line-status-badge');
+      if (res && res.webhook_ready) {
+        badge.style.background = '#e6f9ed';
+        badge.style.color = '#1a7f3c';
+        badge.textContent = '● 連携済み';
+      } else if (res && (res.access_token_set || res.channel_secret_set)) {
+        badge.style.background = '#fff8e1';
+        badge.style.color = '#b45309';
+        badge.textContent = '● 設定不完全';
+      } else {
+        badge.style.background = '#fdeaea';
+        badge.style.color = 'var(--danger)';
+        badge.textContent = '● 未連携';
+      }
+    } catch (e) { /* 取得失敗は静かにスキップ */ }
+  }
 }
 
 function saveHotelSettings() {
