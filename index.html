@@ -325,6 +325,7 @@
     <div class="topbar-title" id="topbar-title">ダッシュボード</div>
     <div class="topbar-right">
       <span id="topbar-date"></span>
+      <span class="badge" id="plan-badge" title="現在のプラン" style="cursor:pointer" onclick="switchTab('settings',document.querySelectorAll('.nav-item')[6])">LITE</span>
       <span class="badge">通知 3件</span>
       <span id="topbar-user" style="color: var(--gold);">👤 管理者</span>
     </div>
@@ -988,6 +989,12 @@
             <button onclick="rsvRegister()" style="padding:7px 18px;background:#fff;color:var(--gold);border:1px solid var(--gold);border-radius:4px;font-size:13px;cursor:pointer">新規登録</button>
           </div>
           <div id="rsv-auth-msg" style="font-size:12px;color:var(--danger);margin-top:8px"></div>
+          <div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:11px;color:var(--text-muted)">デモアカウント：</span>
+            <button onclick="fillDemoLogin('test@omotenashi.com','test1234')" style="padding:4px 12px;background:#f5edd8;color:var(--gold-dark);border:1px solid var(--border-gold);border-radius:4px;font-size:11px;cursor:pointer">🏨 ホテルA（Lite）</button>
+            <button onclick="fillDemoLogin('demo2@omotenashi.com','demo1234')" style="padding:4px 12px;background:#f5edd8;color:var(--gold-dark);border:1px solid var(--border-gold);border-radius:4px;font-size:11px;cursor:pointer">♨️ 旅館B（Standard）</button>
+            <button onclick="fillDemoLogin('demo3@omotenashi.com','demo1234')" style="padding:4px 12px;background:#f5edd8;color:var(--gold-dark);border:1px solid var(--border-gold);border-radius:4px;font-size:11px;cursor:pointer">🏯 町家宿C（Pro）</button>
+          </div>
         </div>
       </div>
 
@@ -1067,6 +1074,16 @@
 
     <!-- Analytics -->
     <div id="tab-analytics" class="tab-pane">
+      <!-- Plan gate banner (shown for lite plan) -->
+      <div id="analytics-gate" style="display:none;background:#fff8e8;border:1px solid var(--border-gold);border-radius:8px;padding:14px 20px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+          <div>
+            <div style="font-size:14px;font-weight:700;color:var(--gold-dark)">🔒 STANDARDプラン以上で利用可能</div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-top:2px">現在はLITEプランです。以下はサンプルデータです。アップグレードで実データを表示します。</div>
+          </div>
+          <button class="btn btn-gold" style="padding:6px 16px;font-size:12px" onclick="showUpgradeModal('アナリティクス','standard')">⬆️ プランを見る</button>
+        </div>
+      </div>
       <div class="kpi-trend-row" style="margin-bottom:16px">
         <div class="kpi-trend-item"><div class="label">稼働率（今月）</div><div class="val">87%</div><div class="sub" style="color:var(--success)">▲ +4.2% vs 先月</div></div>
         <div class="kpi-trend-item"><div class="label">RevPAR</div><div class="val">¥12,450</div><div class="sub" style="color:var(--success)">▲ +8.1% vs 先月</div></div>
@@ -1263,6 +1280,28 @@
   </div>
 </div>
 
+<!-- Upgrade Modal (P3-4) -->
+<div id="upgrade-modal" class="modal-overlay">
+  <div class="modal-box" style="text-align:center;max-width:460px">
+    <button class="modal-close" onclick="document.getElementById('upgrade-modal').classList.remove('open')">✕</button>
+    <div style="font-size:52px;margin-bottom:12px">🔒</div>
+    <div class="modal-title" style="text-align:center">プランのアップグレードが必要です</div>
+    <p style="font-size:14px;color:var(--text-secondary);margin-bottom:4px">
+      「<span id="upgrade-modal-feature">この機能</span>」は
+      <strong style="color:var(--gold)" id="upgrade-modal-minplan">STANDARD</strong>
+      プラン以上でご利用いただけます。
+    </p>
+    <div style="background:var(--bg-card);border-radius:8px;padding:14px 16px;margin:16px 0;text-align:left">
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;font-weight:600">アップグレードで利用可能になる機能：</div>
+      <div id="upgrade-modal-list" style="font-size:13px;color:var(--text-secondary);line-height:2"></div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-outline" style="flex:1" onclick="document.getElementById('upgrade-modal').classList.remove('open')">あとで</button>
+      <button class="btn btn-gold" style="flex:2" onclick="document.getElementById('upgrade-modal').classList.remove('open');switchTab('settings',document.querySelectorAll('.nav-item')[6])">⬆️ プランを変更する</button>
+    </div>
+  </div>
+</div>
+
 <!-- Warmup overlay (P2-5) -->
 <div id="warmup-overlay">
   <div class="warmup-spinner"></div>
@@ -1292,7 +1331,7 @@ function switchTab(name, el) {
   document.getElementById('topbar-title').textContent = tabTitles[name];
   if (name === 'reservation') rsvLoadList();
   if (name === 'customers') { loadCustomersFromAPI(); loadBirthdayMonthList(); }
-  if (name === 'analytics') initAnalytics();
+  if (name === 'analytics') { applyPlanGating(); initAnalytics(); }
   if (name === 'settings') loadHotelSettings();
 }
 
@@ -1533,6 +1572,10 @@ function switchChannel(name, el) {
 
 // ---- Email Broadcast ----
 async function generateEmail() {
+  if (!requirePlan('standard')) {
+    showUpgradeModal('メール配信', 'standard');
+    return;
+  }
   const segment = document.getElementById('email-segment').value;
   const purpose = document.getElementById('email-purpose').value;
   const tone = document.querySelector('#channel-email .tone-pill.active').textContent;
@@ -1577,6 +1620,7 @@ async function generateEmail() {
 
 // ---- Both (LINE + Email) ----
 async function generateBoth() {
+  if (!requirePlan('standard')) { showUpgradeModal('LINE＋メール両方送信', 'standard'); return; }
   const segment = document.getElementById('both-segment').value;
   const purpose = document.getElementById('both-purpose').value;
   const tone = document.querySelector('#channel-both .tone-pill.active').textContent;
@@ -1771,6 +1815,7 @@ async function previewBirthdayMessage(customerName, rank) {
 
 function confirmBirthdaySend() {
   if (!birthdayPreviewTarget) return;
+  if (!requirePlan('standard')) { showUpgradeModal('誕生日自動送信', 'standard'); return; }
   const ch = currentBdayChannel === 'email' ? 'メール' : 'LINE';
   showToast(`${birthdayPreviewTarget}さんへ誕生日${ch}を送信しました`);
   document.getElementById('birthday-send-btn').disabled = true;
@@ -1824,10 +1869,63 @@ renderBirthdayCustomers();
 // ---- Reservation Module ----
 // ======================================================
 const API_BASE = 'https://omotenashi-cloud.onrender.com';
-let rsvToken = localStorage.getItem('rsv_token') || null;
-let rsvFilter = '';
+let rsvToken   = localStorage.getItem('rsv_token') || null;
+let rsvFilter  = '';
 let rsvAllData = [];
-let _apiReady = false;
+let _apiReady  = false;
+
+// ---- P3-4 Plan gating ----
+const PLAN_LEVEL   = { lite:0, standard:1, pro:2, platinum:3 };
+const PLAN_LABEL   = { lite:'LITE', standard:'STANDARD', pro:'PRO', platinum:'PLATINUM' };
+const PLAN_COLOR   = { lite:'', standard:'var(--info)', pro:'#c75000', platinum:'var(--gold)' };
+let currentPlan    = localStorage.getItem('rsv_plan') || 'lite';
+
+const UPGRADE_FEATURES = {
+  standard: '✓ LINE実際の送信\n✓ メール配信\n✓ アナリティクス\n✓ 誕生日自動送信\n✓ 顧客500件登録',
+  pro:      '✓ STANDARDの全機能\n✓ API連携\n✓ 詳細アナリティクス\n✓ 顧客2,000件登録\n✓ 優先サポート',
+  platinum: '✓ PROの全機能\n✓ 顧客無制限\n✓ 複数施設管理\n✓ 専任サポート\n✓ SLA保証',
+};
+
+function requirePlan(minPlan) {
+  return (PLAN_LEVEL[currentPlan] || 0) >= (PLAN_LEVEL[minPlan] || 0);
+}
+
+function showUpgradeModal(feature, minPlan) {
+  document.getElementById('upgrade-modal-feature').textContent = feature;
+  document.getElementById('upgrade-modal-minplan').textContent = PLAN_LABEL[minPlan] || minPlan.toUpperCase();
+  document.getElementById('upgrade-modal-list').innerHTML =
+    (UPGRADE_FEATURES[minPlan] || '').split('\n').map(l => `<div>${l}</div>`).join('');
+  document.getElementById('upgrade-modal').classList.add('open');
+}
+
+function applyPlanGating() {
+  const plan  = currentPlan || 'lite';
+  const label = PLAN_LABEL[plan] || 'LITE';
+  // Topbar badge
+  const pb = document.getElementById('plan-badge');
+  if (pb) pb.textContent = label;
+  // Settings badge
+  const sb = document.getElementById('settings-plan-badge');
+  if (sb) { sb.textContent = label; sb.className = 'plan-badge plan-' + plan; }
+  // Analytics gate banner
+  const gate = document.getElementById('analytics-gate');
+  if (gate) gate.style.display = requirePlan('standard') ? 'none' : 'block';
+  // Email tab — add lock notice if needed
+  const emailPaneBtn = document.querySelector('#tab-line .ch-tab:nth-child(2)');
+  if (emailPaneBtn && !requirePlan('standard')) {
+    emailPaneBtn.title = 'STANDARDプラン以上で利用可能';
+  }
+}
+
+// P3-4: プランゲーティング初期化
+applyPlanGating();
+
+// P3-1: デモログイン補助
+function fillDemoLogin(email, pass) {
+  document.getElementById('rsv-login-email').value = email;
+  document.getElementById('rsv-login-pass').value  = pass;
+  showToast('デモ情報を入力しました。ログインボタンを押してください。');
+}
 
 // P2-5: バックグラウンドウォームアップ（ページ読み込み時に即時実行）
 backgroundWarmup();
@@ -1942,12 +2040,19 @@ function rsvShowLoggedIn(email) {
 }
 
 function rsvLogout() {
-  rsvToken = null;
+  rsvToken    = null;
+  currentPlan = 'lite';
   localStorage.removeItem('rsv_token');
   localStorage.removeItem('rsv_email');
+  localStorage.removeItem('rsv_plan');
+  localStorage.removeItem('rsv_tenant_name');
   _apiReady = false;
   rsvShowAuth();
   rsvRenderSample();
+  applyPlanGating();
+  document.getElementById('sidebar-hotel-name').textContent = 'おもてなし\nクラウド';
+  document.getElementById('sidebar-footer-name').textContent = 'プレミアムホテル東京';
+  document.getElementById('topbar-user').textContent = '👤 管理者';
 }
 
 async function rsvLogin() {
@@ -1966,7 +2071,7 @@ async function rsvLogin() {
     localStorage.setItem('rsv_email', email);
     msg.textContent = '';
     rsvShowLoggedIn(email);
-    // テナント名をサイドバーに反映
+    // テナント名・プランをサイドバーに反映
     try {
       const me = await fetch(API_BASE + '/auth/me', { headers: { 'Authorization': 'Bearer ' + rsvToken } });
       const info = await me.json();
@@ -1975,6 +2080,11 @@ async function rsvLogin() {
         document.getElementById('sidebar-hotel-name').textContent = info.name;
         document.getElementById('sidebar-footer-name').textContent = info.name;
         document.getElementById('topbar-user').textContent = '👤 ' + info.name;
+      }
+      if (info.plan) {
+        currentPlan = info.plan;
+        localStorage.setItem('rsv_plan', info.plan);
+        applyPlanGating();
       }
     } catch(e) {}
     showToast('ログインしました');
@@ -2313,6 +2423,10 @@ function copyLineText() {
 }
 
 function lineOpenSendConfirm() {
+  if (!requirePlan('standard')) {
+    showUpgradeModal('LINE実際の送信', 'standard');
+    return;
+  }
   const edit    = document.getElementById('line-edit-area');
   const out     = document.getElementById('line-output');
   const text    = (edit.style.display !== 'none' && edit.style.display !== '') ? edit.value : out.textContent;
