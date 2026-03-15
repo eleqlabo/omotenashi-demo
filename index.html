@@ -215,6 +215,17 @@
   .bday-ch-tabs { display: flex; gap: 4px; }
   .bday-ch-tab { padding: 4px 14px; border-radius: 5px; border: 1px solid var(--border); font-size: 12px; cursor: pointer; color: var(--text-secondary); background: transparent; font-family: inherit; transition: all 0.15s; }
   .bday-ch-tab.active { background: var(--gold); color: #fff; border-color: var(--gold); font-weight: 600; }
+
+  /* Reservation */
+  .rsv-filter { padding:5px 12px;border:1px solid var(--border);border-radius:20px;background:#fff;font-size:12px;cursor:pointer;color:var(--text-secondary);transition:all .15s; }
+  .rsv-filter.active { background:var(--gold);color:#fff;border-color:var(--gold); }
+  .rsv-status { display:inline-block;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600; }
+  .rsv-status.confirmed { background:#e8f0fa;color:var(--info); }
+  .rsv-status.checked_in { background:#e8f7ed;color:var(--success); }
+  .rsv-status.checked_out { background:#f0f0f0;color:var(--text-muted); }
+  .rsv-status.cancelled { background:#fdeaea;color:var(--danger); }
+  .rsv-action-btn { padding:3px 10px;border-radius:4px;border:1px solid var(--border);background:#fff;font-size:11px;cursor:pointer;color:var(--text-secondary);transition:all .15s; }
+  .rsv-action-btn:hover { background:var(--bg-hover); }
 </style>
 </head>
 <body>
@@ -872,10 +883,99 @@
 
     <!-- Reservation placeholder -->
     <div id="tab-reservation" class="tab-pane">
-      <div class="card" style="text-align:center;padding:60px 20px;">
-        <div style="font-size:48px;margin-bottom:16px">📅</div>
-        <div style="font-size:18px;font-weight:600;color:var(--gold);margin-bottom:8px">予約管理</div>
-        <div style="color:var(--text-secondary)">このセクションでは予約の一覧、変更、キャンセル管理ができます。</div>
+      <!-- KPI -->
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">総予約数</div><div class="kpi-value" id="rsv-kpi-total">-</div></div>
+        <div class="kpi-card"><div class="kpi-label">予約確定</div><div class="kpi-value" id="rsv-kpi-confirmed" style="color:var(--info)">-</div></div>
+        <div class="kpi-card"><div class="kpi-label">チェックイン中</div><div class="kpi-value" id="rsv-kpi-checkin" style="color:var(--success)">-</div></div>
+        <div class="kpi-card"><div class="kpi-label">チェックアウト済</div><div class="kpi-value" id="rsv-kpi-checkout" style="color:var(--text-muted)">-</div></div>
+      </div>
+
+      <!-- Auth banner -->
+      <div id="rsv-auth-banner" class="card" style="margin-bottom:16px;padding:20px;display:none;background:#fff8e8;border:1px solid var(--border-gold)">
+        <div style="font-size:13px;font-weight:600;color:var(--gold);margin-bottom:12px">🔐 バックエンドAPI認証</div>
+        <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+          <div><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">メールアドレス</div>
+            <input id="rsv-login-email" type="email" style="padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-size:13px;width:220px" placeholder="email@example.com"></div>
+          <div><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">パスワード</div>
+            <input id="rsv-login-pass" type="password" style="padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-size:13px;width:160px" placeholder="password"></div>
+          <button onclick="rsvLogin()" style="padding:7px 18px;background:var(--gold);color:#fff;border:none;border-radius:4px;font-size:13px;cursor:pointer">ログイン</button>
+          <button onclick="rsvRegister()" style="padding:7px 18px;background:#fff;color:var(--gold);border:1px solid var(--gold);border-radius:4px;font-size:13px;cursor:pointer">新規登録</button>
+        </div>
+        <div id="rsv-auth-msg" style="font-size:12px;color:var(--danger);margin-top:8px"></div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="rsv-filter active" onclick="rsvSetFilter('',this)">すべて</button>
+            <button class="rsv-filter" onclick="rsvSetFilter('confirmed',this)">確定</button>
+            <button class="rsv-filter" onclick="rsvSetFilter('checked_in',this)">チェックイン中</button>
+            <button class="rsv-filter" onclick="rsvSetFilter('checked_out',this)">チェックアウト済</button>
+            <button class="rsv-filter" onclick="rsvSetFilter('cancelled',this)">キャンセル</button>
+          </div>
+          <button onclick="rsvOpenForm()" style="padding:7px 16px;background:var(--gold);color:#fff;border:none;border-radius:4px;font-size:13px;cursor:pointer;white-space:nowrap">＋ 新規予約</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:13px">
+            <thead>
+              <tr style="border-bottom:2px solid var(--border-gold);color:var(--text-secondary);font-size:11px">
+                <th style="padding:8px 10px;text-align:left">ゲスト名</th>
+                <th style="padding:8px 10px;text-align:left">チェックイン</th>
+                <th style="padding:8px 10px;text-align:left">チェックアウト</th>
+                <th style="padding:8px 10px;text-align:left">部屋タイプ</th>
+                <th style="padding:8px 10px;text-align:left">人数</th>
+                <th style="padding:8px 10px;text-align:left">ステータス</th>
+                <th style="padding:8px 10px;text-align:left">操作</th>
+              </tr>
+            </thead>
+            <tbody id="rsv-tbody"></tbody>
+          </table>
+          <div id="rsv-empty" style="text-align:center;padding:40px;color:var(--text-muted);display:none">
+            <div style="font-size:32px;margin-bottom:8px">📭</div>予約データがありません
+          </div>
+        </div>
+      </div>
+
+      <!-- 新規予約フォームモーダル -->
+      <div id="rsv-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;overflow-y:auto">
+        <div style="background:#fff;max-width:520px;margin:60px auto;border-radius:10px;padding:32px;position:relative">
+          <button onclick="rsvCloseForm()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-muted)">✕</button>
+          <h3 style="font-size:16px;font-weight:700;color:var(--gold);margin-bottom:20px">📅 新規予約登録</h3>
+          <div style="display:grid;gap:14px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div><label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">ゲスト名 <span style="color:var(--danger)">*</span></label>
+                <input id="rsv-f-name" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px;font-size:13px" placeholder="山田 太郎"></div>
+              <div><label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">人数</label>
+                <input id="rsv-f-guests" type="number" min="1" max="20" value="2" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px;font-size:13px"></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div><label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">チェックイン <span style="color:var(--danger)">*</span></label>
+                <input id="rsv-f-checkin" type="date" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px;font-size:13px"></div>
+              <div><label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">チェックアウト <span style="color:var(--danger)">*</span></label>
+                <input id="rsv-f-checkout" type="date" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px;font-size:13px"></div>
+            </div>
+            <div><label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">部屋タイプ</label>
+              <select id="rsv-f-room" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px;font-size:13px">
+                <option value="">-- 選択 --</option>
+                <option>スタンダードダブル</option><option>デラックスツイン</option>
+                <option>スイートルーム</option><option>和室</option><option>露天風呂付き客室</option>
+              </select></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div><label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">メール</label>
+                <input id="rsv-f-email" type="email" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px;font-size:13px" placeholder="guest@example.com"></div>
+              <div><label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">電話番号</label>
+                <input id="rsv-f-phone" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px;font-size:13px" placeholder="090-0000-0000"></div>
+            </div>
+            <div><label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">備考</label>
+              <textarea id="rsv-f-notes" rows="2" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px;font-size:13px;resize:vertical" placeholder="アレルギー・特別リクエストなど"></textarea></div>
+          </div>
+          <div id="rsv-form-err" style="color:var(--danger);font-size:12px;margin-top:10px"></div>
+          <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
+            <button onclick="rsvCloseForm()" style="padding:9px 20px;background:#fff;color:var(--text-secondary);border:1px solid var(--border);border-radius:4px;font-size:13px;cursor:pointer">キャンセル</button>
+            <button onclick="rsvSubmit()" id="rsv-submit-btn" style="padding:9px 24px;background:var(--gold);color:#fff;border:none;border-radius:4px;font-size:13px;cursor:pointer;font-weight:600">予約を登録する</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1388,6 +1488,194 @@ function confirmBirthdaySend() {
 loadBirthdaySettings();
 renderBirthdayCustomers();
 
+// ======================================================
+// ---- Reservation Module ----
+// ======================================================
+const API_BASE = 'https://omotenashi-cloud.onrender.com';
+let rsvToken = localStorage.getItem('rsv_token') || null;
+let rsvFilter = '';
+let rsvAllData = [];
+
+const RSV_STATUS_LABEL = { confirmed:'確定', checked_in:'チェックイン中', checked_out:'チェックアウト済', cancelled:'キャンセル' };
+
+async function rsvApi(path, options = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (rsvToken) headers['Authorization'] = 'Bearer ' + rsvToken;
+  const res = await fetch(API_BASE + path, { ...options, headers });
+  if (res.status === 401) { rsvToken = null; localStorage.removeItem('rsv_token'); rsvShowAuth(); throw new Error('認証が必要です'); }
+  return res;
+}
+
+function rsvShowAuth() {
+  document.getElementById('rsv-auth-banner').style.display = 'block';
+}
+
+async function rsvLogin() {
+  const email = document.getElementById('rsv-login-email').value.trim();
+  const pass  = document.getElementById('rsv-login-pass').value;
+  const msg   = document.getElementById('rsv-auth-msg');
+  if (!email || !pass) { msg.textContent = 'メールとパスワードを入力してください'; return; }
+  try {
+    const body = new URLSearchParams({ username: email, password: pass });
+    const res = await fetch(API_BASE + '/auth/login', { method: 'POST', body, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+    const data = await res.json();
+    if (!res.ok) { msg.textContent = data.detail || 'ログイン失敗'; return; }
+    rsvToken = data.access_token;
+    localStorage.setItem('rsv_token', rsvToken);
+    document.getElementById('rsv-auth-banner').style.display = 'none';
+    msg.textContent = '';
+    showToast('ログインしました');
+    rsvLoadList();
+  } catch(e) { msg.textContent = 'エラー: ' + e.message; }
+}
+
+async function rsvRegister() {
+  const email = document.getElementById('rsv-login-email').value.trim();
+  const pass  = document.getElementById('rsv-login-pass').value;
+  const msg   = document.getElementById('rsv-auth-msg');
+  if (!email || !pass) { msg.textContent = 'メールとパスワードを入力してください'; return; }
+  try {
+    const res = await fetch(API_BASE + '/auth/register', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: email.split('@')[0], email, password: pass })
+    });
+    const data = await res.json();
+    if (!res.ok) { msg.textContent = data.detail || '登録失敗'; return; }
+    msg.style.color = 'var(--success)';
+    msg.textContent = '登録完了。ログインしてください';
+    setTimeout(() => { msg.style.color = 'var(--danger)'; }, 3000);
+  } catch(e) { msg.textContent = 'エラー: ' + e.message; }
+}
+
+async function rsvLoadList() {
+  if (!rsvToken) { rsvShowAuth(); rsvRenderSample(); return; }
+  try {
+    const res = await rsvApi('/reservations/');
+    if (!res.ok) { rsvRenderSample(); return; }
+    rsvAllData = await res.json();
+    rsvRenderList(rsvAllData);
+    rsvUpdateKpi(rsvAllData);
+  } catch(e) { rsvRenderSample(); }
+}
+
+function rsvRenderSample() {
+  const sample = [
+    { id:'1', guest_name:'田中 美咲', check_in:'2026-03-15', check_out:'2026-03-17', room_type:'スイートルーム', num_guests:2, status:'checked_in' },
+    { id:'2', guest_name:'山本 健太郎', check_in:'2026-03-20', check_out:'2026-03-22', room_type:'デラックスツイン', num_guests:2, status:'confirmed' },
+    { id:'3', guest_name:'佐藤 由美', check_in:'2026-03-10', check_out:'2026-03-12', room_type:'和室', num_guests:3, status:'checked_out' },
+    { id:'4', guest_name:'鈴木 一郎', check_in:'2026-03-18', check_out:'2026-03-19', room_type:'スタンダードダブル', num_guests:1, status:'confirmed' },
+    { id:'5', guest_name:'高橋 さくら', check_in:'2026-03-08', check_out:'2026-03-10', room_type:'露天風呂付き客室', num_guests:2, status:'checked_out' },
+  ];
+  rsvAllData = sample;
+  rsvRenderList(sample);
+  rsvUpdateKpi(sample);
+  document.getElementById('rsv-auth-banner').style.display = 'block';
+}
+
+function rsvUpdateKpi(data) {
+  document.getElementById('rsv-kpi-total').textContent     = data.length;
+  document.getElementById('rsv-kpi-confirmed').textContent = data.filter(r => r.status === 'confirmed').length;
+  document.getElementById('rsv-kpi-checkin').textContent   = data.filter(r => r.status === 'checked_in').length;
+  document.getElementById('rsv-kpi-checkout').textContent  = data.filter(r => r.status === 'checked_out').length;
+}
+
+function rsvRenderList(data) {
+  const filtered = rsvFilter ? data.filter(r => r.status === rsvFilter) : data;
+  const tbody = document.getElementById('rsv-tbody');
+  const empty = document.getElementById('rsv-empty');
+  if (!filtered.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  tbody.innerHTML = filtered.map(r => `
+    <tr style="border-bottom:1px solid var(--border);transition:background .1s" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background=''">
+      <td style="padding:10px 10px;font-weight:600">${r.guest_name}</td>
+      <td style="padding:10px 10px;color:var(--text-secondary)">${r.check_in}</td>
+      <td style="padding:10px 10px;color:var(--text-secondary)">${r.check_out}</td>
+      <td style="padding:10px 10px">${r.room_type || '–'}</td>
+      <td style="padding:10px 10px;text-align:center">${r.num_guests}名</td>
+      <td style="padding:10px 10px"><span class="rsv-status ${r.status}">${RSV_STATUS_LABEL[r.status] || r.status}</span></td>
+      <td style="padding:10px 10px">
+        ${r.status === 'confirmed' ? `<button class="rsv-action-btn" onclick="rsvUpdateStatus('${r.id}','checked_in')">チェックイン</button>` : ''}
+        ${r.status === 'checked_in' ? `<button class="rsv-action-btn" onclick="rsvUpdateStatus('${r.id}','checked_out')">チェックアウト</button>` : ''}
+        ${r.status !== 'cancelled' && r.status !== 'checked_out' ? `<button class="rsv-action-btn" style="color:var(--danger);margin-left:4px" onclick="rsvUpdateStatus('${r.id}','cancelled')">取消</button>` : ''}
+      </td>
+    </tr>`).join('');
+}
+
+async function rsvUpdateStatus(id, status) {
+  if (!rsvToken) { showToast('ログインが必要です'); rsvShowAuth(); return; }
+  try {
+    await rsvApi('/reservations/' + id, { method: 'PATCH', body: JSON.stringify({ status }) });
+    showToast('ステータスを更新しました');
+    rsvLoadList();
+  } catch(e) { showToast('更新失敗: ' + e.message); }
+}
+
+function rsvSetFilter(status, el) {
+  rsvFilter = status;
+  document.querySelectorAll('.rsv-filter').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  rsvRenderList(rsvAllData);
+}
+
+function rsvOpenForm() {
+  const today = new Date().toISOString().split('T')[0];
+  const tom = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+  document.getElementById('rsv-f-name').value = '';
+  document.getElementById('rsv-f-guests').value = '2';
+  document.getElementById('rsv-f-checkin').value = today;
+  document.getElementById('rsv-f-checkout').value = tom;
+  document.getElementById('rsv-f-room').value = '';
+  document.getElementById('rsv-f-email').value = '';
+  document.getElementById('rsv-f-phone').value = '';
+  document.getElementById('rsv-f-notes').value = '';
+  document.getElementById('rsv-form-err').textContent = '';
+  document.getElementById('rsv-modal').style.display = 'block';
+}
+
+function rsvCloseForm() { document.getElementById('rsv-modal').style.display = 'none'; }
+
+async function rsvSubmit() {
+  const name     = document.getElementById('rsv-f-name').value.trim();
+  const checkin  = document.getElementById('rsv-f-checkin').value;
+  const checkout = document.getElementById('rsv-f-checkout').value;
+  const errEl    = document.getElementById('rsv-form-err');
+  if (!name)     { errEl.textContent = 'ゲスト名は必須です'; return; }
+  if (!checkin)  { errEl.textContent = 'チェックイン日は必須です'; return; }
+  if (!checkout) { errEl.textContent = 'チェックアウト日は必須です'; return; }
+  if (checkout <= checkin) { errEl.textContent = 'チェックアウトはチェックインより後にしてください'; return; }
+
+  if (!rsvToken) { errEl.textContent = 'ログインが必要です'; rsvShowAuth(); return; }
+
+  const payload = {
+    guest_name:  name,
+    check_in:    checkin,
+    check_out:   checkout,
+    num_guests:  parseInt(document.getElementById('rsv-f-guests').value) || 1,
+    room_type:   document.getElementById('rsv-f-room').value || null,
+    guest_email: document.getElementById('rsv-f-email').value || null,
+    guest_phone: document.getElementById('rsv-f-phone').value || null,
+    notes:       document.getElementById('rsv-f-notes').value || null,
+  };
+  const btn = document.getElementById('rsv-submit-btn');
+  btn.disabled = true; btn.textContent = '登録中...';
+  try {
+    const res = await rsvApi('/reservations/', { method: 'POST', body: JSON.stringify(payload) });
+    if (!res.ok) { const d = await res.json(); errEl.textContent = d.detail || '登録失敗'; return; }
+    rsvCloseForm();
+    showToast('予約を登録しました');
+    rsvLoadList();
+  } catch(e) { errEl.textContent = 'エラー: ' + e.message; }
+  finally { btn.disabled = false; btn.textContent = '予約を登録する'; }
+}
+
+// 予約タブが開かれたときにロード
+const _origSwitchTab = switchTab;
+function switchTab(name, el) {
+  _origSwitchTab(name, el);
+  if (name === 'reservation') rsvLoadList();
+}
+
+// ======================================================
 // ---- Toast ----
 function showToast(msg) {
   const t = document.getElementById('toast');
