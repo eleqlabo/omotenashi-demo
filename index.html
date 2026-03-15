@@ -270,9 +270,9 @@
   <div class="topbar">
     <div class="topbar-title" id="topbar-title">ダッシュボード</div>
     <div class="topbar-right">
-      <span>2026年3月13日（金）</span>
+      <span id="topbar-date"></span>
       <span class="badge">通知 3件</span>
-      <span style="color: var(--gold);">👤 山田 管理者</span>
+      <span id="topbar-user" style="color: var(--gold);">👤 管理者</span>
     </div>
   </div>
 
@@ -1486,6 +1486,17 @@ function confirmBirthdaySend() {
 // ダッシュボード日付初期化
 (function initDashboard() {
   const now = new Date();
+  // 右上日付
+  const days = ['日','月','火','水','木','金','土'];
+  const dateStr = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日（${days[now.getDay()]}）`;
+  const el = document.getElementById('topbar-date');
+  if (el) el.textContent = dateStr;
+  // 1分ごとに日付更新
+  setInterval(() => {
+    const n = new Date();
+    const s = `${n.getFullYear()}年${n.getMonth()+1}月${n.getDate()}日（${days[n.getDay()]}）`;
+    if (el) el.textContent = s;
+  }, 60000);
   const m = now.getMonth(); // 0-indexed
   const y = now.getFullYear();
   const heights = [60, 72, 55, 48, 80, 95];
@@ -1533,6 +1544,7 @@ if (rsvToken) {
     if (savedName) {
       document.getElementById('sidebar-hotel-name').textContent = savedName;
       document.getElementById('sidebar-footer-name').textContent = savedName;
+      document.getElementById('topbar-user').textContent = '👤 ' + savedName;
     }
   });
 }
@@ -1611,6 +1623,7 @@ async function rsvLogin() {
         localStorage.setItem('rsv_tenant_name', info.name);
         document.getElementById('sidebar-hotel-name').textContent = info.name;
         document.getElementById('sidebar-footer-name').textContent = info.name;
+        document.getElementById('topbar-user').textContent = '👤 ' + info.name;
       }
     } catch(e) {}
     showToast('ログインしました');
