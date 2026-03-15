@@ -233,7 +233,7 @@
 <!-- Sidebar -->
 <div id="sidebar">
   <div class="sidebar-logo">
-    <h1>おもてなし<br>クラウド</h1>
+    <h1 id="sidebar-hotel-name">おもてなし<br>クラウド</h1>
     <span>OMOTENASHI CLOUD v2.4</span>
   </div>
   <nav class="sidebar-nav">
@@ -1527,7 +1527,11 @@ let _apiReady = false;
 // ページ読み込み時にログイン状態を復元
 if (rsvToken) {
   const savedEmail = localStorage.getItem('rsv_email') || '';
-  document.addEventListener('DOMContentLoaded', () => rsvShowLoggedIn(savedEmail));
+  const savedName = localStorage.getItem('rsv_tenant_name') || '';
+  document.addEventListener('DOMContentLoaded', () => {
+    rsvShowLoggedIn(savedEmail);
+    if (savedName) document.getElementById('sidebar-hotel-name').textContent = savedName;
+  });
 }
 
 const RSV_STATUS_LABEL = { confirmed:'確定', checked_in:'チェックイン中', checked_out:'チェックアウト済', cancelled:'キャンセル' };
@@ -1596,6 +1600,15 @@ async function rsvLogin() {
     localStorage.setItem('rsv_email', email);
     msg.textContent = '';
     rsvShowLoggedIn(email);
+    // テナント名をサイドバーに反映
+    try {
+      const me = await fetch(API_BASE + '/auth/me', { headers: { 'Authorization': 'Bearer ' + rsvToken } });
+      const info = await me.json();
+      if (info.name) {
+        localStorage.setItem('rsv_tenant_name', info.name);
+        document.getElementById('sidebar-hotel-name').textContent = info.name;
+      }
+    } catch(e) {}
     showToast('ログインしました');
     rsvLoadList();
   } catch(e) { msg.textContent = 'エラー: ' + e.message; }
