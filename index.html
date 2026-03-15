@@ -260,7 +260,7 @@
     </div>
   </nav>
   <div class="sidebar-footer">
-    🏨 プレミアムホテル東京<br>
+    🏨 <span id="sidebar-footer-name">プレミアムホテル東京</span><br>
     <span style="color: var(--gold); font-size: 10px;">● オンライン</span>
   </div>
 </div>
@@ -1530,7 +1530,10 @@ if (rsvToken) {
   const savedName = localStorage.getItem('rsv_tenant_name') || '';
   document.addEventListener('DOMContentLoaded', () => {
     rsvShowLoggedIn(savedEmail);
-    if (savedName) document.getElementById('sidebar-hotel-name').textContent = savedName;
+    if (savedName) {
+      document.getElementById('sidebar-hotel-name').textContent = savedName;
+      document.getElementById('sidebar-footer-name').textContent = savedName;
+    }
   });
 }
 
@@ -1607,6 +1610,7 @@ async function rsvLogin() {
       if (info.name) {
         localStorage.setItem('rsv_tenant_name', info.name);
         document.getElementById('sidebar-hotel-name').textContent = info.name;
+        document.getElementById('sidebar-footer-name').textContent = info.name;
       }
     } catch(e) {}
     showToast('ログインしました');
