@@ -1501,13 +1501,16 @@ let _apiReady = false;
 
 const RSV_STATUS_LABEL = { confirmed:'確定', checked_in:'チェックイン中', checked_out:'チェックアウト済', cancelled:'キャンセル' };
 
-// Render無料プランのコールドスタート対策: 最初のリクエスト前にAPIを起こす
+// Render無料プランのコールドスタート対策
 async function ensureApiReady(msgEl) {
   if (_apiReady) return true;
   if (msgEl) msgEl.textContent = '⏳ APIサーバーを起動中です（初回30秒ほどかかる場合があります）...';
   for (let i = 0; i < 12; i++) {
     try {
-      const r = await fetch(API_BASE + '/health', { signal: AbortSignal.timeout(5000) });
+      const ctrl = new AbortController();
+      const tid = setTimeout(() => ctrl.abort(), 5000);
+      const r = await fetch(API_BASE + '/health', { signal: ctrl.signal });
+      clearTimeout(tid);
       const d = await r.json();
       if (d.status === 'ok') { _apiReady = true; if (msgEl) msgEl.textContent = ''; return true; }
     } catch(e) {}
