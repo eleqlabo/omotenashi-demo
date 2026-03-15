@@ -1019,6 +1019,7 @@ function switchTab(name, el) {
   document.getElementById('tab-' + name).classList.add('active');
   el.classList.add('active');
   document.getElementById('topbar-title').textContent = tabTitles[name];
+  if (name === 'reservation') rsvLoadList();
 }
 
 // ---- Customer Data ----
@@ -1666,13 +1667,6 @@ async function rsvSubmit() {
     rsvLoadList();
   } catch(e) { errEl.textContent = 'エラー: ' + e.message; }
   finally { btn.disabled = false; btn.textContent = '予約を登録する'; }
-}
-
-// 予約タブが開かれたときにロード
-const _origSwitchTab = switchTab;
-function switchTab(name, el) {
-  _origSwitchTab(name, el);
-  if (name === 'reservation') rsvLoadList();
 }
 
 // ======================================================
