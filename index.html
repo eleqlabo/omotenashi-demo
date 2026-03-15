@@ -2133,7 +2133,6 @@ async function rsvLoadList() {
     if (!res.ok) { rsvRenderSample(); return; }
     rsvAllData = await res.json();
     rsvRenderList(rsvAllData);
-    rsvUpdateKpi(rsvAllData);
   } catch(e) { rsvRenderSample(); }
 }
 
@@ -2147,7 +2146,6 @@ function rsvRenderSample() {
   ];
   rsvAllData = sample;
   rsvRenderList(sample);
-  rsvUpdateKpi(sample);
   document.getElementById('rsv-auth-banner').style.display = 'block';
 }
 
@@ -2159,6 +2157,7 @@ function rsvUpdateKpi(data) {
 }
 
 function rsvRenderList(data) {
+  rsvUpdateKpi(rsvAllData);
   const filtered = rsvFilter ? data.filter(r => r.status === rsvFilter) : data;
   const tbody = document.getElementById('rsv-tbody');
   const empty = document.getElementById('rsv-empty');
