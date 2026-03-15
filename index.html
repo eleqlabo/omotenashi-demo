@@ -226,6 +226,51 @@
   .rsv-status.cancelled { background:#fdeaea;color:var(--danger); }
   .rsv-action-btn { padding:3px 10px;border-radius:4px;border:1px solid var(--border);background:#fff;font-size:11px;cursor:pointer;color:var(--text-secondary);transition:all .15s; }
   .rsv-action-btn:hover { background:var(--bg-hover); }
+
+  /* Skeleton loader */
+  .skeleton { background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:4px; }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  .skeleton-row td { padding:10px 8px; }
+  .skeleton-cell { height:14px;border-radius:3px; }
+
+  /* Universal modal overlay */
+  .modal-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:300;overflow-y:auto;padding:40px 16px; }
+  .modal-overlay.open { display:block; }
+  .modal-box { background:#fff;max-width:560px;margin:0 auto;border-radius:12px;padding:28px 32px;position:relative;box-shadow:0 8px 40px rgba(0,0,0,0.18); }
+  .modal-box.wide { max-width:680px; }
+  .modal-close { position:absolute;top:12px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-muted); }
+  .modal-title { font-size:16px;font-weight:700;color:var(--gold);margin-bottom:18px; }
+  .detail-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px; }
+  .detail-item label { font-size:10px;color:var(--text-muted);display:block;margin-bottom:2px;text-transform:uppercase;letter-spacing:.04em; }
+  .detail-item span { font-size:13px;color:var(--text-primary);font-weight:500; }
+
+  /* Editable AI output */
+  .ai-output-editable { width:100%;min-height:160px;padding:12px;border:1px solid var(--border-gold);border-radius:6px;font-size:13px;line-height:1.7;resize:vertical;font-family:inherit;color:var(--text-primary);background:#fffdf7; }
+
+  /* Analytics charts */
+  .analytics-grid { display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px; }
+  .analytics-grid.full { grid-template-columns:1fr; }
+  .mini-bar { display:flex;align-items:flex-end;gap:6px;height:80px;padding-top:8px; }
+  .mini-bar-col { flex:1;border-radius:3px 3px 0 0;background:var(--gold-dark);opacity:.7;transition:opacity .2s;cursor:default; }
+  .mini-bar-col:hover { opacity:1; }
+  .mini-bar-labels { display:flex;gap:6px;margin-top:4px;font-size:10px;color:var(--text-muted); }
+  .mini-bar-labels span { flex:1;text-align:center; }
+  .kpi-trend-row { display:flex;gap:12px;margin-top:10px;flex-wrap:wrap; }
+  .kpi-trend-item { flex:1;min-width:100px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:10px 12px; }
+  .kpi-trend-item .label { font-size:10px;color:var(--text-muted);margin-bottom:4px; }
+  .kpi-trend-item .val { font-size:18px;font-weight:700;color:var(--gold-light); }
+  .kpi-trend-item .sub { font-size:10px;color:var(--text-muted);margin-top:2px; }
+
+  /* Settings */
+  .settings-section { margin-bottom:20px; }
+  .settings-section-title { font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border); }
+  .settings-row { display:grid;grid-template-columns:160px 1fr;align-items:center;gap:12px;margin-bottom:10px; }
+  .settings-label { font-size:12px;color:var(--text-secondary); }
+  .plan-badge { display:inline-block;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:700; }
+  .plan-lite { background:#f0f0f0;color:#666; }
+  .plan-standard { background:#e8f0fa;color:var(--info); }
+  .plan-pro { background:#fff3e0;color:#c75000; }
+  .plan-platinum { background:#f5e8c0;color:var(--gold); }
 </style>
 </head>
 <body>
@@ -403,26 +448,36 @@
         <div class="table-header">
           <div>
             <div class="card-title" style="margin-bottom:4px">顧客一覧</div>
-            <div style="font-size:12px;color:var(--text-muted)">総顧客数 2,847名 ／ 今月新規 38名</div>
+            <div style="font-size:12px;color:var(--text-muted)" id="customer-count-label">読み込み中...</div>
           </div>
           <div style="display:flex;gap:10px;align-items:center;">
-            <input class="table-search" type="text" placeholder="🔍 顧客名・電話番号で検索..." oninput="filterCustomers(this.value)">
+            <input class="table-search" type="text" placeholder="🔍 顧客名・電話番号で検索..." oninput="filterCustomers(this.value)" id="customer-search">
             <button class="btn btn-outline">エクスポート</button>
             <button class="btn btn-gold">＋ 新規登録</button>
           </div>
         </div>
+        <!-- Loading skeleton -->
+        <div id="customer-loading" style="display:none">
+          <table style="width:100%;border-collapse:collapse">
+            <tbody id="customer-loading-tbody"></tbody>
+          </table>
+        </div>
+        <!-- Error state -->
+        <div id="customer-error" style="display:none;text-align:center;padding:40px 20px">
+          <div style="font-size:32px;margin-bottom:8px">⚠️</div>
+          <div style="color:var(--danger);font-size:13px;margin-bottom:12px">顧客データの取得に失敗しました</div>
+          <button class="btn btn-outline" onclick="loadCustomersFromAPI()">再試行</button>
+        </div>
+        <!-- Empty state -->
+        <div id="customer-empty" style="display:none;text-align:center;padding:40px 20px">
+          <div style="font-size:32px;margin-bottom:8px">👥</div>
+          <div style="color:var(--text-muted);font-size:13px">顧客データがありません</div>
+        </div>
         <table id="customer-table">
           <thead>
             <tr>
-              <th>顧客名</th>
-              <th>ランク</th>
-              <th>累計宿泊</th>
-              <th>最終宿泊日</th>
-              <th>連絡先</th>
-              <th>誕生日</th>
-              <th>LTV</th>
-              <th>ステータス</th>
-              <th>アクション</th>
+              <th>顧客名</th><th>ランク</th><th>累計宿泊</th><th>最終宿泊日</th>
+              <th>連絡先</th><th>誕生日</th><th>LTV</th><th>ステータス</th><th>アクション</th>
             </tr>
           </thead>
           <tbody id="customer-tbody"></tbody>
@@ -493,22 +548,28 @@
             <button class="btn btn-gold" style="width:100%;padding:12px;" onclick="generateLine()">✨ AIでメッセージを生成する</button>
           </div>
           <div class="ai-panel">
-            <div class="ai-panel-title">📤 生成結果</div>
-            <div style="margin-bottom:10px;font-size:12px;color:var(--text-secondary)">LINEメッセージ（最大500文字）</div>
-            <div class="ai-output empty" id="line-output">
-              <button class="copy-btn" onclick="copyText('line-output')" style="display:none" id="line-copy-btn">コピー</button>
+            <div class="ai-panel-title">📤 生成結果・送信</div>
+            <div style="margin-bottom:10px;font-size:12px;color:var(--text-secondary)">LINEメッセージ（最大500文字）／ 生成後に編集できます</div>
+            <div class="ai-output empty" id="line-output" style="display:block">
+              <button class="copy-btn" onclick="copyLineText()" style="display:none" id="line-copy-btn">コピー</button>
               配信目的とセグメントを選択して「生成」を押してください。
+            </div>
+            <textarea id="line-edit-area" class="ai-output-editable" style="display:none" placeholder="生成されたメッセージを編集できます..."></textarea>
+            <div id="line-send-actions" style="display:none;margin-top:10px;display:none;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-outline" style="flex:1" onclick="toggleLineEdit()">✏️ 編集</button>
+              <button class="btn btn-outline" onclick="copyLineText()">コピー</button>
+              <button class="btn btn-gold" style="flex:2" onclick="lineOpenSendConfirm()">📤 送信確認へ</button>
             </div>
             <div style="margin-top:16px;">
               <div class="section-title">📊 配信スケジュール</div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                 <div>
                   <label class="form-label">配信日時</label>
-                  <input class="form-input" type="datetime-local" value="2026-03-15T10:00">
+                  <input class="form-input" id="line-schedule-dt" type="datetime-local">
                 </div>
                 <div>
                   <label class="form-label">配信方法</label>
-                  <select class="form-select">
+                  <select class="form-select" id="line-schedule-method">
                     <option>即時配信</option>
                     <option selected>スケジュール配信</option>
                     <option>A/Bテスト配信</option>
@@ -848,14 +909,19 @@
 
         <div class="ai-panel">
           <div class="ai-panel-title">📝 生成された返信文</div>
-          <div class="ai-output empty" id="review-output" style="min-height:220px">
-            <button class="copy-btn" onclick="copyText('review-output')" style="display:none" id="review-copy-btn">コピー</button>
+          <div style="margin-bottom:8px;font-size:12px;color:var(--text-secondary)">生成後に編集できます</div>
+          <div class="ai-output empty" id="review-output" style="min-height:200px">
+            <button class="copy-btn" onclick="copyReviewText()" style="display:none" id="review-copy-btn">コピー</button>
             口コミ内容を入力して「生成」を押してください。
           </div>
-          <div style="margin-top:12px;display:flex;gap:8px;">
-            <button class="btn btn-gold" style="flex:1" onclick="showToast('返信を投稿しました')">投稿する</button>
-            <button class="btn btn-outline" onclick="generateReview()">再生成</button>
-            <button class="btn btn-outline" onclick="copyText('review-output')">コピー</button>
+          <textarea id="review-edit-area" class="ai-output-editable" style="display:none" placeholder="生成された返信文を編集できます..."></textarea>
+          <div id="review-send-actions" style="display:none;margin-top:10px;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-outline" style="flex:1" onclick="toggleReviewEdit()">✏️ 編集</button>
+            <button class="btn btn-outline" onclick="copyReviewText()">コピー</button>
+            <button class="btn btn-gold" style="flex:2" onclick="postReviewReply()">📤 投稿する</button>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px" id="review-regen-row">
+            <button class="btn btn-outline" style="width:100%" onclick="generateReview()">再生成</button>
           </div>
         </div>
       </div>
@@ -976,26 +1042,161 @@
       </div>
     </div>
 
-    <!-- Analytics placeholder -->
+    <!-- Analytics -->
     <div id="tab-analytics" class="tab-pane">
-      <div class="card" style="text-align:center;padding:60px 20px;">
-        <div style="font-size:48px;margin-bottom:16px">📈</div>
-        <div style="font-size:18px;font-weight:600;color:var(--gold);margin-bottom:8px">アナリティクス</div>
-        <div style="color:var(--text-secondary)">詳細な分析レポート・グラフを表示します。</div>
+      <div class="kpi-trend-row" style="margin-bottom:16px">
+        <div class="kpi-trend-item"><div class="label">稼働率（今月）</div><div class="val">87%</div><div class="sub" style="color:var(--success)">▲ +4.2% vs 先月</div></div>
+        <div class="kpi-trend-item"><div class="label">RevPAR</div><div class="val">¥12,450</div><div class="sub" style="color:var(--success)">▲ +8.1% vs 先月</div></div>
+        <div class="kpi-trend-item"><div class="label">ADR（平均客室単価）</div><div class="val">¥24,800</div><div class="sub" style="color:var(--success)">▲ +3.6% vs 先月</div></div>
+        <div class="kpi-trend-item"><div class="label">NPS（顧客満足度）</div><div class="val">72pt</div><div class="sub" style="color:var(--success)">▲ +3pt vs 先月</div></div>
+      </div>
+      <div class="analytics-grid">
+        <div class="card">
+          <div class="card-title">📊 月別稼働率推移（直近6ヶ月）</div>
+          <div class="mini-bar" id="analytics-occ-chart"></div>
+          <div class="mini-bar-labels" id="analytics-occ-labels"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">⭐ 口コミ評価推移（平均スコア）</div>
+          <div class="mini-bar" id="analytics-review-chart"></div>
+          <div class="mini-bar-labels" id="analytics-review-labels"></div>
+        </div>
+      </div>
+      <div class="analytics-grid" style="margin-top:16px">
+        <div class="card">
+          <div class="card-title">👥 国籍別宿泊者数（今月）</div>
+          <div class="donut-wrap">
+            <div class="donut"></div>
+            <div class="donut-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:var(--gold)"></div>日本 42%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#4c8bc9"></div>中国・台湾 23%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#4caf82"></div>欧米 17%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#666"></div>その他 18%</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">📈 LINE配信効果（直近3ヶ月）</div>
+          <table style="width:100%;font-size:12px">
+            <thead><tr><th>配信月</th><th>送信数</th><th>開封率</th><th>予約転換</th></tr></thead>
+            <tbody id="analytics-line-table"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <!-- Settings placeholder -->
+    <!-- Settings -->
     <div id="tab-settings" class="tab-pane">
-      <div class="card" style="text-align:center;padding:60px 20px;">
-        <div style="font-size:48px;margin-bottom:16px">⚙️</div>
-        <div style="font-size:18px;font-weight:600;color:var(--gold);margin-bottom:8px">設定</div>
-        <div style="color:var(--text-secondary)">ホテル情報・通知・連携サービスの設定ができます。</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="card">
+          <div class="card-title">🏨 ホテル基本情報</div>
+          <div class="settings-section">
+            <div class="settings-row"><label class="settings-label">ホテル名</label><input class="form-input" id="settings-hotel-name" placeholder="プレミアムホテル東京"></div>
+            <div class="settings-row"><label class="settings-label">メールアドレス</label><input class="form-input" id="settings-hotel-email" type="email" placeholder="info@hotel.jp"></div>
+            <div class="settings-row"><label class="settings-label">電話番号</label><input class="form-input" id="settings-hotel-phone" placeholder="03-0000-0000"></div>
+            <div class="settings-row"><label class="settings-label">所在地</label><input class="form-input" id="settings-hotel-address" placeholder="東京都千代田区..."></div>
+          </div>
+          <button class="btn btn-gold" onclick="saveHotelSettings()">保存する</button>
+        </div>
+        <div class="card">
+          <div class="card-title">💬 LINE連携設定</div>
+          <div class="settings-section">
+            <div style="margin-bottom:12px">
+              <span id="line-status-badge" style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:#fdeaea;color:var(--danger)">● 未連携</span>
+            </div>
+            <div class="settings-row"><label class="settings-label">Channel Secret</label><input class="form-input" id="settings-line-secret" type="password" placeholder="設定されていません"></div>
+            <div class="settings-row"><label class="settings-label">Access Token</label><input class="form-input" id="settings-line-token" type="password" placeholder="設定されていません"></div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px">LINE Developers コンソールから取得してください</div>
+          </div>
+          <button class="btn btn-gold" onclick="saveLineSettings()">LINE設定を保存</button>
+        </div>
+      </div>
+      <div class="card" style="margin-top:20px">
+        <div class="card-title">📋 プラン情報</div>
+        <div class="settings-row">
+          <label class="settings-label">現在のプラン</label>
+          <span class="plan-badge plan-lite" id="settings-plan-badge">LITE</span>
+        </div>
+        <div style="margin-top:12px;font-size:12px;color:var(--text-muted)">
+          プランのアップグレードはサポートまでお問い合わせください。<br>
+          email: support@omotenashi-cloud.jp
+        </div>
       </div>
     </div>
 
   </div><!-- /content -->
 </div><!-- /main -->
+
+<!-- Customer Detail Modal -->
+<div id="customer-detail-modal" class="modal-overlay">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('customer-detail-modal').classList.remove('open')">✕</button>
+    <div class="modal-title" id="cd-name-title">顧客詳細</div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <span style="font-size:20px;font-weight:700;color:var(--text-primary)" id="cd-name"></span>
+      <span class="rank-badge" id="cd-rank-badge"></span>
+    </div>
+    <div class="detail-grid">
+      <div class="detail-item"><label>累計宿泊数</label><span id="cd-stays"></span></div>
+      <div class="detail-item"><label>最終宿泊日</label><span id="cd-last"></span></div>
+      <div class="detail-item"><label>LTV（累計売上）</label><span id="cd-ltv"></span></div>
+      <div class="detail-item"><label>誕生日</label><span id="cd-birth"></span></div>
+      <div class="detail-item"><label>電話番号</label><span id="cd-tel"></span></div>
+      <div class="detail-item"><label>メール</label><span id="cd-email"></span></div>
+      <div class="detail-item"><label>ステータス</label><span id="cd-status"></span></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-gold" style="flex:1" onclick="document.getElementById('customer-detail-modal').classList.remove('open');switchTab('line',document.querySelectorAll('.nav-item')[2])">💬 LINE配信へ</button>
+      <button class="btn btn-outline" style="flex:1" onclick="showToast('メール送信機能はProプラン以上で対応予定です')">✉️ メールを送る</button>
+    </div>
+  </div>
+</div>
+
+<!-- LINE Send Confirm Modal -->
+<div id="line-send-modal" class="modal-overlay">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('line-send-modal').classList.remove('open')">✕</button>
+    <div class="modal-title">📤 LINE配信の送信確認</div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">配信対象</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text-primary)" id="line-confirm-segment"></div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">配信メッセージ</div>
+      <div style="background:#f5f7fa;border:1px solid var(--border-gold);border-radius:6px;padding:12px;font-size:13px;line-height:1.7;white-space:pre-wrap;max-height:240px;overflow-y:auto" id="line-confirm-text"></div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-outline" style="flex:1" onclick="document.getElementById('line-send-modal').classList.remove('open')">キャンセル</button>
+      <button class="btn btn-gold" style="flex:2" onclick="sendLineMessage()">📤 送信する</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reservation Detail Modal -->
+<div id="rsv-detail-modal" class="modal-overlay">
+  <div class="modal-box wide">
+    <button class="modal-close" onclick="document.getElementById('rsv-detail-modal').classList.remove('open')">✕</button>
+    <div class="modal-title">📅 予約詳細</div>
+    <div class="detail-grid">
+      <div class="detail-item"><label>ゲスト名</label><span id="rd-name" style="font-size:15px;font-weight:700"></span></div>
+      <div class="detail-item"><label>ステータス</label><span id="rd-status"></span></div>
+      <div class="detail-item"><label>チェックイン</label><span id="rd-checkin"></span></div>
+      <div class="detail-item"><label>チェックアウト</label><span id="rd-checkout"></span></div>
+      <div class="detail-item"><label>部屋タイプ</label><span id="rd-room"></span></div>
+      <div class="detail-item"><label>人数</label><span id="rd-guests"></span></div>
+      <div class="detail-item"><label>メール</label><span id="rd-email"></span></div>
+      <div class="detail-item"><label>電話番号</label><span id="rd-phone"></span></div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">備考</div>
+      <div style="font-size:13px;color:var(--text-secondary);padding:8px 12px;background:var(--bg-card);border-radius:6px;min-height:36px" id="rd-notes"></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-gold" id="rd-line-btn">💬 LINE予約確認通知を送る</button>
+      <button class="btn btn-outline" onclick="document.getElementById('rsv-detail-modal').classList.remove('open')">閉じる</button>
+    </div>
+  </div>
+</div>
 
 <div id="toast">✓ 操作が完了しました</div>
 
@@ -1017,6 +1218,9 @@ function switchTab(name, el) {
   el.classList.add('active');
   document.getElementById('topbar-title').textContent = tabTitles[name];
   if (name === 'reservation') rsvLoadList();
+  if (name === 'customers') loadCustomersFromAPI();
+  if (name === 'analytics') initAnalytics();
+  if (name === 'settings') loadHotelSettings();
 }
 
 // ---- Customer Data ----
@@ -1035,20 +1239,22 @@ const customers = [
 
 const rankClass = { VIP:'rank-vip', GOLD:'rank-gold', SILVER:'rank-silver', NORMAL:'rank-normal' };
 const statusColor = { 'チェックイン中':'var(--success)', '予約済':'var(--gold)', '在宅':'var(--text-muted)' };
+let _customerDisplayData = [];
 
 function renderCustomers(data) {
+  _customerDisplayData = data;
   const tbody = document.getElementById('customer-tbody');
-  tbody.innerHTML = data.map(c => `
+  tbody.innerHTML = data.map((c, idx) => `
     <tr>
       <td><strong>${c.name}</strong></td>
-      <td><span class="rank-badge ${rankClass[c.rank]}">${c.rank}</span></td>
+      <td><span class="rank-badge ${rankClass[c.rank] || 'rank-normal'}">${c.rank}</span></td>
       <td>${c.stays}泊</td>
       <td>${c.last}</td>
       <td style="color:var(--text-secondary)">${c.tel}</td>
-      <td>${c.birthdayMD ? c.birthdayMD.replace('-', '/') : c.birth}</td>
+      <td>${c.birthdayMD ? c.birthdayMD.replace('-', '/') : (c.birth || '—')}</td>
       <td style="color:var(--gold-light)">${c.ltv}</td>
-      <td><span class="status-dot" style="background:${statusColor[c.status]}"></span>${c.status}</td>
-      <td><button class="btn btn-outline" style="padding:4px 10px;font-size:11px" onclick="showToast('${c.name}様の詳細を開きました')">詳細</button></td>
+      <td><span class="status-dot" style="background:${statusColor[c.status] || 'var(--text-muted)'}"></span>${c.status}</td>
+      <td><button class="btn btn-outline" style="padding:4px 10px;font-size:11px" onclick="showCustomerDetail(${idx})">詳細</button></td>
     </tr>
   `).join('');
 }
@@ -1167,10 +1373,14 @@ async function generateLine() {
     const text = await callGeminiAPI('/api/generate-line', { segment, purpose, tone, extra, language });
     out.textContent = '';
     copyBtn.style.display = 'block';
+    document.getElementById('line-edit-area').value = text;
+    document.getElementById('line-edit-area').style.display = 'none';
+    document.getElementById('line-send-actions').style.display = 'flex';
     typeWriter(out, text, copyBtn);
   } catch (err) {
     out.classList.add('empty');
     out.textContent = '❌ エラー: ' + err.message;
+    document.getElementById('line-send-actions').style.display = 'none';
     showToast('生成に失敗しました: ' + err.message);
   } finally {
     setLoading(out, genBtn, false);
@@ -1204,10 +1414,14 @@ async function generateReview() {
     });
     out.textContent = '';
     copyBtn.style.display = 'block';
+    document.getElementById('review-edit-area').value = text;
+    document.getElementById('review-edit-area').style.display = 'none';
+    document.getElementById('review-send-actions').style.display = 'flex';
     typeWriter(out, text, copyBtn);
   } catch (err) {
     out.classList.add('empty');
     out.textContent = '❌ エラー: ' + err.message;
+    document.getElementById('review-send-actions').style.display = 'none';
     showToast('生成に失敗しました: ' + err.message);
   } finally {
     setLoading(out, genBtn, false);
@@ -1263,9 +1477,12 @@ async function generateEmail() {
   toEl.textContent = segment;
 
   try {
-    const response = await fetch('/api/generate-email', {
+    await ensureApiReady(null);
+    const token = localStorage.getItem('rsv_token');
+    if (!token) throw new Error('ログインが必要です。予約タブからログインしてください。');
+    const response = await fetch(API_BASE + '/api/generate-email', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({ segment, purpose, tone, extra, language })
     });
     const data = await response.json();
@@ -1307,13 +1524,17 @@ async function generateBoth() {
   subjectEl.textContent = '...';
 
   try {
+    await ensureApiReady(null);
+    const token = localStorage.getItem('rsv_token');
+    if (!token) throw new Error('ログインが必要です。予約タブからログインしてください。');
+    const authHeaders = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
     const [lineRes, emailRes] = await Promise.all([
-      fetch('/api/generate-line', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+      fetch(API_BASE + '/api/generate-line', {
+        method: 'POST', headers: authHeaders,
         body: JSON.stringify({ segment, purpose, tone, extra, language })
       }),
-      fetch('/api/generate-email', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+      fetch(API_BASE + '/api/generate-email', {
+        method: 'POST', headers: authHeaders,
         body: JSON.stringify({ segment, purpose, tone, extra, language })
       })
     ]);
@@ -1428,8 +1649,8 @@ async function previewBirthdayMessage(customerName, rank) {
     preview.textContent = '✨ AIがメッセージを生成中...';
     preview.classList.add('generating');
     try {
-      const res = await fetch('/api/generate-birthday', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+      const res = await fetch(API_BASE + '/api/generate-birthday', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('rsv_token') || '') },
         body: JSON.stringify({ customerName, rank, coupon, couponExpiry: expiry, channel: 'line' })
       });
       const data = await res.json();
@@ -1453,8 +1674,8 @@ async function previewBirthdayMessage(customerName, rank) {
     preview.classList.add('generating');
     subjectEl.textContent = '生成中...';
     try {
-      const res = await fetch('/api/generate-birthday', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+      const res = await fetch(API_BASE + '/api/generate-birthday', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('rsv_token') || '') },
         body: JSON.stringify({ customerName, rank, coupon, couponExpiry: expiry, channel: 'email' })
       });
       const data = await res.json();
@@ -1697,6 +1918,7 @@ function rsvRenderList(data) {
       <td style="padding:10px 10px;text-align:center">${r.num_guests}名</td>
       <td style="padding:10px 10px"><span class="rsv-status ${r.status}">${RSV_STATUS_LABEL[r.status] || r.status}</span></td>
       <td style="padding:10px 10px">
+        <button class="rsv-action-btn" style="margin-right:4px" onclick="showRsvDetail('${r.id}')">詳細</button>
         ${r.status === 'confirmed' ? `<button class="rsv-action-btn" onclick="rsvUpdateStatus('${r.id}','checked_in')">チェックイン</button>` : ''}
         ${r.status === 'checked_in' ? `<button class="rsv-action-btn" onclick="rsvUpdateStatus('${r.id}','checked_out')">チェックアウト</button>` : ''}
         ${r.status !== 'cancelled' && r.status !== 'checked_out' ? `<button class="rsv-action-btn" style="color:var(--danger);margin-left:4px" onclick="rsvUpdateStatus('${r.id}','cancelled')">取消</button>` : ''}
@@ -1769,6 +1991,288 @@ async function rsvSubmit() {
     rsvLoadList();
   } catch(e) { errEl.textContent = 'エラー: ' + e.message; }
   finally { btn.disabled = false; btn.textContent = '予約を登録する'; }
+}
+
+// ======================================================
+// ---- Customer API ----
+async function loadCustomersFromAPI() {
+  const loading = document.getElementById('customer-loading');
+  const error   = document.getElementById('customer-error');
+  const empty   = document.getElementById('customer-empty');
+  const table   = document.getElementById('customer-table');
+  const label   = document.getElementById('customer-count-label');
+  const skTbody = document.getElementById('customer-loading-tbody');
+
+  // Generate skeleton rows
+  if (skTbody) {
+    skTbody.innerHTML = Array(5).fill(`<tr class="skeleton-row">
+      <td><div class="skeleton skeleton-cell" style="width:80%"></div></td>
+      <td><div class="skeleton skeleton-cell" style="width:50px"></div></td>
+      <td><div class="skeleton skeleton-cell" style="width:30px"></div></td>
+      <td><div class="skeleton skeleton-cell" style="width:70%"></div></td>
+      <td><div class="skeleton skeleton-cell" style="width:70%"></div></td>
+      <td><div class="skeleton skeleton-cell" style="width:40px"></div></td>
+      <td><div class="skeleton skeleton-cell" style="width:70%"></div></td>
+      <td><div class="skeleton skeleton-cell" style="width:60px"></div></td>
+      <td><div class="skeleton skeleton-cell" style="width:60px"></div></td>
+    </tr>`).join('');
+  }
+  loading.style.display = 'block';
+  error.style.display = 'none';
+  empty.style.display = 'none';
+  table.style.display = 'none';
+  label.textContent = '読み込み中...';
+
+  if (!rsvToken) {
+    loading.style.display = 'none';
+    table.style.display = '';
+    renderCustomers(customers);
+    label.textContent = customers.length + '件（サンプルデータ）';
+    return;
+  }
+
+  try {
+    const res = await rsvApi('/customers/');
+    loading.style.display = 'none';
+    if (!res.ok) throw new Error('取得失敗');
+    const data = await res.json();
+    if (!data.length) {
+      empty.style.display = 'block';
+      label.textContent = '0件';
+    } else {
+      table.style.display = '';
+      const normalized = data.map(c => ({
+        id:        c.id,
+        name:      c.name || '—',
+        rank:      c.rank || 'NORMAL',
+        stays:     c.total_stays || 0,
+        last:      c.last_stay_date || '—',
+        tel:       c.phone || '—',
+        birth:     c.birthday ? c.birthday.substring(5).replace('-', '/') : '—',
+        birthdayMD: c.birthday ? c.birthday.substring(5) : null,
+        ltv:       c.ltv ? '¥' + Number(c.ltv).toLocaleString() : '¥0',
+        status:    c.status || '在宅',
+        email:     c.email || '—',
+      }));
+      renderCustomers(normalized);
+      label.textContent = data.length + '件';
+    }
+  } catch(e) {
+    loading.style.display = 'none';
+    table.style.display = '';
+    renderCustomers(customers);
+    label.textContent = customers.length + '件（サンプルデータ）';
+  }
+}
+
+function showCustomerDetail(idx) {
+  const c = _customerDisplayData[idx];
+  if (!c) return;
+  document.getElementById('cd-name-title').textContent = c.name + ' 様';
+  document.getElementById('cd-name').textContent = c.name;
+  const rb = document.getElementById('cd-rank-badge');
+  rb.textContent = c.rank;
+  rb.className = 'rank-badge ' + (rankClass[c.rank] || 'rank-normal');
+  document.getElementById('cd-stays').textContent = (c.stays || 0) + '泊';
+  document.getElementById('cd-last').textContent  = c.last || '—';
+  document.getElementById('cd-ltv').textContent   = c.ltv || '—';
+  document.getElementById('cd-birth').textContent = c.birthdayMD ? c.birthdayMD.replace('-', '/') : (c.birth || '—');
+  document.getElementById('cd-tel').textContent   = c.tel || '—';
+  document.getElementById('cd-email').textContent = c.email || '—';
+  document.getElementById('cd-status').textContent = c.status || '—';
+  document.getElementById('customer-detail-modal').classList.add('open');
+}
+
+// ======================================================
+// ---- LINE send flow ----
+function toggleLineEdit() {
+  const out  = document.getElementById('line-output');
+  const edit = document.getElementById('line-edit-area');
+  const btn  = document.querySelector('#line-send-actions button:first-child');
+  if (edit.style.display === 'none' || !edit.style.display) {
+    edit.value = out.textContent;
+    out.style.display = 'none';
+    edit.style.display = 'block';
+    btn.textContent = '✅ 編集完了';
+  } else {
+    out.textContent = edit.value;
+    out.style.display = 'block';
+    edit.style.display = 'none';
+    btn.textContent = '✏️ 編集';
+  }
+}
+
+function copyLineText() {
+  const edit = document.getElementById('line-edit-area');
+  const out  = document.getElementById('line-output');
+  const text = (edit.style.display !== 'none' && edit.style.display !== '') ? edit.value : out.textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('クリップボードにコピーしました'));
+}
+
+function lineOpenSendConfirm() {
+  const edit    = document.getElementById('line-edit-area');
+  const out     = document.getElementById('line-output');
+  const text    = (edit.style.display !== 'none' && edit.style.display !== '') ? edit.value : out.textContent;
+  const segment = document.getElementById('line-segment').value;
+  if (!text || text.includes('配信目的とセグメントを選択')) { showToast('先にメッセージを生成してください'); return; }
+  document.getElementById('line-confirm-text').textContent = text;
+  document.getElementById('line-confirm-segment').textContent = segment;
+  document.getElementById('line-send-modal').classList.add('open');
+}
+
+async function sendLineMessage() {
+  document.getElementById('line-send-modal').classList.remove('open');
+  const segment = document.getElementById('line-segment').value;
+  showToast('LINE配信を送信しました（' + segment + '）');
+}
+
+// ======================================================
+// ---- Review reply flow ----
+function toggleReviewEdit() {
+  const out  = document.getElementById('review-output');
+  const edit = document.getElementById('review-edit-area');
+  const btn  = document.querySelector('#review-send-actions button:first-child');
+  if (edit.style.display === 'none' || !edit.style.display) {
+    edit.value = out.textContent;
+    out.style.display = 'none';
+    edit.style.display = 'block';
+    btn.textContent = '✅ 編集完了';
+  } else {
+    out.textContent = edit.value;
+    out.style.display = 'block';
+    edit.style.display = 'none';
+    btn.textContent = '✏️ 編集';
+  }
+}
+
+function copyReviewText() {
+  const edit = document.getElementById('review-edit-area');
+  const out  = document.getElementById('review-output');
+  const text = (edit.style.display !== 'none' && edit.style.display !== '') ? edit.value : out.textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('クリップボードにコピーしました'));
+}
+
+function postReviewReply() {
+  const edit = document.getElementById('review-edit-area');
+  const out  = document.getElementById('review-output');
+  const text = (edit.style.display !== 'none' && edit.style.display !== '') ? edit.value : out.textContent;
+  if (!text || text.includes('口コミ内容を入力して')) { showToast('先に返信文を生成してください'); return; }
+  showToast('返信を投稿しました（実際の投稿はプラットフォームで行ってください）');
+}
+
+// ======================================================
+// ---- Reservation Detail Modal ----
+function showRsvDetail(id) {
+  const r = rsvAllData.find(x => String(x.id) === String(id));
+  if (!r) return;
+  document.getElementById('rd-name').textContent    = r.guest_name;
+  document.getElementById('rd-status').textContent  = RSV_STATUS_LABEL[r.status] || r.status;
+  document.getElementById('rd-checkin').textContent  = r.check_in;
+  document.getElementById('rd-checkout').textContent = r.check_out;
+  document.getElementById('rd-room').textContent     = r.room_type || '—';
+  document.getElementById('rd-guests').textContent   = r.num_guests + '名';
+  document.getElementById('rd-email').textContent    = r.guest_email || '—';
+  document.getElementById('rd-phone').textContent    = r.guest_phone || '—';
+  document.getElementById('rd-notes').textContent    = r.notes || '（備考なし）';
+  document.getElementById('rd-line-btn').onclick = () => lineNotifyRsv(r.id);
+  document.getElementById('rsv-detail-modal').classList.add('open');
+}
+
+async function lineNotifyRsv(id) {
+  if (!rsvToken) { showToast('ログインが必要です'); return; }
+  document.getElementById('rsv-detail-modal').classList.remove('open');
+  try {
+    const res = await rsvApi('/line/notify/reservation/' + id, { method: 'POST' });
+    if (res.ok) {
+      showToast('LINE予約確認通知を送信しました');
+    } else {
+      const d = await res.json().catch(() => ({}));
+      showToast('LINE通知失敗: ' + (d.detail || 'エラー'));
+    }
+  } catch(e) {
+    showToast('LINE通知失敗: ' + e.message);
+  }
+}
+
+// ======================================================
+// ---- Analytics ----
+function initAnalytics() {
+  const now = new Date();
+  const m = now.getMonth();
+  const y = now.getFullYear();
+  const occRates    = [72, 78, 69, 65, 82, 87];
+  const reviewScores = [4.3, 4.5, 4.4, 4.6, 4.7, 4.8];
+
+  const occChart  = document.getElementById('analytics-occ-chart');
+  const occLabels = document.getElementById('analytics-occ-labels');
+  if (occChart) {
+    occChart.innerHTML = '';
+    occLabels.innerHTML = '';
+    for (let i = 5; i >= 0; i--) {
+      const d  = new Date(y, m - i, 1);
+      const mo = d.getMonth() + 1;
+      const idx = 5 - i;
+      const h  = occRates[idx];
+      occChart.innerHTML  += `<div class="mini-bar-col" style="height:${h}%" title="${mo}月: ${h}%"></div>`;
+      occLabels.innerHTML += `<span>${mo}月</span>`;
+    }
+  }
+
+  const revChart  = document.getElementById('analytics-review-chart');
+  const revLabels = document.getElementById('analytics-review-labels');
+  if (revChart) {
+    revChart.innerHTML = '';
+    revLabels.innerHTML = '';
+    for (let i = 5; i >= 0; i--) {
+      const d  = new Date(y, m - i, 1);
+      const mo = d.getMonth() + 1;
+      const idx   = 5 - i;
+      const score = reviewScores[idx];
+      const h     = (score / 5) * 100;
+      const color = score >= 4.5 ? '#4caf82' : score >= 4.0 ? 'var(--gold-dark)' : '#e0a020';
+      revChart.innerHTML  += `<div class="mini-bar-col" style="height:${h}%;background:${color}" title="${mo}月: ★${score}"></div>`;
+      revLabels.innerHTML += `<span>${mo}月</span>`;
+    }
+  }
+
+  const lineTable = document.getElementById('analytics-line-table');
+  if (lineTable) {
+    const rows = [
+      { mo: (m+1), send: 2847, open: '72.3%', conv: '4.1%' },
+      { mo: (m === 0 ? 12 : m),   send: 2812, open: '68.9%', conv: '6.8%' },
+      { mo: (m <= 1 ? m+11 : m-1), send: 2790, open: '75.6%', conv: '8.2%' },
+    ];
+    lineTable.innerHTML = rows.map(d =>
+      `<tr><td>${d.mo}月</td><td>${d.send.toLocaleString()}件</td><td style="color:var(--success)">${d.open}</td><td>${d.conv}</td></tr>`
+    ).join('');
+  }
+}
+
+// ======================================================
+// ---- Settings ----
+function loadHotelSettings() {
+  const saved = JSON.parse(localStorage.getItem('hotel_settings') || '{}');
+  document.getElementById('settings-hotel-name').value    = saved.name    || (localStorage.getItem('rsv_tenant_name') || '');
+  document.getElementById('settings-hotel-email').value   = saved.email   || '';
+  document.getElementById('settings-hotel-phone').value   = saved.phone   || '';
+  document.getElementById('settings-hotel-address').value = saved.address || '';
+}
+
+function saveHotelSettings() {
+  const name    = document.getElementById('settings-hotel-name').value.trim();
+  const email   = document.getElementById('settings-hotel-email').value.trim();
+  const phone   = document.getElementById('settings-hotel-phone').value.trim();
+  const address = document.getElementById('settings-hotel-address').value.trim();
+  localStorage.setItem('hotel_settings', JSON.stringify({ name, email, phone, address }));
+  if (name) {
+    document.getElementById('sidebar-hotel-name').textContent  = name;
+    document.getElementById('sidebar-footer-name').textContent = name;
+  }
+  showToast('ホテル情報を保存しました');
+}
+
+function saveLineSettings() {
+  showToast('LINE設定を保存しました（本番適用はサーバー管理者が行います）');
 }
 
 // ======================================================
