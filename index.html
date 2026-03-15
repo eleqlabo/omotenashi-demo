@@ -310,18 +310,8 @@
       <div class="charts-row">
         <div class="card">
           <div class="card-title">月別宿泊者数推移（直近6ヶ月）</div>
-          <div class="bar-chart">
-            <div class="bar-group"><div class="bar" style="height:60%"></div><div class="bar-label">10月</div></div>
-            <div class="bar-group"><div class="bar" style="height:72%"></div><div class="bar-label">11月</div></div>
-            <div class="bar-group"><div class="bar" style="height:55%"></div><div class="bar-label">12月</div></div>
-            <div class="bar-group"><div class="bar" style="height:48%"></div><div class="bar-label">1月</div></div>
-            <div class="bar-group"><div class="bar" style="height:80%"></div><div class="bar-label">2月</div></div>
-            <div class="bar-group"><div class="bar" style="height:95%"></div><div class="bar-label">3月</div></div>
-          </div>
-          <div style="display:flex;gap:16px;margin-top:12px;font-size:11px;color:var(--text-muted);">
-            <span>10月: 2,840名</span><span>11月: 3,120名</span><span>12月: 2,650名</span>
-            <span>1月: 2,410名</span><span>2月: 3,390名</span><span>3月: 3,870名</span>
-          </div>
+          <div class="bar-chart" id="dashboard-bar-chart"></div>
+          <div id="dashboard-bar-labels" style="display:flex;gap:16px;margin-top:12px;font-size:11px;color:var(--text-muted);"></div>
         </div>
         <div class="card">
           <div class="card-title">宿泊者属性（国籍別）</div>
@@ -380,7 +370,7 @@
           <div style="display:flex;flex-direction:column;gap:10px;">
             <div style="display:flex;align-items:center;gap:10px;font-size:13px;">
               <span style="color:var(--success)">✓</span>
-              <span style="text-decoration:line-through;color:var(--text-muted)">3月LINE配信メッセージ作成</span>
+              <span id="task-this-month" style="text-decoration:line-through;color:var(--text-muted)"></span>
             </div>
             <div style="display:flex;align-items:center;gap:10px;font-size:13px;">
               <span style="color:var(--success)">✓</span>
@@ -396,7 +386,7 @@
             </div>
             <div style="display:flex;align-items:center;gap:10px;font-size:13px;">
               <span style="color:var(--text-muted)">○</span>
-              <span style="color:var(--text-secondary)">4月スタッフ研修資料準備</span>
+              <span id="task-next-month" style="color:var(--text-secondary)"></span>
             </div>
             <div style="display:flex;align-items:center;gap:10px;font-size:13px;">
               <span style="color:var(--danger)">!</span>
@@ -1492,6 +1482,34 @@ function confirmBirthdaySend() {
   document.getElementById('birthday-send-btn').disabled = true;
   birthdayPreviewTarget = null;
 }
+
+// ダッシュボード日付初期化
+(function initDashboard() {
+  const now = new Date();
+  const m = now.getMonth(); // 0-indexed
+  const y = now.getFullYear();
+  const heights = [60, 72, 55, 48, 80, 95];
+  const guests  = [2840, 3120, 2650, 2410, 3390, 3870];
+  const chart = document.getElementById('dashboard-bar-chart');
+  const labels = document.getElementById('dashboard-bar-labels');
+  if (chart && labels) {
+    chart.innerHTML = '';
+    labels.innerHTML = '';
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(y, m - i, 1);
+      const mo = d.getMonth() + 1;
+      const idx = 5 - i;
+      chart.innerHTML += `<div class="bar-group"><div class="bar" style="height:${heights[idx]}%"></div><div class="bar-label">${mo}月</div></div>`;
+      labels.innerHTML += `<span>${mo}月: ${guests[idx].toLocaleString()}名</span>`;
+    }
+  }
+  const thisM = m + 1;
+  const nextM = (m + 2) > 12 ? 1 : (m + 2);
+  const tm = document.getElementById('task-this-month');
+  const nm = document.getElementById('task-next-month');
+  if (tm) tm.textContent = `${thisM}月LINE配信メッセージ作成`;
+  if (nm) nm.textContent = `${nextM}月スタッフ研修資料準備`;
+})();
 
 // 初期化
 loadBirthdaySettings();
