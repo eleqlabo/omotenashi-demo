@@ -1783,6 +1783,47 @@ async function callGeminiAPI(endpoint, body) {
   return data.text;
 }
 
+// SSEストリーミング版：口コミ返信に使用。outElにリアルタイム表示しfullTextを返す
+async function callGeminiAPIStream(endpoint, body, outEl) {
+  await ensureApiReady(null);
+  const token = localStorage.getItem('rsv_token');
+  if (!token) throw new Error('ログインが必要です。予約タブからログインしてください。');
+  const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+  const response = await fetch(API_BASE + endpoint, { method: 'POST', headers, body: JSON.stringify(body) });
+  if (response.status === 401) throw new Error('ログインが必要です。予約タブからログインしてください。');
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.detail || data.error || 'AIの生成に失敗しました。');
+  }
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let fullText = '';
+  outEl.classList.remove('empty');
+  outEl.textContent = '';
+  let buf = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, { stream: true });
+    const lines = buf.split('\n');
+    buf = lines.pop(); // 未完了行をバッファに残す
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const payload = line.slice(6).trim();
+      if (payload === '[DONE]') return fullText;
+      try {
+        const parsed = JSON.parse(payload);
+        if (parsed.error) throw new Error(parsed.error);
+        if (parsed.text) {
+          fullText += parsed.text;
+          outEl.textContent = fullText;
+        }
+      } catch (e) { /* 不完全なJSONは無視 */ }
+    }
+  }
+  return fullText;
+}
+
 function setLoading(outEl, btnEl, loading) {
   if (loading) {
     outEl.classList.remove('empty');
@@ -1844,20 +1885,18 @@ async function generateReview() {
   copyBtn.style.display = 'none';
 
   try {
-    const text = await callGeminiAPI('/api/generate-reply', {
+    const text = await callGeminiAPIStream('/api/generate-reply', {
       platform,
       rating: currentRating,
       reviewText,
       tone,
       reviewerName,
       language
-    });
-    out.textContent = '';
+    }, out);
     copyBtn.style.display = 'block';
     document.getElementById('review-edit-area').value = text;
     document.getElementById('review-edit-area').style.display = 'none';
     document.getElementById('review-send-actions').style.display = 'flex';
-    typeWriter(out, text, copyBtn);
   } catch (err) {
     out.classList.add('empty');
     out.textContent = '❌ エラー: ' + err.message;
