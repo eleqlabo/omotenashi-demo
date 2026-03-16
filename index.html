@@ -1206,6 +1206,17 @@
       </div>
     </div>
 
+      <!-- デモデータ管理 -->
+      <div class="card" style="margin-top:20px;border:1px dashed var(--border-gold);background:#fffdf5">
+        <div class="card-title">🛠️ デモデータ管理</div>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">補助金審査デモ用のサンプルデータを本番DBに一括投入します。既存データがある場合はスキップされます。</p>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <input class="form-input" id="seed-secret" type="password" placeholder="管理者シークレットキー" style="max-width:220px">
+          <button class="btn btn-gold" id="seed-btn" onclick="runSeedDemo()">▶ デモデータ投入</button>
+          <span id="seed-status" style="font-size:12px;color:var(--text-muted)"></span>
+        </div>
+      </div>
+
   </div><!-- /content -->
 </div><!-- /main -->
 
@@ -1276,6 +1287,21 @@
     <div style="display:flex;gap:8px">
       <button class="btn btn-gold" id="rd-line-btn">💬 LINE予約確認通知を送る</button>
       <button class="btn btn-outline" onclick="document.getElementById('rsv-detail-modal').classList.remove('open')">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<!-- Customer Delete Confirm Modal -->
+<div id="customer-delete-modal" class="modal-overlay">
+  <div class="modal-box" style="text-align:center;max-width:400px">
+    <div style="font-size:40px;margin-bottom:10px">🗑️</div>
+    <div class="modal-title">顧客を削除しますか？</div>
+    <p style="font-size:13px;color:var(--text-secondary);margin:10px 0 18px">
+      「<strong id="customer-delete-name"></strong>」を完全に削除します。<br>この操作は元に戻せません。
+    </p>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn btn-outline" onclick="document.getElementById('customer-delete-modal').classList.remove('open')">キャンセル</button>
+      <button class="btn" style="background:var(--danger);color:#fff;border-color:var(--danger)" onclick="customerDeleteExecute()">削除する</button>
     </div>
   </div>
 </div>
@@ -1374,22 +1400,53 @@ function renderCustomers(data) {
   tbody.innerHTML = data.map((c, idx) => `
     <tr>
       <td><strong>${c.name}</strong></td>
-      <td><span class="rank-badge ${rankClass[c.rank] || 'rank-normal'}">${c.rank}</span></td>
-      <td>${c.stays}泊</td>
-      <td>${c.last}</td>
-      <td style="color:var(--text-secondary)">${c.tel}</td>
+      <td><span class="rank-badge ${rankClass[c.rank] || 'rank-normal'}">${c.rank || 'NORMAL'}</span></td>
+      <td>${c.stays || 0}泊</td>
+      <td>${c.last || '—'}</td>
+      <td style="color:var(--text-secondary)">${c.tel || c.phone || '—'}</td>
       <td>${c.birthdayMD ? c.birthdayMD.replace('-', '/') : (c.birth || '—')}</td>
-      <td style="color:var(--gold-light)">${c.ltv}</td>
-      <td><span class="status-dot" style="background:${statusColor[c.status] || 'var(--text-muted)'}"></span>${c.status}</td>
-      <td><button class="btn btn-outline" style="padding:4px 10px;font-size:11px" onclick="showCustomerDetail(${idx})">詳細</button></td>
+      <td style="color:var(--gold-light)">${c.ltv || '¥0'}</td>
+      <td><span class="status-dot" style="background:${statusColor[c.status] || 'var(--text-muted)'}"></span>${c.status || '在宅'}</td>
+      <td style="display:flex;gap:4px">
+        <button class="btn btn-outline" style="padding:4px 10px;font-size:11px" onclick="showCustomerDetail(${idx})">詳細</button>
+        ${c.id ? `<button class="rsv-action-btn" style="color:var(--danger);border-color:var(--danger)" onclick="customerDeleteConfirm('${c.id}','${c.name.replace(/'/g,'&#39;')}')">🗑️</button>` : ''}
+      </td>
     </tr>
   `).join('');
 }
 renderCustomers(customers);
 
 function filterCustomers(val) {
-  const filtered = customers.filter(c => c.name.includes(val) || c.tel.includes(val));
+  const src = _customerDisplayData.length ? _customerDisplayData : customers;
+  const filtered = src.filter(c =>
+    (c.name || '').includes(val) ||
+    (c.tel  || '').includes(val) ||
+    (c.phone|| '').includes(val)
+  );
   renderCustomers(filtered);
+}
+
+function customerDeleteConfirm(id, name) {
+  if (!rsvToken) { showToast('ログインが必要です'); return; }
+  document.getElementById('customer-delete-name').textContent = name;
+  document.getElementById('customer-delete-modal').dataset.targetId = id;
+  document.getElementById('customer-delete-modal').classList.add('open');
+}
+
+async function customerDeleteExecute() {
+  const modal = document.getElementById('customer-delete-modal');
+  const id = modal.dataset.targetId;
+  modal.classList.remove('open');
+  try {
+    const res = await rsvApi('/customers/' + id, { method: 'DELETE' });
+    if (res.ok || res.status === 204) {
+      showToast('顧客を削除しました');
+      loadCustomersFromAPI();
+    } else {
+      const d = await res.json().catch(() => ({}));
+      showToast('削除失敗: ' + (d.detail || 'エラー'));
+    }
+  } catch(e) { showToast('削除失敗: ' + e.message); }
 }
 
 // ---- Review list ----
@@ -2725,6 +2782,39 @@ function saveHotelSettings() {
 
 function saveLineSettings() {
   showToast('LINE設定を保存しました（本番適用はサーバー管理者が行います）');
+}
+
+async function runSeedDemo() {
+  const secret = document.getElementById('seed-secret').value.trim();
+  if (!secret) { showToast('シークレットキーを入力してください'); return; }
+  const btn    = document.getElementById('seed-btn');
+  const status = document.getElementById('seed-status');
+  btn.disabled = true;
+  status.textContent = '投入中...';
+  status.style.color = 'var(--text-muted)';
+  try {
+    const res  = await fetch(API_BASE + '/admin/seed-demo?secret=' + encodeURIComponent(secret), { method: 'POST' });
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 403) {
+      status.textContent = '❌ シークレットキーが違います';
+      status.style.color = 'var(--danger)';
+    } else if (data.status === 'ok') {
+      const c = data.created?.length || 0;
+      const u = data.updated?.length || 0;
+      const s = data.skipped?.length || 0;
+      status.textContent = `✅ 完了（新規:${c}件 更新:${u}件 スキップ:${s}件）`;
+      status.style.color = 'var(--success)';
+      showToast('デモデータの投入が完了しました');
+    } else {
+      status.textContent = '❌ ' + (data.detail || 'エラーが発生しました');
+      status.style.color = 'var(--danger)';
+    }
+  } catch(e) {
+    status.textContent = '❌ 通信エラー: ' + e.message;
+    status.style.color = 'var(--danger)';
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 function submitUpgradeRequest() {
