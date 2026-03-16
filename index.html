@@ -92,8 +92,9 @@
   .card-title { font-size: 13px; font-weight: 600; color: var(--gold); margin-bottom: 16px; }
 
   /* Bar chart mock */
-  .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 120px; }
-  .bar-group { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+  .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 130px; padding-top: 20px; }
+  .bar-group { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 1; position: relative; }
+  .bar-count { font-size: 10px; font-weight: 700; color: var(--gold-dark); line-height: 1; margin-bottom: 2px; }
   .bar { width: 100%; background: linear-gradient(to top, var(--gold-dark), var(--gold)); border-radius: 3px 3px 0 0; transition: opacity 0.2s; }
   .bar:hover { opacity: 0.8; }
   .bar-label { font-size: 10px; color: var(--text-muted); }
@@ -250,11 +251,16 @@
   /* Analytics charts */
   .analytics-grid { display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px; }
   .analytics-grid.full { grid-template-columns:1fr; }
-  .mini-bar { display:flex;align-items:flex-end;gap:6px;height:80px;padding-top:8px; }
-  .mini-bar-col { flex:1;border-radius:3px 3px 0 0;background:var(--gold-dark);opacity:.7;transition:opacity .2s;cursor:default; }
+  .mini-bar { display:flex;align-items:flex-end;gap:6px;height:80px;padding-top:20px; }
+  .mini-bar-col-wrap { flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;height:100%; }
+  .mini-bar-val { font-size:10px;font-weight:700;color:var(--gold-dark);line-height:1; }
+  .mini-bar-col { width:100%;border-radius:3px 3px 0 0;background:var(--gold-dark);opacity:.7;transition:opacity .2s;cursor:default; }
   .mini-bar-col:hover { opacity:1; }
   .mini-bar-labels { display:flex;gap:6px;margin-top:4px;font-size:10px;color:var(--text-muted); }
   .mini-bar-labels span { flex:1;text-align:center; }
+  .data-badge { display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:8px;vertical-align:middle; }
+  .data-badge.real { background:#e8f5ee;color:#2a7a4f; }
+  .data-badge.sample { background:#f5f0e0;color:#8a6a00; }
   .kpi-trend-row { display:flex;gap:12px;margin-top:10px;flex-wrap:wrap; }
   .kpi-trend-item { flex:1;min-width:100px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:10px 12px; }
   .kpi-trend-item .label { font-size:10px;color:var(--text-muted);margin-bottom:4px; }
@@ -1301,6 +1307,14 @@
           <span id="seed-status" style="font-size:12px;color:var(--text-muted)"></span>
         </div>
         <div style="font-size:11px;color:var(--text-muted);margin-top:8px">投入されるデータ：デモアカウント3件・顧客5件・予約5件・口コミ5件</div>
+        <hr style="margin:16px 0;border:none;border-top:1px solid var(--border)">
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:var(--danger)">🔄 デモデータをリセット</div>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:4px">現在ログイン中のアカウントのデータ（顧客・予約・口コミ）を全削除し、初期サンプルデータに戻します。</p>
+        <p style="font-size:11px;color:var(--danger);margin-bottom:12px">⚠️ この操作は元に戻せません。デモ本番前のリセット用です。</p>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-outline" id="reset-btn" style="color:var(--danger);border-color:var(--danger)" onclick="confirmDemoReset()">🗑️ データをリセットして再投入する</button>
+          <span id="reset-status" style="font-size:12px;color:var(--text-muted)"></span>
+        </div>
       </div>
 
   </div><!-- /content -->
@@ -2985,7 +2999,43 @@ async function loadDashboardStats() {
     set('dash-kpi-monthly',  d.confirmed_this_month ?? '—');
     set('dash-kpi-customers', d.total_customers ?? '—');
     set('dash-kpi-checkout', d.checked_out_this_month ?? '—');
-    // Bar chart
+    // Trend sub-labels (computed from monthly_data)
+    if (d.monthly_data && d.monthly_data.length >= 2) {
+      const last  = d.monthly_data[d.monthly_data.length - 1];
+      const prev  = d.monthly_data[d.monthly_data.length - 2];
+      const diff  = last.count - prev.count;
+      const sign  = diff >= 0 ? '▲' : '▼';
+      const color = diff >= 0 ? 'var(--success)' : 'var(--danger)';
+      const subEl = document.getElementById('dash-kpi-monthly-sub');
+      if (subEl) {
+        subEl.innerHTML = `<span style="color:${color}">${sign} ${Math.abs(diff)}件 vs 先月</span>`;
+        subEl.className = '';
+      }
+    }
+    // checkin sub
+    const checkinSub = document.getElementById('dash-kpi-checkin-sub');
+    if (checkinSub && d.checked_in_now != null) {
+      checkinSub.innerHTML = `<span style="color:var(--text-muted)">${d.checked_in_now > 0 ? '滞在中のゲストあり' : '現在空室'}</span>`;
+      checkinSub.className = '';
+    }
+    // customers sub
+    const custSub = document.getElementById('dash-kpi-customers-sub');
+    if (custSub && d.total_customers != null) {
+      custSub.innerHTML = `<span style="color:var(--text-muted)">累計登録顧客</span>`;
+      custSub.className = '';
+    }
+    // checkout sub
+    const coSub = document.getElementById('dash-kpi-checkout-sub');
+    if (coSub && d.checked_out_this_month != null) {
+      coSub.innerHTML = `<span style="color:var(--text-muted)">今月退館済み</span>`;
+      coSub.className = '';
+    }
+    // "実データ" badge on chart title
+    const chartTitle = document.querySelector('#tab-dashboard .card-title');
+    if (chartTitle && !chartTitle.querySelector('.data-badge')) {
+      chartTitle.innerHTML += '<span class="data-badge real">実データ</span>';
+    }
+    // Bar chart with count labels on top
     const chart  = document.getElementById('dashboard-bar-chart');
     const labels = document.getElementById('dashboard-bar-labels');
     if (chart && d.monthly_data && d.monthly_data.length) {
@@ -2994,8 +3044,7 @@ async function loadDashboardStats() {
       labels.innerHTML = '';
       d.monthly_data.forEach(m => {
         const h = Math.max(Math.round((m.count / maxCount) * 100), 4);
-        chart.innerHTML  += `<div class="bar-group"><div class="bar" style="height:${h}%" title="${m.month}: ${m.count}件"></div><div class="bar-label">${m.month}</div></div>`;
-        labels.innerHTML += `<span>${m.month}: ${m.count}件</span>`;
+        chart.innerHTML += `<div class="bar-group"><div class="bar-count">${m.count}</div><div class="bar" style="height:${h}%" title="${m.month}: ${m.count}件"></div><div class="bar-label">${m.month}</div></div>`;
       });
     }
   } catch(e) {}
@@ -3012,7 +3061,8 @@ async function initAnalytics() {
         const apiData = await res.json();
         _drawAnalyticsCharts(
           apiData.monthly_reservations,
-          apiData.monthly_reviews.map(r => ({ ...r, score: r.avg_rating }))
+          apiData.monthly_reviews.map(r => ({ ...r, score: r.avg_rating })),
+          true
         );
         _fillAnalyticsLineTable();
         return;
@@ -3034,11 +3084,23 @@ async function initAnalytics() {
     mockRsv.push({ month: `${mo}月`, count: Math.round(occRates[idx] * 1.2) });
     mockRev.push({ month: `${mo}月`, score: reviewScores[idx] });
   }
-  _drawAnalyticsCharts(mockRsv, mockRev);
+  _drawAnalyticsCharts(mockRsv, mockRev, false);
   _fillAnalyticsLineTable();
 }
 
-function _drawAnalyticsCharts(rsvData, revData) {
+function _drawAnalyticsCharts(rsvData, revData, isReal) {
+  // Badge helper
+  const badgeCls = isReal ? 'real' : 'sample';
+  const badgeTxt = isReal ? '実データ' : 'サンプル';
+  const occCard = document.querySelector('#tab-analytics .analytics-grid .card');
+  const revCard = document.querySelectorAll('#tab-analytics .analytics-grid .card')[1];
+  [occCard, revCard].forEach(card => {
+    if (card && !card.querySelector('.data-badge')) {
+      const t = card.querySelector('.card-title');
+      if (t) t.innerHTML += `<span class="data-badge ${badgeCls}">${badgeTxt}</span>`;
+    }
+  });
+
   const occChart  = document.getElementById('analytics-occ-chart');
   const occLabels = document.getElementById('analytics-occ-labels');
   if (occChart && rsvData && rsvData.length) {
@@ -3047,7 +3109,7 @@ function _drawAnalyticsCharts(rsvData, revData) {
     occLabels.innerHTML = '';
     rsvData.forEach(d => {
       const h = Math.max(Math.round((d.count / maxRsv) * 100), 4);
-      occChart.innerHTML  += `<div class="mini-bar-col" style="height:${h}%" title="${d.month}: ${d.count}件"></div>`;
+      occChart.innerHTML += `<div class="mini-bar-col-wrap" title="${d.month}: ${d.count}件"><div class="mini-bar-val">${d.count}</div><div class="mini-bar-col" style="height:${h}%"></div></div>`;
       occLabels.innerHTML += `<span>${d.month}</span>`;
     });
   }
@@ -3060,10 +3122,31 @@ function _drawAnalyticsCharts(rsvData, revData) {
       const score = d.avg_rating ?? d.score ?? null;
       const h     = score ? Math.max(Math.round((score / 5) * 100), 4) : 4;
       const color = !score ? '#ccc' : score >= 4.5 ? '#4caf82' : score >= 4.0 ? 'var(--gold-dark)' : '#e0a020';
-      const label = score ? `★${score}` : 'データなし';
-      revChart.innerHTML  += `<div class="mini-bar-col" style="height:${h}%;background:${color}" title="${d.month}: ${label}"></div>`;
+      const label = score ? `★${score.toFixed(1)}` : '—';
+      revChart.innerHTML  += `<div class="mini-bar-col-wrap" title="${d.month}: ${label}"><div class="mini-bar-val" style="color:${color}">${label}</div><div class="mini-bar-col" style="height:${h}%;background:${color}"></div></div>`;
       revLabels.innerHTML += `<span>${d.month}</span>`;
     });
+  }
+  // Update KPI row with computed values when real data is available
+  if (isReal && rsvData && rsvData.length) {
+    const last  = rsvData[rsvData.length - 1];
+    const prev  = rsvData[rsvData.length - 2];
+    const items = document.querySelectorAll('#tab-analytics .kpi-trend-item');
+    if (items[0]) {
+      // Occupancy: show count comparison trend
+      const diff = last.count - (prev?.count || 0);
+      const sign = diff >= 0 ? '▲' : '▼';
+      const color = diff >= 0 ? 'var(--success)' : 'var(--danger)';
+      const subEl = items[0].querySelector('.sub');
+      if (subEl) subEl.innerHTML = `<span style="color:${color}">${sign} ${Math.abs(diff)}件 vs 先月</span>`;
+    }
+    if (revData && revData.length && items[3]) {
+      const latestScore = revData[revData.length - 1]?.avg_rating ?? revData[revData.length - 1]?.score;
+      if (latestScore) {
+        const valEl = items[3].querySelector('.val');
+        if (valEl) valEl.textContent = `★${latestScore.toFixed(1)}`;
+      }
+    }
   }
 }
 
@@ -3151,6 +3234,45 @@ async function runSeedDemo() {
       status.textContent = `✅ 完了（新規:${c}件 更新:${u}件 スキップ:${s}件）`;
       status.style.color = 'var(--success)';
       showToast('デモデータの投入が完了しました');
+    } else {
+      status.textContent = '❌ ' + (data.detail || 'エラーが発生しました');
+      status.style.color = 'var(--danger)';
+    }
+  } catch(e) {
+    status.textContent = '❌ 通信エラー: ' + e.message;
+    status.style.color = 'var(--danger)';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function confirmDemoReset() {
+  if (!confirm('現在のアカウントのデータ（顧客・予約・口コミ）を全削除してサンプルデータに戻します。\n本当に実行しますか？')) return;
+  runDemoReset();
+}
+
+async function runDemoReset() {
+  const btn    = document.getElementById('reset-btn');
+  const status = document.getElementById('reset-status');
+  btn.disabled = true;
+  status.textContent = 'リセット中...';
+  status.style.color = 'var(--text-muted)';
+  try {
+    const secret = document.getElementById('seed-secret').value.trim();
+    const res  = await fetch(API_BASE + '/admin/reset-demo?secret=' + encodeURIComponent(secret), {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + rsvToken }
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 401 || res.status === 403) {
+      status.textContent = '❌ 認証エラー（ログインし直してください）';
+      status.style.color = 'var(--danger)';
+    } else if (data.status === 'ok') {
+      status.textContent = `✅ リセット完了（顧客${data.deleted_customers || 0}件・予約${data.deleted_reservations || 0}件・口コミ${data.deleted_reviews || 0}件 削除→再投入）`;
+      status.style.color = 'var(--success)';
+      showToast('デモデータをリセットしました');
+      // Reload visible data
+      setTimeout(() => { rsvLoadList(); loadCustomersFromAPI(); loadDashboardStats(); }, 600);
     } else {
       status.textContent = '❌ ' + (data.detail || 'エラーが発生しました');
       status.style.color = 'var(--danger)';
