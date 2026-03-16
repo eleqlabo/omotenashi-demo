@@ -1017,9 +1017,11 @@
           <textarea id="review-edit-area" class="ai-output-editable" style="display:none" placeholder="生成された返信文を編集できます..."></textarea>
           <div id="review-send-actions" style="display:none;margin-top:10px;gap:8px;flex-wrap:wrap">
             <button class="btn btn-outline" style="flex:1" onclick="toggleReviewEdit()">✏️ 編集</button>
-            <button class="btn btn-outline" onclick="copyReviewText()">コピー</button>
-            <button class="btn btn-gold" style="flex:2" onclick="postReviewReply()">📤 投稿する</button>
+            <button class="btn btn-outline" onclick="copyReviewText()">📋 コピー</button>
+            <button class="btn btn-gold" id="review-save-btn" style="flex:2;display:none" onclick="saveReviewReply()">💾 返信を保存する</button>
+            <button class="btn btn-outline" onclick="postReviewReply()" style="flex:1;font-size:11px">📤 投稿メモ</button>
           </div>
+          <div id="review-save-status" style="display:none;margin-top:6px;font-size:12px;padding:6px 10px;border-radius:4px"></div>
           <div style="margin-top:10px;display:flex;gap:8px" id="review-regen-row">
             <button class="btn btn-outline" style="width:100%" onclick="generateReview()">再生成</button>
           </div>
@@ -1659,7 +1661,7 @@ function renderReviewList(data, isMock) {
         ${hasReply
           ? '<span style="font-size:11px;color:var(--success)">✓ 返信済</span>'
           : `<button class="btn btn-gold" style="padding:4px 12px;font-size:11px"
-               onclick="loadReview(${JSON.stringify(r.content)},${ratingNum},${JSON.stringify(reviewerName)},${JSON.stringify(platform)})">返信作成</button>`
+               onclick="loadReview(${JSON.stringify(r.content)},${ratingNum},${JSON.stringify(reviewerName)},${JSON.stringify(platform)},${JSON.stringify(r.id||null)})">返信作成</button>`
         }
       </td>
     </tr>`;
@@ -1702,7 +1704,8 @@ async function loadReviewsFromAPI() {
 // 初期描画（モック）
 renderReviewList(reviewsMock, true);
 
-function loadReview(text, rating, reviewerName, platform) {
+function loadReview(text, rating, reviewerName, platform, reviewId) {
+  _currentReviewId = reviewId || null;
   document.getElementById('review-text').value = text;
   setRating(rating || 4);
   if (reviewerName) document.getElementById('reviewer-name').value = reviewerName;
@@ -1711,6 +1714,9 @@ function loadReview(text, rating, reviewerName, platform) {
     const opt = Array.from(sel.options).find(o => o.text.includes(platform) || platform.includes(o.text));
     if (opt) sel.value = opt.value;
   }
+  // 保存ボタンの表示切替（DBに口コミIDがある場合のみ保存可）
+  const saveBtn = document.getElementById('review-save-btn');
+  if (saveBtn) saveBtn.style.display = reviewId ? 'flex' : 'none';
   // フォームまでスクロール
   document.querySelector('#tab-review .ai-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
   document.getElementById('review-text').focus();
@@ -2842,12 +2848,61 @@ function postReviewReply() {
   const out  = document.getElementById('review-output');
   const text = (edit.style.display !== 'none' && edit.style.display !== '') ? edit.value : out.textContent;
   if (!text || text.includes('口コミ内容を入力して')) { showToast('先に返信文を生成してください'); return; }
-  showToast('返信を投稿しました（実際の投稿はプラットフォームで行ってください）');
+  showToast('📋 プラットフォームに返信を投稿してください（コピーして貼り付け）');
+}
+
+async function saveReviewReply() {
+  if (!_currentReviewId) { showToast('口コミ一覧から「返信作成」を押して口コミを選択してください'); return; }
+  if (!rsvToken)          { showToast('ログインが必要です'); return; }
+
+  const edit    = document.getElementById('review-edit-area');
+  const out     = document.getElementById('review-output');
+  const replyTx = (edit.style.display !== 'none' && edit.style.display !== '') ? edit.value : out.textContent;
+  if (!replyTx || replyTx.includes('口コミ内容を入力して')) { showToast('先に返信文を生成してください'); return; }
+
+  const btn    = document.getElementById('review-save-btn');
+  const status = document.getElementById('review-save-status');
+  btn.disabled = true;
+  btn.textContent = '保存中...';
+  status.style.display = 'block';
+  status.style.background = '#f5f5f5';
+  status.style.color = 'var(--text-muted)';
+  status.textContent = '保存中...';
+
+  try {
+    const res = await rsvApi(`/reviews/${_currentReviewId}/reply`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reply: replyTx })
+    });
+    if (res.ok) {
+      status.style.background = '#e8f5ee';
+      status.style.color = 'var(--success)';
+      status.textContent = '✅ 返信を保存しました。一覧に「返信済」と表示されます。';
+      showToast('返信をDBに保存しました');
+      btn.style.display = 'none';
+      _currentReviewId = null;
+      setTimeout(loadReviewsFromAPI, 800);
+    } else {
+      const d = await res.json().catch(() => ({}));
+      status.style.background = '#ffeaea';
+      status.style.color = 'var(--danger)';
+      status.textContent = '❌ 保存失敗: ' + (d.detail || res.status);
+    }
+  } catch(e) {
+    status.style.background = '#ffeaea';
+    status.style.color = 'var(--danger)';
+    status.textContent = '❌ 通信エラー: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 返信を保存する';
+  }
 }
 
 // ======================================================
 // ---- Reservation Detail / Edit Modal ----
 let _currentRsvId = null;
+let _currentReviewId = null; // 返信保存用: 口コミ一覧から「返信作成」したときに設定
 
 function showRsvDetail(id) {
   const r = rsvAllData.find(x => String(x.id) === String(id));
@@ -3064,7 +3119,7 @@ async function initAnalytics() {
           apiData.monthly_reviews.map(r => ({ ...r, score: r.avg_rating })),
           true
         );
-        _fillAnalyticsLineTable();
+        _fillAnalyticsLineTable(); // async, no await needed
         return;
       }
     } catch(e) {}
@@ -3085,7 +3140,7 @@ async function initAnalytics() {
     mockRev.push({ month: `${mo}月`, score: reviewScores[idx] });
   }
   _drawAnalyticsCharts(mockRsv, mockRev, false);
-  _fillAnalyticsLineTable();
+  _fillAnalyticsLineTable(); // async, no await needed
 }
 
 function _drawAnalyticsCharts(rsvData, revData, isReal) {
@@ -3150,18 +3205,67 @@ function _drawAnalyticsCharts(rsvData, revData, isReal) {
   }
 }
 
-function _fillAnalyticsLineTable() {
+async function _fillAnalyticsLineTable() {
   const lineTable = document.getElementById('analytics-line-table');
   if (!lineTable) return;
+
+  // モックデータ（フォールバック用）
   const now = new Date();
-  const rows = [
-    { mo: now.getMonth() + 1, send: 2847, open: '72.3%', conv: '4.1%' },
-    { mo: now.getMonth() === 0 ? 12 : now.getMonth(), send: 2812, open: '68.9%', conv: '6.8%' },
-    { mo: now.getMonth() <= 1 ? now.getMonth() + 11 : now.getMonth() - 1, send: 2790, open: '75.6%', conv: '8.2%' },
+  const mockMonths = [
+    now.getMonth() <= 1 ? now.getMonth() + 11 : now.getMonth() - 1,
+    now.getMonth() === 0 ? 12 : now.getMonth(),
+    now.getMonth() + 1,
   ];
-  lineTable.innerHTML = rows.map(d =>
-    `<tr><td>${d.mo}月</td><td>${d.send.toLocaleString()}件</td><td style="color:var(--success)">${d.open}</td><td>${d.conv}</td></tr>`
-  ).join('');
+  const mockRows = [
+    { mo: mockMonths[0] + '月', send: 2790, open: '75.6%', conv: '8.2%', real: false },
+    { mo: mockMonths[1] + '月', send: 2812, open: '68.9%', conv: '6.8%', real: false },
+    { mo: mockMonths[2] + '月', send: 2847, open: '72.3%', conv: '4.1%', real: false },
+  ];
+
+  const renderRows = (rows) => {
+    lineTable.innerHTML = rows.map(d =>
+      `<tr>
+        <td>${d.mo}</td>
+        <td>${d.real ? `<strong>${(d.send||0).toLocaleString()}件</strong>` : `${(d.send||0).toLocaleString()}件`}</td>
+        <td style="color:${d.open ? 'var(--success)' : 'var(--text-muted)'}">
+          ${d.open ?? '<span style="font-size:10px;color:var(--text-muted)">推定値なし</span>'}
+        </td>
+        <td>${d.conv ?? '<span style="font-size:10px;color:var(--text-muted)">—</span>'}</td>
+      </tr>`
+    ).join('');
+  };
+
+  if (!rsvToken) { renderRows(mockRows); return; }
+
+  try {
+    const res = await rsvApi('/analytics/line-stats');
+    if (!res.ok) throw new Error('取得失敗');
+    const data = await res.json();
+    if (!data.monthly_line || !data.monthly_line.length) throw new Error('データなし');
+
+    // 実データ取得成功: カウントは実データ、開封率/転換率はフォールバック
+    const mockRates = [['75.6%','8.2%'],['68.9%','6.8%'],['72.3%','4.1%']];
+    const realRows = data.monthly_line.map((d, i) => ({
+      mo:   d.month,
+      send: d.count,
+      open: d.open_rate ?? mockRates[i]?.[0] ?? '—',
+      conv: d.conv_rate ?? mockRates[i]?.[1] ?? '—',
+      real: true,
+    }));
+
+    // テーブルタイトルにバッジ
+    const lineCard = document.querySelector('#tab-analytics .card:has(#analytics-line-table)') ||
+                     [...document.querySelectorAll('#tab-analytics .card')].find(c => c.querySelector('#analytics-line-table'));
+    if (lineCard) {
+      const t = lineCard.querySelector('.card-title');
+      if (t && !t.querySelector('.data-badge')) {
+        t.innerHTML += '<span class="data-badge real">配信数:実データ</span>';
+      }
+    }
+    renderRows(realRows);
+  } catch(e) {
+    renderRows(mockRows); // フォールバック: サンプル表示
+  }
 }
 
 // ======================================================
