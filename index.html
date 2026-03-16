@@ -280,6 +280,8 @@
   .warmup-sub { font-size:12px;color:var(--text-muted); }
   .warmup-bar { width:240px;height:4px;background:var(--border);border-radius:2px;overflow:hidden; }
   .warmup-bar-fill { height:100%;background:var(--gold);border-radius:2px;transition:width 3s linear;width:0% }
+  #demo-guide-body { transition:max-height .25s ease,opacity .2s ease;max-height:600px;overflow:hidden;opacity:1; }
+  #demo-guide-body.collapsed { max-height:0;opacity:0; }
 </style>
 </head>
 <body>
@@ -332,6 +334,58 @@
   </div>
 
   <div class="content">
+
+    <!-- ===== デモ操作ガイドバナー ===== -->
+    <div id="demo-guide-banner" style="background:linear-gradient(135deg,#fffbe8 0%,#fff8f0 100%);border:1.5px solid var(--border-gold);border-radius:10px;padding:14px 18px;margin-bottom:16px;position:relative">
+      <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleDemoGuide()">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:18px">🗺️</span>
+          <span style="font-size:13px;font-weight:700;color:var(--gold-dark)">デモ操作ガイド</span>
+          <span id="demo-login-status-badge" style="display:none;font-size:11px;font-weight:700;padding:2px 10px;border-radius:10px;background:#e6f9ed;color:#1a7f3c">● ログイン中</span>
+        </div>
+        <span id="demo-guide-arrow" style="font-size:12px;color:var(--text-muted);transition:transform .2s">▼ 閉じる</span>
+      </div>
+      <div id="demo-guide-body" style="margin-top:12px">
+        <!-- ステップ案内 -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:14px">
+          <div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+            <div style="font-size:11px;font-weight:700;color:var(--gold-dark);margin-bottom:6px">① まずログイン</div>
+            <div style="font-size:11px;color:var(--text-secondary);line-height:1.6">予約タブの下にある<br>デモボタンをクリック</div>
+          </div>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+            <div style="font-size:11px;font-weight:700;color:#1d4ed8;margin-bottom:6px">② 顧客管理タブ</div>
+            <div style="font-size:11px;color:var(--text-secondary);line-height:1.6">顧客一覧・検索・<br>誕生日顧客の確認</div>
+          </div>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+            <div style="font-size:11px;font-weight:700;color:#166534;margin-bottom:6px">③ LINE配信AIタブ</div>
+            <div style="font-size:11px;color:var(--text-secondary);line-height:1.6">条件入力→AI文案生成<br>→プレビュー→送信</div>
+          </div>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+            <div style="font-size:11px;font-weight:700;color:#6d28d9;margin-bottom:6px">④ 口コミ返信AIタブ</div>
+            <div style="font-size:11px;color:var(--text-secondary);line-height:1.6">口コミ選択→AI返信生成<br>→編集→コピー</div>
+          </div>
+        </div>
+        <!-- プランと機能の対応 -->
+        <div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:10px">
+          <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:8px">📋 デモアカウントと使える機能</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:11px">
+            <div style="padding:8px 10px;background:#f9f9f9;border-radius:6px;border-left:3px solid #9ca3af">
+              <div style="font-weight:700;margin-bottom:3px">🏨 ホテルA（Lite）</div>
+              <div style="color:var(--text-muted);line-height:1.7">test@omotenashi.com<br>✓ 顧客管理・予約管理<br>✓ AI文案プレビュー<br>✗ LINE・メール送信</div>
+            </div>
+            <div style="padding:8px 10px;background:#eff6ff;border-radius:6px;border-left:3px solid #3b82f6">
+              <div style="font-weight:700;margin-bottom:3px">♨️ 旅館B（Standard）</div>
+              <div style="color:var(--text-secondary);line-height:1.7">demo2@omotenashi.com<br>✓ 上記すべて<br>✓ LINE・メール実送信<br>✓ アナリティクス</div>
+            </div>
+            <div style="padding:8px 10px;background:#faf5ff;border-radius:6px;border-left:3px solid #8b5cf6">
+              <div style="font-weight:700;margin-bottom:3px">🏯 町家宿C（Pro）</div>
+              <div style="color:var(--text-secondary);line-height:1.7">demo3@omotenashi.com<br>✓ 上記すべて<br>✓ API連携<br>✓ 詳細アナリティクス</div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted)">💡 <strong>送信系の機能をデモする場合は「旅館B（Standard）」でログインしてください。</strong> 🔒アイコンの機能はプランアップグレードで利用可能です。</div>
+      </div>
+    </div>
 
     <!-- Dashboard -->
     <div id="tab-dashboard" class="tab-pane active">
@@ -511,6 +565,22 @@
 
     <!-- LINE AI -->
     <div id="tab-line" class="tab-pane">
+
+      <!-- LINE配信の操作フロー案内 -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);background:#f9f9f9;border:1px solid var(--border);border-radius:20px;padding:5px 12px">
+          <span style="background:var(--gold);color:#fff;border-radius:50%;width:17px;height:17px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">1</span>配信条件を入力
+          <span style="color:var(--border)">›</span>
+          <span style="background:var(--gold);color:#fff;border-radius:50%;width:17px;height:17px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">2</span>AIで文案生成
+          <span style="color:var(--border)">›</span>
+          <span style="background:var(--gold);color:#fff;border-radius:50%;width:17px;height:17px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">3</span>プレビュー・編集
+          <span style="color:var(--border)">›</span>
+          <span style="background:var(--gold);color:#fff;border-radius:50%;width:17px;height:17px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">4</span>送信確認
+          <span style="color:var(--border)">›</span>
+          <span style="background:var(--gold);color:#fff;border-radius:50%;width:17px;height:17px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">5</span>完了
+        </div>
+        <span style="font-size:11px;color:var(--text-muted)">💡 送信にはSTANDARD以上のプランが必要です</span>
+      </div>
 
       <!-- ===== チャンネル切り替えタブ ===== -->
       <div class="channel-switcher">
@@ -1209,12 +1279,14 @@
       <!-- デモデータ管理 -->
       <div class="card" style="margin-top:20px;border:1px dashed var(--border-gold);background:#fffdf5">
         <div class="card-title">🛠️ デモデータ管理</div>
-        <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">補助金審査デモ用のサンプルデータを本番DBに一括投入します。既存データがある場合はスキップされます。</p>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:4px">補助金審査デモ用のサンプルデータを本番DBに一括投入します。</p>
+        <p style="font-size:11px;color:var(--text-muted);margin-bottom:12px">※ 既存データがある場合はスキップされます（何度押しても安全です）</p>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <input class="form-input" id="seed-secret" type="password" placeholder="管理者シークレットキー" style="max-width:220px">
-          <button class="btn btn-gold" id="seed-btn" onclick="runSeedDemo()">▶ デモデータ投入</button>
+          <input class="form-input" id="seed-secret" type="hidden" value="omotenashi2024">
+          <button class="btn btn-gold" id="seed-btn" onclick="runSeedDemo()">▶ デモデータを投入する</button>
           <span id="seed-status" style="font-size:12px;color:var(--text-muted)"></span>
         </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:8px">投入されるデータ：デモアカウント3件・顧客5件・予約5件・口コミ5件</div>
       </div>
 
   </div><!-- /content -->
@@ -1336,9 +1408,13 @@
       <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;font-weight:600">アップグレードで利用可能になる機能：</div>
       <div id="upgrade-modal-list" style="font-size:13px;color:var(--text-secondary);line-height:2"></div>
     </div>
-    <div style="display:flex;gap:10px">
+    <div style="display:flex;gap:10px;margin-bottom:10px">
       <button class="btn btn-outline" style="flex:1" onclick="document.getElementById('upgrade-modal').classList.remove('open')">あとで</button>
       <button class="btn btn-gold" style="flex:2" onclick="document.getElementById('upgrade-modal').classList.remove('open');switchTab('settings',document.querySelectorAll('.nav-item')[6])">⬆️ プランを変更する</button>
+    </div>
+    <div style="background:#fffbe8;border:1px solid var(--border-gold);border-radius:6px;padding:10px 12px;font-size:11px;color:var(--gold-dark)">
+      💡 <strong>デモで送信機能を試すには</strong>「旅館B（Standard）」でログインしてください。<br>
+      <button onclick="document.getElementById('upgrade-modal').classList.remove('open');fillDemoLogin('demo2@omotenashi.com','demo1234')" style="margin-top:8px;padding:5px 14px;background:var(--gold);color:#fff;border:none;border-radius:4px;font-size:11px;cursor:pointer;font-weight:700">♨️ 旅館B（Standard）でログインし直す</button>
     </div>
   </div>
 </div>
@@ -1346,9 +1422,10 @@
 <!-- Warmup overlay (P2-5) -->
 <div id="warmup-overlay">
   <div class="warmup-spinner"></div>
-  <div class="warmup-msg">APIサーバーを起動中です...</div>
+  <div class="warmup-msg">サーバーを起動しています...</div>
   <div class="warmup-bar"><div class="warmup-bar-fill" id="warmup-bar-fill"></div></div>
-  <div class="warmup-sub" id="warmup-sub-msg">初回起動は最大30秒ほどかかります</div>
+  <div class="warmup-sub" id="warmup-sub-msg">初回ログイン時のみ、最大30秒かかります。そのままお待ちください。</div>
+  <div style="font-size:11px;color:#b8860b;margin-top:8px">✅ 2回目以降は即座にログインできます</div>
 </div>
 
 <div id="toast">✓ 操作が完了しました</div>
@@ -1989,14 +2066,42 @@ function applyPlanGating() {
   }
 }
 
+// デモガイド折りたたみ
+let _guideOpen = true;
+function toggleDemoGuide() {
+  _guideOpen = !_guideOpen;
+  const body  = document.getElementById('demo-guide-body');
+  const arrow = document.getElementById('demo-guide-arrow');
+  if (_guideOpen) {
+    body.classList.remove('collapsed');
+    arrow.textContent = '▼ 閉じる';
+  } else {
+    body.classList.add('collapsed');
+    arrow.textContent = '▶ 開く';
+  }
+}
+
+function updateDemoGuideBadge() {
+  const badge = document.getElementById('demo-login-status-badge');
+  if (!badge) return;
+  if (rsvToken) {
+    const name = localStorage.getItem('rsv_tenant_name') || '';
+    badge.textContent = '● ログイン中' + (name ? '：' + name : '');
+    badge.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
 // P3-4: プランゲーティング初期化
 applyPlanGating();
+updateDemoGuideBadge();
 
-// P3-1: デモログイン補助
+// P3-1: デモログイン補助（ワンクリックで自動ログインまで完結）
 function fillDemoLogin(email, pass) {
   document.getElementById('rsv-login-email').value = email;
   document.getElementById('rsv-login-pass').value  = pass;
-  showToast('デモ情報を入力しました。ログインボタンを押してください。');
+  rsvLogin();
 }
 
 // P2-5: バックグラウンドウォームアップ（ページ読み込み時に即時実行）
@@ -2122,6 +2227,7 @@ function rsvLogout() {
   rsvShowAuth();
   rsvRenderSample();
   applyPlanGating();
+  updateDemoGuideBadge();
   document.getElementById('sidebar-hotel-name').textContent = 'おもてなし\nクラウド';
   document.getElementById('sidebar-footer-name').textContent = 'プレミアムホテル東京';
   document.getElementById('topbar-user').textContent = '👤 管理者';
@@ -2160,6 +2266,7 @@ async function rsvLogin() {
       }
     } catch(e) {}
     showToast('ログインしました');
+    updateDemoGuideBadge();
     rsvLoadList();
   } catch(e) { msg.textContent = 'エラー: ' + e.message; }
 }
