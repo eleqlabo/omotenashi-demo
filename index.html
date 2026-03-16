@@ -1021,10 +1021,24 @@
       </div>
 
       <div style="margin-top:20px;" class="card">
-        <div class="card-title">📋 未返信の口コミ <span style="color:var(--danger);font-size:12px">● 12件</span></div>
-        <table style="width:100%">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div class="card-title" style="margin-bottom:0">📋 口コミ一覧 <span id="review-list-count" style="color:var(--danger);font-size:12px"></span></div>
+          <button class="btn btn-outline" style="padding:4px 12px;font-size:11px" onclick="loadReviewsFromAPI()">🔄 更新</button>
+        </div>
+        <div id="review-list-loading" style="display:none;padding:20px;text-align:center;color:var(--text-muted);font-size:13px">読み込み中...</div>
+        <div id="review-list-empty" style="display:none;padding:30px;text-align:center">
+          <div style="font-size:28px;margin-bottom:8px">⭐</div>
+          <div style="color:var(--text-muted);font-size:13px">口コミがありません</div>
+        </div>
+        <div id="review-list-gate" style="display:none;padding:20px;text-align:center;background:#fffbe8;border-radius:6px;font-size:13px;color:var(--gold-dark)">
+          🔒 口コミ一覧はSTANDARDプラン以上でご利用いただけます。
+          <div style="margin-top:8px">
+            <button class="btn btn-gold" style="font-size:12px;padding:5px 14px" onclick="showUpgradeModal('口コミ一覧','standard')">プランを見る</button>
+          </div>
+        </div>
+        <table style="width:100%" id="review-list-table">
           <thead>
-            <tr><th>日付</th><th>プラットフォーム</th><th>評価</th><th>口コミ抜粋</th><th>アクション</th></tr>
+            <tr><th>日付</th><th>プラットフォーム</th><th>評価</th><th>投稿者</th><th>口コミ抜粋</th><th>アクション</th></tr>
           </thead>
           <tbody id="review-list"></tbody>
         </table>
@@ -1337,28 +1351,87 @@
   </div>
 </div>
 
-<!-- Reservation Detail Modal -->
+<!-- Reservation Detail / Edit Modal -->
 <div id="rsv-detail-modal" class="modal-overlay">
   <div class="modal-box wide">
     <button class="modal-close" onclick="document.getElementById('rsv-detail-modal').classList.remove('open')">✕</button>
-    <div class="modal-title">📅 予約詳細</div>
-    <div class="detail-grid">
-      <div class="detail-item"><label>ゲスト名</label><span id="rd-name" style="font-size:15px;font-weight:700"></span></div>
-      <div class="detail-item"><label>ステータス</label><span id="rd-status"></span></div>
-      <div class="detail-item"><label>チェックイン</label><span id="rd-checkin"></span></div>
-      <div class="detail-item"><label>チェックアウト</label><span id="rd-checkout"></span></div>
-      <div class="detail-item"><label>部屋タイプ</label><span id="rd-room"></span></div>
-      <div class="detail-item"><label>人数</label><span id="rd-guests"></span></div>
-      <div class="detail-item"><label>メール</label><span id="rd-email"></span></div>
-      <div class="detail-item"><label>電話番号</label><span id="rd-phone"></span></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div class="modal-title" style="margin-bottom:0" id="rd-modal-title">📅 予約詳細</div>
+      <button class="btn btn-outline" style="font-size:12px;padding:4px 14px" id="rd-edit-toggle" onclick="toggleRsvEdit()">✏️ 編集</button>
     </div>
-    <div style="margin-bottom:16px">
-      <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">備考</div>
-      <div style="font-size:13px;color:var(--text-secondary);padding:8px 12px;background:var(--bg-card);border-radius:6px;min-height:36px" id="rd-notes"></div>
+
+    <!-- 表示モード -->
+    <div id="rd-view-mode">
+      <div class="detail-grid">
+        <div class="detail-item"><label>ゲスト名</label><span id="rd-name" style="font-size:15px;font-weight:700"></span></div>
+        <div class="detail-item"><label>ステータス</label><span id="rd-status"></span></div>
+        <div class="detail-item"><label>チェックイン</label><span id="rd-checkin"></span></div>
+        <div class="detail-item"><label>チェックアウト</label><span id="rd-checkout"></span></div>
+        <div class="detail-item"><label>部屋タイプ</label><span id="rd-room"></span></div>
+        <div class="detail-item"><label>人数</label><span id="rd-guests"></span></div>
+        <div class="detail-item"><label>メール</label><span id="rd-email"></span></div>
+        <div class="detail-item"><label>電話番号</label><span id="rd-phone"></span></div>
+      </div>
+      <div style="margin-bottom:16px">
+        <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">備考</div>
+        <div style="font-size:13px;color:var(--text-secondary);padding:8px 12px;background:var(--bg-card);border-radius:6px;min-height:36px" id="rd-notes"></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-gold" id="rd-line-btn">💬 LINE予約確認通知を送る</button>
+        <button class="btn btn-outline" onclick="document.getElementById('rsv-detail-modal').classList.remove('open')">閉じる</button>
+      </div>
     </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-gold" id="rd-line-btn">💬 LINE予約確認通知を送る</button>
-      <button class="btn btn-outline" onclick="document.getElementById('rsv-detail-modal').classList.remove('open')">閉じる</button>
+
+    <!-- 編集モード -->
+    <div id="rd-edit-mode" style="display:none">
+      <div class="detail-grid">
+        <div class="detail-item">
+          <label>ゲスト名 <span style="color:var(--danger)">*</span></label>
+          <input class="form-input" id="re-name" style="width:100%">
+        </div>
+        <div class="detail-item">
+          <label>ステータス</label>
+          <select class="form-select" id="re-status" style="width:100%">
+            <option value="confirmed">予約確定</option>
+            <option value="checked_in">チェックイン中</option>
+            <option value="checked_out">チェックアウト済</option>
+            <option value="cancelled">キャンセル</option>
+          </select>
+        </div>
+        <div class="detail-item">
+          <label>チェックイン <span style="color:var(--danger)">*</span></label>
+          <input class="form-input" id="re-checkin" type="date" style="width:100%">
+        </div>
+        <div class="detail-item">
+          <label>チェックアウト <span style="color:var(--danger)">*</span></label>
+          <input class="form-input" id="re-checkout" type="date" style="width:100%">
+        </div>
+        <div class="detail-item">
+          <label>部屋タイプ</label>
+          <input class="form-input" id="re-room" style="width:100%" placeholder="スイートルーム">
+        </div>
+        <div class="detail-item">
+          <label>人数</label>
+          <input class="form-input" id="re-guests" type="number" min="1" max="20" style="width:100%">
+        </div>
+        <div class="detail-item">
+          <label>メール</label>
+          <input class="form-input" id="re-email" type="email" style="width:100%">
+        </div>
+        <div class="detail-item">
+          <label>電話番号</label>
+          <input class="form-input" id="re-phone" style="width:100%">
+        </div>
+      </div>
+      <div style="margin-bottom:16px">
+        <label class="form-label">備考</label>
+        <textarea class="form-textarea" id="re-notes" style="min-height:60px" placeholder="アレルギー・特別リクエスト等"></textarea>
+      </div>
+      <div id="re-error" style="color:var(--danger);font-size:12px;margin-bottom:8px;display:none"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" style="flex:1" onclick="toggleRsvEdit()">キャンセル</button>
+        <button class="btn btn-gold" style="flex:2" id="re-save-btn" onclick="saveRsvEdit()">💾 変更を保存する</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1448,9 +1521,10 @@ function switchTab(name, el) {
   el.classList.add('active');
   document.getElementById('topbar-title').textContent = tabTitles[name];
   if (name === 'reservation') rsvLoadList();
-  if (name === 'customers') { loadCustomersFromAPI(); loadBirthdayMonthList(); }
-  if (name === 'analytics') { applyPlanGating(); initAnalytics(); }
-  if (name === 'settings') loadHotelSettings();
+  if (name === 'customers')  { loadCustomersFromAPI(); loadBirthdayMonthList(); }
+  if (name === 'review')     loadReviewsFromAPI();
+  if (name === 'analytics')  { applyPlanGating(); initAnalytics(); }
+  if (name === 'settings')   loadHotelSettings();
 }
 
 // ---- Customer Data ----
@@ -1527,28 +1601,106 @@ async function customerDeleteExecute() {
 }
 
 // ---- Review list ----
-const reviews = [
-  { date:'2026/03/12', platform:'Google', rating:5, text:'スタッフの接客が素晴らしく、また来たいと思います。' },
-  { date:'2026/03/11', platform:'楽天', rating:4, text:'お部屋は綺麗で広かったです。朝食は少し種類が少なめ。' },
-  { date:'2026/03/10', platform:'じゃらん', rating:5, text:'記念日に利用しました。サプライズ演出をしていただき感動。' },
-  { date:'2026/03/09', platform:'一休', rating:3, text:'立地は最高ですが、アメニティが少し古い印象でした。' },
-  { date:'2026/03/08', platform:'Google', rating:4, text:'チェックインがスムーズでとても助かりました。' },
+// 口コミモックデータ（フォールバック用）
+const reviewsMock = [
+  { id:null, created_at:'2026/03/12', platform:'Google',  reviewer_name:'田中 美咲',   rating:5, content:'スタッフの接客が素晴らしく、また来たいと思います。' },
+  { id:null, created_at:'2026/03/11', platform:'楽天トラベル', reviewer_name:'山本 健太郎', rating:4, content:'お部屋は綺麗で広かったです。朝食は少し種類が少なめ。' },
+  { id:null, created_at:'2026/03/10', platform:'じゃらん',reviewer_name:'佐藤 由美',   rating:5, content:'記念日に利用しました。サプライズ演出をしていただき感動。' },
+  { id:null, created_at:'2026/03/09', platform:'一休.com', reviewer_name:'渡辺 雄大',   rating:3, content:'立地は最高ですが、アメニティが少し古い印象でした。' },
+  { id:null, created_at:'2026/03/08', platform:'Google',  reviewer_name:'伊藤 奈々',   rating:4, content:'チェックインがスムーズでとても助かりました。' },
 ];
 const stars = r => '★'.repeat(r) + '☆'.repeat(5-r);
-document.getElementById('review-list').innerHTML = reviews.map(r => `
-  <tr>
-    <td>${r.date}</td>
-    <td>${r.platform}</td>
-    <td style="color:var(--gold)">${stars(r.rating)}</td>
-    <td style="color:var(--text-secondary)">${r.text.substring(0,30)}...</td>
-    <td><button class="btn btn-gold" style="padding:4px 12px;font-size:11px" onclick="loadReview(\`${r.text}\`, ${r.rating})">返信作成</button></td>
-  </tr>
-`).join('');
 
-function loadReview(text, rating) {
-  switchTab('review', document.querySelectorAll('.nav-item')[3]);
+function renderReviewList(data, isMock) {
+  const tbody  = document.getElementById('review-list');
+  const table  = document.getElementById('review-list-table');
+  const empty  = document.getElementById('review-list-empty');
+  const count  = document.getElementById('review-list-count');
+  const gate   = document.getElementById('review-list-gate');
+  gate.style.display  = 'none';
+  if (!data.length) {
+    table.style.display = 'none';
+    empty.style.display = 'block';
+    count.textContent   = '';
+    return;
+  }
+  table.style.display = '';
+  empty.style.display = 'none';
+  const unreplied = data.filter(r => !r.reply).length;
+  count.textContent = unreplied > 0 ? `● 未返信 ${unreplied}件` : `● ${data.length}件`;
+  tbody.innerHTML = data.map(r => {
+    const dateStr = r.created_at ? r.created_at.substring(0, 10).replace(/-/g, '/') : '—';
+    const ratingNum = r.rating || 0;
+    const excerpt = (r.content || '').substring(0, 28) + ((r.content||'').length > 28 ? '...' : '');
+    const reviewerName = r.reviewer_name || 'お客様';
+    const platform = r.platform || '—';
+    const hasReply = !!r.reply;
+    return `<tr style="${hasReply ? 'opacity:.6' : ''}">
+      <td>${dateStr}</td>
+      <td>${platform}</td>
+      <td style="color:var(--gold);white-space:nowrap">${stars(ratingNum)}</td>
+      <td style="color:var(--text-secondary)">${reviewerName}</td>
+      <td style="color:var(--text-secondary)">${excerpt}</td>
+      <td style="white-space:nowrap">
+        ${hasReply
+          ? '<span style="font-size:11px;color:var(--success)">✓ 返信済</span>'
+          : `<button class="btn btn-gold" style="padding:4px 12px;font-size:11px"
+               onclick="loadReview(${JSON.stringify(r.content)},${ratingNum},${JSON.stringify(reviewerName)},${JSON.stringify(platform)})">返信作成</button>`
+        }
+      </td>
+    </tr>`;
+  }).join('');
+  if (isMock) count.textContent += '（サンプル）';
+}
+
+async function loadReviewsFromAPI() {
+  const loading = document.getElementById('review-list-loading');
+  const table   = document.getElementById('review-list-table');
+  const gate    = document.getElementById('review-list-gate');
+  loading.style.display = 'block';
+  table.style.display   = 'none';
+
+  if (!rsvToken) {
+    loading.style.display = 'none';
+    renderReviewList(reviewsMock, true);
+    return;
+  }
+  if (!requirePlan('standard')) {
+    loading.style.display = 'none';
+    table.style.display   = 'none';
+    gate.style.display    = 'block';
+    document.getElementById('review-list-count').textContent = '';
+    renderReviewList(reviewsMock, true); // モックを下に表示
+    return;
+  }
+  try {
+    const res = await rsvApi('/reviews/');
+    loading.style.display = 'none';
+    if (!res.ok) throw new Error('取得失敗');
+    const data = await res.json();
+    renderReviewList(data, false);
+  } catch(e) {
+    loading.style.display = 'none';
+    renderReviewList(reviewsMock, true);
+  }
+}
+
+// 初期描画（モック）
+renderReviewList(reviewsMock, true);
+
+function loadReview(text, rating, reviewerName, platform) {
   document.getElementById('review-text').value = text;
-  setRating(rating);
+  setRating(rating || 4);
+  if (reviewerName) document.getElementById('reviewer-name').value = reviewerName;
+  if (platform) {
+    const sel = document.getElementById('review-platform');
+    const opt = Array.from(sel.options).find(o => o.text.includes(platform) || platform.includes(o.text));
+    if (opt) sel.value = opt.value;
+  }
+  // フォームまでスクロール
+  document.querySelector('#tab-review .ai-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('review-text').focus();
+  showToast('口コミを読み込みました。「AIで返信文を生成する」を押してください。');
 }
 
 // ---- Star rating ----
@@ -2680,12 +2832,22 @@ function postReviewReply() {
 }
 
 // ======================================================
-// ---- Reservation Detail Modal ----
+// ---- Reservation Detail / Edit Modal ----
+let _currentRsvId = null;
+
 function showRsvDetail(id) {
   const r = rsvAllData.find(x => String(x.id) === String(id));
   if (!r) return;
-  document.getElementById('rd-name').textContent    = r.guest_name;
-  document.getElementById('rd-status').textContent  = RSV_STATUS_LABEL[r.status] || r.status;
+  _currentRsvId = r.id;
+  // 表示モードに戻す
+  document.getElementById('rd-view-mode').style.display = 'block';
+  document.getElementById('rd-edit-mode').style.display = 'none';
+  document.getElementById('rd-modal-title').textContent = '📅 予約詳細';
+  document.getElementById('rd-edit-toggle').textContent = '✏️ 編集';
+  document.getElementById('rd-edit-toggle').style.display = rsvToken ? 'inline-flex' : 'none';
+  // 表示フィールド
+  document.getElementById('rd-name').textContent     = r.guest_name;
+  document.getElementById('rd-status').textContent   = RSV_STATUS_LABEL[r.status] || r.status;
   document.getElementById('rd-checkin').textContent  = r.check_in;
   document.getElementById('rd-checkout').textContent = r.check_out;
   document.getElementById('rd-room').textContent     = r.room_type || '—';
@@ -2696,10 +2858,9 @@ function showRsvDetail(id) {
   const lineBtn = document.getElementById('rd-line-btn');
   const hasLine = !!r.line_user_id;
   lineBtn.disabled = !hasLine;
-  lineBtn.title    = hasLine ? '' : 'LINE未連携のためご利用いただけません';
   lineBtn.style.opacity = hasLine ? '1' : '0.45';
-  lineBtn.onclick  = () => lineNotifyRsv(r.id);
-  // LINE連携なし案内
+  lineBtn.title   = hasLine ? '' : 'LINE未連携のためご利用いただけません';
+  lineBtn.onclick = () => lineNotifyRsv(r.id);
   let lineNote = document.getElementById('rd-line-note');
   if (!lineNote) {
     lineNote = document.createElement('div');
@@ -2709,6 +2870,84 @@ function showRsvDetail(id) {
   }
   lineNote.textContent = hasLine ? '' : '※ 顧客タブでLINE連携をすると通知送信が可能になります';
   document.getElementById('rsv-detail-modal').classList.add('open');
+}
+
+function toggleRsvEdit() {
+  const r = rsvAllData.find(x => String(x.id) === String(_currentRsvId));
+  const viewEl = document.getElementById('rd-view-mode');
+  const editEl = document.getElementById('rd-edit-mode');
+  const isEdit = editEl.style.display !== 'none';
+  if (isEdit) {
+    // 編集→表示
+    viewEl.style.display = 'block';
+    editEl.style.display = 'none';
+    document.getElementById('rd-modal-title').textContent = '📅 予約詳細';
+    document.getElementById('rd-edit-toggle').textContent = '✏️ 編集';
+  } else {
+    // 表示→編集（フォームに現在値セット）
+    if (!r) return;
+    document.getElementById('re-name').value    = r.guest_name || '';
+    document.getElementById('re-status').value  = r.status || 'confirmed';
+    document.getElementById('re-checkin').value = r.check_in || '';
+    document.getElementById('re-checkout').value= r.check_out || '';
+    document.getElementById('re-room').value    = r.room_type || '';
+    document.getElementById('re-guests').value  = r.num_guests || 1;
+    document.getElementById('re-email').value   = r.guest_email || '';
+    document.getElementById('re-phone').value   = r.guest_phone || '';
+    document.getElementById('re-notes').value   = r.notes || '';
+    document.getElementById('re-error').style.display = 'none';
+    viewEl.style.display = 'none';
+    editEl.style.display = 'block';
+    document.getElementById('rd-modal-title').textContent = '✏️ 予約を編集';
+    document.getElementById('rd-edit-toggle').textContent = '← 戻る';
+  }
+}
+
+async function saveRsvEdit() {
+  if (!rsvToken) { showToast('ログインが必要です'); return; }
+  const errEl = document.getElementById('re-error');
+  const btn   = document.getElementById('re-save-btn');
+  const name  = document.getElementById('re-name').value.trim();
+  const ci    = document.getElementById('re-checkin').value;
+  const co    = document.getElementById('re-checkout').value;
+  if (!name)       { errEl.textContent = 'ゲスト名は必須です'; errEl.style.display = 'block'; return; }
+  if (!ci || !co)  { errEl.textContent = 'チェックイン/アウト日は必須です'; errEl.style.display = 'block'; return; }
+  if (ci >= co)    { errEl.textContent = 'チェックアウトはチェックインより後の日付を指定してください'; errEl.style.display = 'block'; return; }
+  errEl.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = '保存中...';
+  try {
+    const payload = {
+      guest_name:  name,
+      status:      document.getElementById('re-status').value,
+      check_in:    ci,
+      check_out:   co,
+      room_type:   document.getElementById('re-room').value.trim() || null,
+      num_guests:  parseInt(document.getElementById('re-guests').value) || 1,
+      guest_email: document.getElementById('re-email').value.trim() || null,
+      guest_phone: document.getElementById('re-phone').value.trim() || null,
+      notes:       document.getElementById('re-notes').value.trim() || null,
+    };
+    const res = await rsvApi('/reservations/' + _currentRsvId, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      errEl.textContent = '保存失敗: ' + (d.detail || 'エラー');
+      errEl.style.display = 'block';
+      return;
+    }
+    document.getElementById('rsv-detail-modal').classList.remove('open');
+    showToast('✅ 予約を更新しました');
+    rsvLoadList();
+  } catch(e) {
+    errEl.textContent = 'エラー: ' + e.message;
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 変更を保存する';
+  }
 }
 
 async function lineNotifyRsv(id) {
