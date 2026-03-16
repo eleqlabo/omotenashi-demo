@@ -1119,6 +1119,13 @@
           <div id="rsv-empty" style="text-align:center;padding:40px;color:var(--text-muted);display:none">
             <div style="font-size:32px;margin-bottom:8px">📭</div>予約データがありません
           </div>
+          <div id="rsv-pagination" style="display:none;align-items:center;justify-content:space-between;padding:10px 4px;margin-top:4px;font-size:12px;color:var(--text-secondary)">
+            <span id="rsv-page-info"></span>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-outline" id="rsv-prev-btn" style="padding:4px 12px;font-size:12px" onclick="rsvChangePage(-1)">◀ 前へ</button>
+              <button class="btn btn-outline" id="rsv-next-btn" style="padding:4px 12px;font-size:12px" onclick="rsvChangePage(1)">次へ ▶</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -2191,8 +2198,10 @@ renderBirthdayCustomers();
 // ======================================================
 const API_BASE = 'https://omotenashi-cloud.onrender.com';
 let rsvToken   = localStorage.getItem('rsv_token') || null;
-let rsvFilter  = '';
-let rsvAllData = [];
+let rsvFilter   = '';
+let rsvAllData  = [];
+let rsvPage     = 0;       // 現在ページ（0始まり）
+const RSV_PAGE_SIZE = 10;  // 1ページあたりの表示件数
 let _apiReady  = false;
 
 // ---- P3-4 Plan gating ----
@@ -2468,6 +2477,7 @@ async function rsvLoadList() {
     const res = await rsvApi('/reservations/');
     if (!res.ok) { rsvRenderSample(); return; }
     rsvAllData = await res.json();
+    rsvPage    = 0; // 新規データ取得時は先頭ページに戻す
     rsvRenderList(rsvAllData);
   } catch(e) { rsvRenderSample(); }
 }
@@ -2495,11 +2505,30 @@ function rsvUpdateKpi(data) {
 function rsvRenderList(data) {
   rsvUpdateKpi(rsvAllData);
   const filtered = rsvFilter ? data.filter(r => r.status === rsvFilter) : data;
-  const tbody = document.getElementById('rsv-tbody');
-  const empty = document.getElementById('rsv-empty');
-  if (!filtered.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+  const tbody  = document.getElementById('rsv-tbody');
+  const empty  = document.getElementById('rsv-empty');
+  const pgWrap = document.getElementById('rsv-pagination');
+  const pgInfo = document.getElementById('rsv-page-info');
+  const prevBtn = document.getElementById('rsv-prev-btn');
+  const nextBtn = document.getElementById('rsv-next-btn');
+
+  if (!filtered.length) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    pgWrap.style.display = 'none';
+    return;
+  }
   empty.style.display = 'none';
-  tbody.innerHTML = filtered.map(r => `
+
+  // ページ境界補正
+  const totalPages = Math.ceil(filtered.length / RSV_PAGE_SIZE);
+  if (rsvPage >= totalPages) rsvPage = totalPages - 1;
+  if (rsvPage < 0) rsvPage = 0;
+
+  const start  = rsvPage * RSV_PAGE_SIZE;
+  const paged  = filtered.slice(start, start + RSV_PAGE_SIZE);
+
+  tbody.innerHTML = paged.map(r => `
     <tr style="border-bottom:1px solid var(--border);transition:background .1s" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background=''">
       <td style="padding:10px 10px;font-weight:600">${r.guest_name}</td>
       <td style="padding:10px 10px;color:var(--text-secondary)">${r.check_in}</td>
@@ -2515,6 +2544,22 @@ function rsvRenderList(data) {
         <button class="rsv-action-btn" style="color:var(--danger);margin-left:4px;border-color:var(--danger)" onclick="rsvDeleteConfirm('${r.id}','${r.guest_name.replace(/'/g,'&#39;')}')">🗑️</button>
       </td>
     </tr>`).join('');
+
+  // ページネーションコントロール
+  if (totalPages <= 1) {
+    pgWrap.style.display = 'none';
+  } else {
+    pgWrap.style.display = 'flex';
+    pgInfo.textContent = `${start + 1}〜${Math.min(start + RSV_PAGE_SIZE, filtered.length)} 件表示 / 全 ${filtered.length} 件（${rsvPage + 1} / ${totalPages} ページ）`;
+    prevBtn.disabled = rsvPage === 0;
+    nextBtn.disabled = rsvPage >= totalPages - 1;
+  }
+}
+
+function rsvChangePage(delta) {
+  rsvPage += delta;
+  rsvRenderList(rsvAllData);
+  document.getElementById('rsv-tbody').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 async function rsvUpdateStatus(id, status) {
@@ -2551,6 +2596,7 @@ async function rsvDeleteExecute() {
 
 function rsvSetFilter(status, el) {
   rsvFilter = status;
+  rsvPage   = 0; // フィルター変更時は先頭ページに戻す
   document.querySelectorAll('.rsv-filter').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
   rsvRenderList(rsvAllData);
