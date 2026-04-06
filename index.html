@@ -1726,8 +1726,7 @@ function loadReview(text, rating, reviewerName, platform, reviewId) {
   if (saveBtn) saveBtn.style.display = reviewId ? 'flex' : 'none';
   // フォームまでスクロール
   document.querySelector('#tab-review .ai-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  document.getElementById('review-text').focus();
-  showToast('口コミを読み込みました。「AIで返信文を生成する」を押してください。');
+  generateReview();
 }
 
 // ---- Star rating ----
