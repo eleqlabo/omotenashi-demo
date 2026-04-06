@@ -92,8 +92,9 @@
   .card-title { font-size: 13px; font-weight: 600; color: var(--gold); margin-bottom: 16px; }
 
   /* Bar chart mock */
-  .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 120px; }
-  .bar-group { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+  .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 130px; padding-top: 20px; }
+  .bar-group { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 1; position: relative; }
+  .bar-count { font-size: 10px; font-weight: 700; color: var(--gold-dark); line-height: 1; margin-bottom: 2px; }
   .bar { width: 100%; background: linear-gradient(to top, var(--gold-dark), var(--gold)); border-radius: 3px 3px 0 0; transition: opacity 0.2s; }
   .bar:hover { opacity: 0.8; }
   .bar-label { font-size: 10px; color: var(--text-muted); }
@@ -215,6 +216,78 @@
   .bday-ch-tabs { display: flex; gap: 4px; }
   .bday-ch-tab { padding: 4px 14px; border-radius: 5px; border: 1px solid var(--border); font-size: 12px; cursor: pointer; color: var(--text-secondary); background: transparent; font-family: inherit; transition: all 0.15s; }
   .bday-ch-tab.active { background: var(--gold); color: #fff; border-color: var(--gold); font-weight: 600; }
+
+  /* Reservation */
+  .rsv-filter { padding:5px 12px;border:1px solid var(--border);border-radius:20px;background:#fff;font-size:12px;cursor:pointer;color:var(--text-secondary);transition:all .15s; }
+  .rsv-filter.active { background:var(--gold);color:#fff;border-color:var(--gold); }
+  .rsv-status { display:inline-block;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600; }
+  .rsv-status.confirmed { background:#e8f0fa;color:var(--info); }
+  .rsv-status.checked_in { background:#e8f7ed;color:var(--success); }
+  .rsv-status.checked_out { background:#f0f0f0;color:var(--text-muted); }
+  .rsv-status.cancelled { background:#fdeaea;color:var(--danger); }
+  .rsv-action-btn { padding:3px 10px;border-radius:4px;border:1px solid var(--border);background:#fff;font-size:11px;cursor:pointer;color:var(--text-secondary);transition:all .15s; }
+  .rsv-action-btn:hover { background:var(--bg-hover); }
+
+  /* Skeleton loader */
+  .skeleton { background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:4px; }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  .skeleton-row td { padding:10px 8px; }
+  .skeleton-cell { height:14px;border-radius:3px; }
+
+  /* Universal modal overlay */
+  .modal-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:300;overflow-y:auto;padding:40px 16px; }
+  .modal-overlay.open { display:block; }
+  .modal-box { background:#fff;max-width:560px;margin:0 auto;border-radius:12px;padding:28px 32px;position:relative;box-shadow:0 8px 40px rgba(0,0,0,0.18); }
+  .modal-box.wide { max-width:680px; }
+  .modal-close { position:absolute;top:12px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-muted); }
+  .modal-title { font-size:16px;font-weight:700;color:var(--gold);margin-bottom:18px; }
+  .detail-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px; }
+  .detail-item label { font-size:10px;color:var(--text-muted);display:block;margin-bottom:2px;text-transform:uppercase;letter-spacing:.04em; }
+  .detail-item span { font-size:13px;color:var(--text-primary);font-weight:500; }
+
+  /* Editable AI output */
+  .ai-output-editable { width:100%;min-height:160px;padding:12px;border:1px solid var(--border-gold);border-radius:6px;font-size:13px;line-height:1.7;resize:vertical;font-family:inherit;color:var(--text-primary);background:#fffdf7; }
+
+  /* Analytics charts */
+  .analytics-grid { display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px; }
+  .analytics-grid.full { grid-template-columns:1fr; }
+  .mini-bar { display:flex;align-items:flex-end;gap:6px;height:80px;padding-top:20px; }
+  .mini-bar-col-wrap { flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;height:100%; }
+  .mini-bar-val { font-size:10px;font-weight:700;color:var(--gold-dark);line-height:1; }
+  .mini-bar-col { width:100%;border-radius:3px 3px 0 0;background:var(--gold-dark);opacity:.7;transition:opacity .2s;cursor:default; }
+  .mini-bar-col:hover { opacity:1; }
+  .mini-bar-labels { display:flex;gap:6px;margin-top:4px;font-size:10px;color:var(--text-muted); }
+  .mini-bar-labels span { flex:1;text-align:center; }
+  .data-badge { display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:8px;vertical-align:middle; }
+  .data-badge.real { background:#e8f5ee;color:#2a7a4f; }
+  .data-badge.sample { background:#f5f0e0;color:#8a6a00; }
+  .kpi-trend-row { display:flex;gap:12px;margin-top:10px;flex-wrap:wrap; }
+  .kpi-trend-item { flex:1;min-width:100px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:10px 12px; }
+  .kpi-trend-item .label { font-size:10px;color:var(--text-muted);margin-bottom:4px; }
+  .kpi-trend-item .val { font-size:18px;font-weight:700;color:var(--gold-light); }
+  .kpi-trend-item .sub { font-size:10px;color:var(--text-muted);margin-top:2px; }
+
+  /* Settings */
+  .settings-section { margin-bottom:20px; }
+  .settings-section-title { font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border); }
+  .settings-row { display:grid;grid-template-columns:160px 1fr;align-items:center;gap:12px;margin-bottom:10px; }
+  .settings-label { font-size:12px;color:var(--text-secondary); }
+  .plan-badge { display:inline-block;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:700; }
+  .plan-lite { background:#f0f0f0;color:#666; }
+  .plan-standard { background:#e8f0fa;color:var(--info); }
+  .plan-pro { background:#fff3e0;color:#c75000; }
+  .plan-platinum { background:#f5e8c0;color:var(--gold); }
+  /* Cold-start warmup overlay */
+  #warmup-overlay { display:none;position:fixed;inset:0;background:rgba(255,255,255,0.92);z-index:500;flex-direction:column;align-items:center;justify-content:center;gap:16px; }
+  #warmup-overlay.show { display:flex; }
+  .warmup-spinner { width:48px;height:48px;border:4px solid var(--border-gold);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg) } }
+  .warmup-msg { font-size:14px;color:var(--gold-light);font-weight:600; }
+  .warmup-sub { font-size:12px;color:var(--text-muted); }
+  .warmup-bar { width:240px;height:4px;background:var(--border);border-radius:2px;overflow:hidden; }
+  .warmup-bar-fill { height:100%;background:var(--gold);border-radius:2px;transition:width 3s linear;width:0% }
+  #demo-guide-body { transition:max-height .25s ease,opacity .2s ease;max-height:600px;overflow:hidden;opacity:1; }
+  #demo-guide-body.collapsed { max-height:0;opacity:0; }
 </style>
 </head>
 <body>
@@ -222,7 +295,7 @@
 <!-- Sidebar -->
 <div id="sidebar">
   <div class="sidebar-logo">
-    <h1>おもてなし<br>クラウド</h1>
+    <h1 id="sidebar-hotel-name">おもてなし<br>クラウド</h1>
     <span>OMOTENASHI CLOUD v2.4</span>
   </div>
   <nav class="sidebar-nav">
@@ -249,7 +322,7 @@
     </div>
   </nav>
   <div class="sidebar-footer">
-    🏨 プレミアムホテル東京<br>
+    🏨 <span id="sidebar-footer-name">プレミアムホテル東京</span><br>
     <span style="color: var(--gold); font-size: 10px;">● オンライン</span>
   </div>
 </div>
@@ -259,58 +332,101 @@
   <div class="topbar">
     <div class="topbar-title" id="topbar-title">ダッシュボード</div>
     <div class="topbar-right">
-      <span>2026年3月13日（金）</span>
+      <span id="topbar-date"></span>
+      <span class="badge" id="plan-badge" title="現在のプラン" style="cursor:pointer" onclick="switchTab('settings',document.querySelectorAll('.nav-item')[6])">LITE</span>
       <span class="badge">通知 3件</span>
-      <span style="color: var(--gold);">👤 山田 管理者</span>
+      <span id="topbar-user" style="color: var(--gold);">👤 管理者</span>
     </div>
   </div>
 
   <div class="content">
 
+    <!-- ===== デモ操作ガイドバナー ===== -->
+    <div id="demo-guide-banner" style="background:linear-gradient(135deg,#fffbe8 0%,#fff8f0 100%);border:1.5px solid var(--border-gold);border-radius:10px;padding:14px 18px;margin-bottom:16px;position:relative">
+      <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleDemoGuide()">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:18px">🗺️</span>
+          <span style="font-size:13px;font-weight:700;color:var(--gold-dark)">デモ操作ガイド</span>
+          <span id="demo-login-status-badge" style="display:none;font-size:11px;font-weight:700;padding:2px 10px;border-radius:10px;background:#e6f9ed;color:#1a7f3c">● ログイン中</span>
+        </div>
+        <span id="demo-guide-arrow" style="font-size:12px;color:var(--text-muted);transition:transform .2s">▼ 閉じる</span>
+      </div>
+      <div id="demo-guide-body" style="margin-top:12px">
+        <!-- ステップ案内 -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:14px">
+          <div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+            <div style="font-size:11px;font-weight:700;color:var(--gold-dark);margin-bottom:6px">① まずログイン</div>
+            <div style="font-size:11px;color:var(--text-secondary);line-height:1.6">予約タブの下にある<br>デモボタンをクリック</div>
+          </div>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+            <div style="font-size:11px;font-weight:700;color:#1d4ed8;margin-bottom:6px">② 顧客管理タブ</div>
+            <div style="font-size:11px;color:var(--text-secondary);line-height:1.6">顧客一覧・検索・<br>誕生日顧客の確認</div>
+          </div>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+            <div style="font-size:11px;font-weight:700;color:#166534;margin-bottom:6px">③ LINE配信AIタブ</div>
+            <div style="font-size:11px;color:var(--text-secondary);line-height:1.6">条件入力→AI文案生成<br>→プレビュー→送信</div>
+          </div>
+          <div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+            <div style="font-size:11px;font-weight:700;color:#6d28d9;margin-bottom:6px">④ 口コミ返信AIタブ</div>
+            <div style="font-size:11px;color:var(--text-secondary);line-height:1.6">口コミ選択→AI返信生成<br>→編集→コピー</div>
+          </div>
+        </div>
+        <!-- プランと機能の対応 -->
+        <div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:10px">
+          <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:8px">📋 デモアカウントと使える機能</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:11px">
+            <div style="padding:8px 10px;background:#f9f9f9;border-radius:6px;border-left:3px solid #9ca3af">
+              <div style="font-weight:700;margin-bottom:3px">🏨 ホテルA（Lite）</div>
+              <div style="color:var(--text-muted);line-height:1.7">test@omotenashi.com<br>✓ 顧客管理・予約管理<br>✓ AI文案プレビュー<br>✗ LINE・メール送信</div>
+            </div>
+            <div style="padding:8px 10px;background:#eff6ff;border-radius:6px;border-left:3px solid #3b82f6">
+              <div style="font-weight:700;margin-bottom:3px">♨️ 旅館B（Standard）</div>
+              <div style="color:var(--text-secondary);line-height:1.7">demo2@omotenashi.com<br>✓ 上記すべて<br>✓ LINE・メール実送信<br>✓ アナリティクス</div>
+            </div>
+            <div style="padding:8px 10px;background:#faf5ff;border-radius:6px;border-left:3px solid #8b5cf6">
+              <div style="font-weight:700;margin-bottom:3px">🏯 町家宿C（Pro）</div>
+              <div style="color:var(--text-secondary);line-height:1.7">demo3@omotenashi.com<br>✓ 上記すべて<br>✓ API連携<br>✓ 詳細アナリティクス</div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted)">💡 <strong>送信系の機能をデモする場合は「旅館B（Standard）」でログインしてください。</strong> 🔒アイコンの機能はプランアップグレードで利用可能です。</div>
+      </div>
+    </div>
+
     <!-- Dashboard -->
     <div id="tab-dashboard" class="tab-pane active">
-      <div class="kpi-grid">
+      <div class="kpi-grid" id="dash-kpi-grid">
         <div class="kpi-card">
-          <div class="kpi-label">今月の稼働率</div>
-          <div class="kpi-value">87<span style="font-size:16px">%</span></div>
-          <div class="kpi-sub">客室 142/164室</div>
-          <div class="kpi-trend up">▲ 前月比 +4.2%</div>
+          <div class="kpi-label">チェックイン中</div>
+          <div class="kpi-value" id="dash-kpi-checkin"><span class="skeleton skeleton-cell" style="width:60px;height:28px;display:inline-block"></span></div>
+          <div class="kpi-sub">現在滞在中のゲスト</div>
+          <div class="kpi-trend up" id="dash-kpi-checkin-sub"></div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label">月間宿泊売上</div>
-          <div class="kpi-value" style="font-size:20px">¥12,400,000</div>
-          <div class="kpi-sub">目標 ¥11.0M</div>
-          <div class="kpi-trend up">▲ 目標比 +12.7%</div>
+          <div class="kpi-label">今月の予約数</div>
+          <div class="kpi-value" id="dash-kpi-monthly"><span class="skeleton skeleton-cell" style="width:60px;height:28px;display:inline-block"></span></div>
+          <div class="kpi-sub">確定・滞在・完了を含む</div>
+          <div class="kpi-trend up" id="dash-kpi-monthly-sub"></div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label">顧客満足度 (NPS)</div>
-          <div class="kpi-value">72</div>
-          <div class="kpi-sub">回答数 384件</div>
-          <div class="kpi-trend up">▲ 前月比 +3pt</div>
+          <div class="kpi-label">登録顧客数</div>
+          <div class="kpi-value" id="dash-kpi-customers"><span class="skeleton skeleton-cell" style="width:60px;height:28px;display:inline-block"></span></div>
+          <div class="kpi-sub">累計登録数</div>
+          <div class="kpi-trend" id="dash-kpi-customers-sub"></div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label">LINE開封率</div>
-          <div class="kpi-value">68<span style="font-size:16px">%</span></div>
-          <div class="kpi-sub">配信数 1,247件</div>
-          <div class="kpi-trend down">▼ 前月比 -1.1%</div>
+          <div class="kpi-label">今月チェックアウト済</div>
+          <div class="kpi-value" id="dash-kpi-checkout"><span class="skeleton skeleton-cell" style="width:60px;height:28px;display:inline-block"></span></div>
+          <div class="kpi-sub">今月退館完了数</div>
+          <div class="kpi-trend" id="dash-kpi-checkout-sub"></div>
         </div>
       </div>
 
       <div class="charts-row">
         <div class="card">
           <div class="card-title">月別宿泊者数推移（直近6ヶ月）</div>
-          <div class="bar-chart">
-            <div class="bar-group"><div class="bar" style="height:60%"></div><div class="bar-label">10月</div></div>
-            <div class="bar-group"><div class="bar" style="height:72%"></div><div class="bar-label">11月</div></div>
-            <div class="bar-group"><div class="bar" style="height:55%"></div><div class="bar-label">12月</div></div>
-            <div class="bar-group"><div class="bar" style="height:48%"></div><div class="bar-label">1月</div></div>
-            <div class="bar-group"><div class="bar" style="height:80%"></div><div class="bar-label">2月</div></div>
-            <div class="bar-group"><div class="bar" style="height:95%"></div><div class="bar-label">3月</div></div>
-          </div>
-          <div style="display:flex;gap:16px;margin-top:12px;font-size:11px;color:var(--text-muted);">
-            <span>10月: 2,840名</span><span>11月: 3,120名</span><span>12月: 2,650名</span>
-            <span>1月: 2,410名</span><span>2月: 3,390名</span><span>3月: 3,870名</span>
-          </div>
+          <div class="bar-chart" id="dashboard-bar-chart"></div>
+          <div id="dashboard-bar-labels" style="display:flex;gap:16px;margin-top:12px;font-size:11px;color:var(--text-muted);"></div>
         </div>
         <div class="card">
           <div class="card-title">宿泊者属性（国籍別）</div>
@@ -369,7 +485,7 @@
           <div style="display:flex;flex-direction:column;gap:10px;">
             <div style="display:flex;align-items:center;gap:10px;font-size:13px;">
               <span style="color:var(--success)">✓</span>
-              <span style="text-decoration:line-through;color:var(--text-muted)">3月LINE配信メッセージ作成</span>
+              <span id="task-this-month" style="text-decoration:line-through;color:var(--text-muted)"></span>
             </div>
             <div style="display:flex;align-items:center;gap:10px;font-size:13px;">
               <span style="color:var(--success)">✓</span>
@@ -385,7 +501,7 @@
             </div>
             <div style="display:flex;align-items:center;gap:10px;font-size:13px;">
               <span style="color:var(--text-muted)">○</span>
-              <span style="color:var(--text-secondary)">4月スタッフ研修資料準備</span>
+              <span id="task-next-month" style="color:var(--text-secondary)"></span>
             </div>
             <div style="display:flex;align-items:center;gap:10px;font-size:13px;">
               <span style="color:var(--danger)">!</span>
@@ -402,35 +518,75 @@
         <div class="table-header">
           <div>
             <div class="card-title" style="margin-bottom:4px">顧客一覧</div>
-            <div style="font-size:12px;color:var(--text-muted)">総顧客数 2,847名 ／ 今月新規 38名</div>
+            <div style="font-size:12px;color:var(--text-muted)" id="customer-count-label">読み込み中...</div>
           </div>
           <div style="display:flex;gap:10px;align-items:center;">
-            <input class="table-search" type="text" placeholder="🔍 顧客名・電話番号で検索..." oninput="filterCustomers(this.value)">
+            <input class="table-search" type="text" placeholder="🔍 顧客名・電話番号で検索..." oninput="filterCustomers(this.value)" id="customer-search">
             <button class="btn btn-outline">エクスポート</button>
             <button class="btn btn-gold">＋ 新規登録</button>
           </div>
         </div>
+        <!-- Loading skeleton -->
+        <div id="customer-loading" style="display:none">
+          <table style="width:100%;border-collapse:collapse">
+            <tbody id="customer-loading-tbody"></tbody>
+          </table>
+        </div>
+        <!-- Error state -->
+        <div id="customer-error" style="display:none;text-align:center;padding:40px 20px">
+          <div style="font-size:32px;margin-bottom:8px">⚠️</div>
+          <div style="color:var(--danger);font-size:13px;margin-bottom:12px">顧客データの取得に失敗しました</div>
+          <button class="btn btn-outline" onclick="loadCustomersFromAPI()">再試行</button>
+        </div>
+        <!-- Empty state -->
+        <div id="customer-empty" style="display:none;text-align:center;padding:40px 20px">
+          <div style="font-size:32px;margin-bottom:8px">👥</div>
+          <div style="color:var(--text-muted);font-size:13px">顧客データがありません</div>
+        </div>
         <table id="customer-table">
           <thead>
             <tr>
-              <th>顧客名</th>
-              <th>ランク</th>
-              <th>累計宿泊</th>
-              <th>最終宿泊日</th>
-              <th>連絡先</th>
-              <th>誕生日</th>
-              <th>LTV</th>
-              <th>ステータス</th>
-              <th>アクション</th>
+              <th>顧客名</th><th>ランク</th><th>累計宿泊</th><th>最終宿泊日</th>
+              <th>連絡先</th><th>誕生日</th><th>LTV</th><th>ステータス</th><th>アクション</th>
             </tr>
           </thead>
           <tbody id="customer-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- 今月の誕生日顧客 -->
+      <div class="card" style="margin-top:16px" id="birthday-month-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="card-title" style="margin-bottom:0" id="birthday-month-title">🎂 今月の誕生日顧客</div>
+          <button class="btn btn-gold" style="padding:5px 14px;font-size:12px" onclick="generateAllBirthday()">✨ 一括AI文案生成</button>
+        </div>
+        <div id="birthday-month-loading" style="display:none;color:var(--text-muted);font-size:13px;padding:10px">読み込み中...</div>
+        <div id="birthday-month-empty" style="display:none;text-align:center;padding:24px;color:var(--text-muted);font-size:13px">今月誕生日の顧客はいません</div>
+        <table id="birthday-month-table" style="width:100%;display:none">
+          <thead><tr><th>顧客名</th><th>誕生日</th><th>メール</th><th>電話</th><th>アクション</th></tr></thead>
+          <tbody id="birthday-month-tbody"></tbody>
         </table>
       </div>
     </div>
 
     <!-- LINE AI -->
     <div id="tab-line" class="tab-pane">
+
+      <!-- LINE配信の操作フロー案内 -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);background:#f9f9f9;border:1px solid var(--border);border-radius:20px;padding:5px 12px">
+          <span style="background:var(--gold);color:#fff;border-radius:50%;width:17px;height:17px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">1</span>配信条件を入力
+          <span style="color:var(--border)">›</span>
+          <span style="background:var(--gold);color:#fff;border-radius:50%;width:17px;height:17px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">2</span>AIで文案生成
+          <span style="color:var(--border)">›</span>
+          <span style="background:var(--gold);color:#fff;border-radius:50%;width:17px;height:17px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">3</span>プレビュー・編集
+          <span style="color:var(--border)">›</span>
+          <span style="background:var(--gold);color:#fff;border-radius:50%;width:17px;height:17px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">4</span>送信確認
+          <span style="color:var(--border)">›</span>
+          <span style="background:var(--gold);color:#fff;border-radius:50%;width:17px;height:17px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">5</span>完了
+        </div>
+        <span style="font-size:11px;color:var(--text-muted)">💡 送信にはSTANDARD以上のプランが必要です</span>
+      </div>
 
       <!-- ===== チャンネル切り替えタブ ===== -->
       <div class="channel-switcher">
@@ -492,22 +648,28 @@
             <button class="btn btn-gold" style="width:100%;padding:12px;" onclick="generateLine()">✨ AIでメッセージを生成する</button>
           </div>
           <div class="ai-panel">
-            <div class="ai-panel-title">📤 生成結果</div>
-            <div style="margin-bottom:10px;font-size:12px;color:var(--text-secondary)">LINEメッセージ（最大500文字）</div>
-            <div class="ai-output empty" id="line-output">
-              <button class="copy-btn" onclick="copyText('line-output')" style="display:none" id="line-copy-btn">コピー</button>
+            <div class="ai-panel-title">📤 生成結果・送信</div>
+            <div style="margin-bottom:10px;font-size:12px;color:var(--text-secondary)">LINEメッセージ（最大500文字）／ 生成後に編集できます</div>
+            <div class="ai-output empty" id="line-output" style="display:block">
+              <button class="copy-btn" onclick="copyLineText()" style="display:none" id="line-copy-btn">コピー</button>
               配信目的とセグメントを選択して「生成」を押してください。
+            </div>
+            <textarea id="line-edit-area" class="ai-output-editable" style="display:none" placeholder="生成されたメッセージを編集できます..."></textarea>
+            <div id="line-send-actions" style="display:none;margin-top:10px;display:none;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-outline" style="flex:1" onclick="toggleLineEdit()">✏️ 編集</button>
+              <button class="btn btn-outline" onclick="copyLineText()">コピー</button>
+              <button class="btn btn-gold" style="flex:2" onclick="lineOpenSendConfirm()">📤 送信確認へ</button>
             </div>
             <div style="margin-top:16px;">
               <div class="section-title">📊 配信スケジュール</div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                 <div>
                   <label class="form-label">配信日時</label>
-                  <input class="form-input" type="datetime-local" value="2026-03-15T10:00">
+                  <input class="form-input" id="line-schedule-dt" type="datetime-local">
                 </div>
                 <div>
                   <label class="form-label">配信方法</label>
-                  <select class="form-select">
+                  <select class="form-select" id="line-schedule-method">
                     <option>即時配信</option>
                     <option selected>スケジュール配信</option>
                     <option>A/Bテスト配信</option>
@@ -847,23 +1009,44 @@
 
         <div class="ai-panel">
           <div class="ai-panel-title">📝 生成された返信文</div>
-          <div class="ai-output empty" id="review-output" style="min-height:220px">
-            <button class="copy-btn" onclick="copyText('review-output')" style="display:none" id="review-copy-btn">コピー</button>
+          <div style="margin-bottom:8px;font-size:12px;color:var(--text-secondary)">生成後に編集できます</div>
+          <div class="ai-output empty" id="review-output" style="min-height:200px">
+            <button class="copy-btn" onclick="copyReviewText()" style="display:none" id="review-copy-btn">コピー</button>
             口コミ内容を入力して「生成」を押してください。
           </div>
-          <div style="margin-top:12px;display:flex;gap:8px;">
-            <button class="btn btn-gold" style="flex:1" onclick="showToast('返信を投稿しました')">投稿する</button>
-            <button class="btn btn-outline" onclick="generateReview()">再生成</button>
-            <button class="btn btn-outline" onclick="copyText('review-output')">コピー</button>
+          <textarea id="review-edit-area" class="ai-output-editable" style="display:none" placeholder="生成された返信文を編集できます..."></textarea>
+          <div id="review-send-actions" style="display:none;margin-top:10px;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-outline" style="flex:1" onclick="toggleReviewEdit()">✏️ 編集</button>
+            <button class="btn btn-outline" onclick="copyReviewText()">📋 コピー</button>
+            <button class="btn btn-gold" id="review-save-btn" style="flex:2;display:none" onclick="saveReviewReply()">💾 返信を保存する</button>
+            <button class="btn btn-outline" onclick="postReviewReply()" style="flex:1;font-size:11px">📤 投稿メモ</button>
+          </div>
+          <div id="review-save-status" style="display:none;margin-top:6px;font-size:12px;padding:6px 10px;border-radius:4px"></div>
+          <div style="margin-top:10px;display:flex;gap:8px" id="review-regen-row">
+            <button class="btn btn-outline" style="width:100%" onclick="generateReview()">再生成</button>
           </div>
         </div>
       </div>
 
       <div style="margin-top:20px;" class="card">
-        <div class="card-title">📋 未返信の口コミ <span style="color:var(--danger);font-size:12px">● 12件</span></div>
-        <table style="width:100%">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div class="card-title" style="margin-bottom:0">📋 口コミ一覧 <span id="review-list-count" style="color:var(--danger);font-size:12px"></span></div>
+          <button class="btn btn-outline" style="padding:4px 12px;font-size:11px" onclick="loadReviewsFromAPI()">🔄 更新</button>
+        </div>
+        <div id="review-list-loading" style="display:none;padding:20px;text-align:center;color:var(--text-muted);font-size:13px">読み込み中...</div>
+        <div id="review-list-empty" style="display:none;padding:30px;text-align:center">
+          <div style="font-size:28px;margin-bottom:8px">⭐</div>
+          <div style="color:var(--text-muted);font-size:13px">口コミがありません</div>
+        </div>
+        <div id="review-list-gate" style="display:none;padding:20px;text-align:center;background:#fffbe8;border-radius:6px;font-size:13px;color:var(--gold-dark)">
+          🔒 口コミ一覧はSTANDARDプラン以上でご利用いただけます。
+          <div style="margin-top:8px">
+            <button class="btn btn-gold" style="font-size:12px;padding:5px 14px" onclick="showUpgradeModal('口コミ一覧','standard')">プランを見る</button>
+          </div>
+        </div>
+        <table style="width:100%" id="review-list-table">
           <thead>
-            <tr><th>日付</th><th>プラットフォーム</th><th>評価</th><th>口コミ抜粋</th><th>アクション</th></tr>
+            <tr><th>日付</th><th>プラットフォーム</th><th>評価</th><th>投稿者</th><th>口コミ抜粋</th><th>アクション</th></tr>
           </thead>
           <tbody id="review-list"></tbody>
         </table>
@@ -872,33 +1055,474 @@
 
     <!-- Reservation placeholder -->
     <div id="tab-reservation" class="tab-pane">
-      <div class="card" style="text-align:center;padding:60px 20px;">
-        <div style="font-size:48px;margin-bottom:16px">📅</div>
-        <div style="font-size:18px;font-weight:600;color:var(--gold);margin-bottom:8px">予約管理</div>
-        <div style="color:var(--text-secondary)">このセクションでは予約の一覧、変更、キャンセル管理ができます。</div>
+      <!-- KPI -->
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">総予約数</div><div class="kpi-value" id="rsv-kpi-total">-</div></div>
+        <div class="kpi-card"><div class="kpi-label">予約確定</div><div class="kpi-value" id="rsv-kpi-confirmed" style="color:var(--info)">-</div></div>
+        <div class="kpi-card"><div class="kpi-label">チェックイン中</div><div class="kpi-value" id="rsv-kpi-checkin" style="color:var(--success)">-</div></div>
+        <div class="kpi-card"><div class="kpi-label">チェックアウト済</div><div class="kpi-value" id="rsv-kpi-checkout" style="color:var(--text-muted)">-</div></div>
+      </div>
+
+      <!-- Auth banner: always visible -->
+      <div class="card" style="margin-bottom:16px;padding:16px 20px;border:1px solid var(--border-gold);background:#fff8e8">
+        <div id="rsv-logged-in" style="display:none;align-items:center;gap:12px">
+          <span style="font-size:13px;color:var(--success)">● ログイン中</span>
+          <span id="rsv-logged-email" style="font-size:13px;color:var(--text-secondary)"></span>
+          <button onclick="rsvLogout()" style="padding:4px 14px;background:#fff;color:var(--danger);border:1px solid var(--danger);border-radius:4px;font-size:12px;cursor:pointer">ログアウト</button>
+        </div>
+        <div id="rsv-auth-banner" style="display:block">
+          <div style="font-size:13px;font-weight:600;color:var(--gold);margin-bottom:10px">🔐 ログインしてください</div>
+          <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+            <div><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">メールアドレス</div>
+              <input id="rsv-login-email" type="email" style="padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-size:13px;width:220px" placeholder="test@omotenashi.com"></div>
+            <div><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">パスワード</div>
+              <input id="rsv-login-pass" type="password" style="padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-size:13px;width:160px" placeholder="test1234"></div>
+            <button onclick="rsvLogin()" style="padding:7px 18px;background:var(--gold);color:#fff;border:none;border-radius:4px;font-size:13px;cursor:pointer">ログイン</button>
+            <button onclick="rsvRegister()" style="padding:7px 18px;background:#fff;color:var(--gold);border:1px solid var(--gold);border-radius:4px;font-size:13px;cursor:pointer">新規登録</button>
+          </div>
+          <div id="rsv-auth-msg" style="font-size:12px;color:var(--danger);margin-top:8px"></div>
+          <div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:11px;color:var(--text-muted)">デモアカウント：</span>
+            <button onclick="fillDemoLogin('test@omotenashi.com','test1234')" style="padding:4px 12px;background:#f5edd8;color:var(--gold-dark);border:1px solid var(--border-gold);border-radius:4px;font-size:11px;cursor:pointer">🏨 ホテルA（Lite）</button>
+            <button onclick="fillDemoLogin('demo2@omotenashi.com','demo1234')" style="padding:4px 12px;background:#f5edd8;color:var(--gold-dark);border:1px solid var(--border-gold);border-radius:4px;font-size:11px;cursor:pointer">♨️ 旅館B（Standard）</button>
+            <button onclick="fillDemoLogin('demo3@omotenashi.com','demo1234')" style="padding:4px 12px;background:#f5edd8;color:var(--gold-dark);border:1px solid var(--border-gold);border-radius:4px;font-size:11px;cursor:pointer">🏯 町家宿C（Pro）</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="rsv-filter active" onclick="rsvSetFilter('',this)">すべて</button>
+            <button class="rsv-filter" onclick="rsvSetFilter('confirmed',this)">確定</button>
+            <button class="rsv-filter" onclick="rsvSetFilter('checked_in',this)">チェックイン中</button>
+            <button class="rsv-filter" onclick="rsvSetFilter('checked_out',this)">チェックアウト済</button>
+            <button class="rsv-filter" onclick="rsvSetFilter('cancelled',this)">キャンセル</button>
+          </div>
+          <button onclick="rsvOpenForm()" style="padding:7px 16px;background:var(--gold);color:#fff;border:none;border-radius:4px;font-size:13px;cursor:pointer;white-space:nowrap">＋ 新規予約</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:13px">
+            <thead>
+              <tr style="border-bottom:2px solid var(--border-gold);color:var(--text-secondary);font-size:11px">
+                <th style="padding:8px 10px;text-align:left">ゲスト名</th>
+                <th style="padding:8px 10px;text-align:left">チェックイン</th>
+                <th style="padding:8px 10px;text-align:left">チェックアウト</th>
+                <th style="padding:8px 10px;text-align:left">部屋タイプ</th>
+                <th style="padding:8px 10px;text-align:left">人数</th>
+                <th style="padding:8px 10px;text-align:left">ステータス</th>
+                <th style="padding:8px 10px;text-align:left">操作</th>
+              </tr>
+            </thead>
+            <tbody id="rsv-tbody"></tbody>
+          </table>
+          <div id="rsv-empty" style="text-align:center;padding:40px;color:var(--text-muted);display:none">
+            <div style="font-size:32px;margin-bottom:8px">📭</div>予約データがありません
+          </div>
+          <div id="rsv-pagination" style="display:none;align-items:center;justify-content:space-between;padding:10px 4px;margin-top:4px;font-size:12px;color:var(--text-secondary)">
+            <span id="rsv-page-info"></span>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-outline" id="rsv-prev-btn" style="padding:4px 12px;font-size:12px" onclick="rsvChangePage(-1)">◀ 前へ</button>
+              <button class="btn btn-outline" id="rsv-next-btn" style="padding:4px 12px;font-size:12px" onclick="rsvChangePage(1)">次へ ▶</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 新規予約フォームモーダル -->
+      <div id="rsv-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;overflow-y:auto">
+        <div style="background:#fff;max-width:520px;margin:60px auto;border-radius:10px;padding:32px;position:relative">
+          <button onclick="rsvCloseForm()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-muted)">✕</button>
+          <h3 style="font-size:16px;font-weight:700;color:var(--gold);margin-bottom:20px">📅 新規予約登録</h3>
+          <div style="display:grid;gap:14px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div><label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">ゲスト名 <span style="color:var(--danger)">*</span></label>
+                <input id="rsv-f-name" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px;font-size:13px" placeholder="山田 太郎"></div>
+              <div><label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">人数</label>
+                <input id="rsv-f-guests" type="number" min="1" max="20" value="2" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px;font-size:13px"></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div><label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">チェックイン <span style="color:var(--danger)">*</span></label>
+                <input id="rsv-f-checkin" type="date" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px;font-size:13px"></div>
+              <div><label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">チェックアウト <span style="color:var(--danger)">*</span></label>
+                <input id="rsv-f-checkout" type="date" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px;font-size:13px"></div>
+            </div>
+            <div><label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">部屋タイプ</label>
+              <select id="rsv-f-room" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px;font-size:13px">
+                <option value="">-- 選択 --</option>
+                <option>スタンダードダブル</option><option>デラックスツイン</option>
+                <option>スイートルーム</option><option>和室</option><option>露天風呂付き客室</option>
+              </select></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div><label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">メール</label>
+                <input id="rsv-f-email" type="email" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px;font-size:13px" placeholder="guest@example.com"></div>
+              <div><label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">電話番号</label>
+                <input id="rsv-f-phone" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px;font-size:13px" placeholder="090-0000-0000"></div>
+            </div>
+            <div><label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">備考</label>
+              <textarea id="rsv-f-notes" rows="2" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px;font-size:13px;resize:vertical" placeholder="アレルギー・特別リクエストなど"></textarea></div>
+          </div>
+          <div id="rsv-form-err" style="color:var(--danger);font-size:12px;margin-top:10px"></div>
+          <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
+            <button onclick="rsvCloseForm()" style="padding:9px 20px;background:#fff;color:var(--text-secondary);border:1px solid var(--border);border-radius:4px;font-size:13px;cursor:pointer">キャンセル</button>
+            <button onclick="rsvSubmit()" id="rsv-submit-btn" style="padding:9px 24px;background:var(--gold);color:#fff;border:none;border-radius:4px;font-size:13px;cursor:pointer;font-weight:600">予約を登録する</button>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Analytics placeholder -->
+    <!-- Analytics -->
     <div id="tab-analytics" class="tab-pane">
-      <div class="card" style="text-align:center;padding:60px 20px;">
-        <div style="font-size:48px;margin-bottom:16px">📈</div>
-        <div style="font-size:18px;font-weight:600;color:var(--gold);margin-bottom:8px">アナリティクス</div>
-        <div style="color:var(--text-secondary)">詳細な分析レポート・グラフを表示します。</div>
+      <!-- Plan gate banner (shown for lite plan) -->
+      <div id="analytics-gate" style="display:none;background:#fff8e8;border:1px solid var(--border-gold);border-radius:8px;padding:14px 20px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+          <div>
+            <div style="font-size:14px;font-weight:700;color:var(--gold-dark)">🔒 STANDARDプラン以上で利用可能</div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-top:2px">現在はLITEプランです。以下はサンプルデータです。アップグレードで実データを表示します。</div>
+          </div>
+          <button class="btn btn-gold" style="padding:6px 16px;font-size:12px" onclick="showUpgradeModal('アナリティクス','standard')">⬆️ プランを見る</button>
+        </div>
+      </div>
+      <div class="kpi-trend-row" style="margin-bottom:16px">
+        <div class="kpi-trend-item"><div class="label">稼働率（今月）</div><div class="val">87%</div><div class="sub" style="color:var(--success)">▲ +4.2% vs 先月</div></div>
+        <div class="kpi-trend-item"><div class="label">RevPAR</div><div class="val">¥12,450</div><div class="sub" style="color:var(--success)">▲ +8.1% vs 先月</div></div>
+        <div class="kpi-trend-item"><div class="label">ADR（平均客室単価）</div><div class="val">¥24,800</div><div class="sub" style="color:var(--success)">▲ +3.6% vs 先月</div></div>
+        <div class="kpi-trend-item"><div class="label">NPS（顧客満足度）</div><div class="val">72pt</div><div class="sub" style="color:var(--success)">▲ +3pt vs 先月</div></div>
+      </div>
+      <div class="analytics-grid">
+        <div class="card">
+          <div class="card-title">📊 月別稼働率推移（直近6ヶ月）</div>
+          <div class="mini-bar" id="analytics-occ-chart"></div>
+          <div class="mini-bar-labels" id="analytics-occ-labels"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">⭐ 口コミ評価推移（平均スコア）</div>
+          <div class="mini-bar" id="analytics-review-chart"></div>
+          <div class="mini-bar-labels" id="analytics-review-labels"></div>
+        </div>
+      </div>
+      <div class="analytics-grid" style="margin-top:16px">
+        <div class="card">
+          <div class="card-title">👥 国籍別宿泊者数（今月）</div>
+          <div class="donut-wrap">
+            <div class="donut"></div>
+            <div class="donut-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:var(--gold)"></div>日本 42%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#4c8bc9"></div>中国・台湾 23%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#4caf82"></div>欧米 17%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#666"></div>その他 18%</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">📈 LINE配信効果（直近3ヶ月）</div>
+          <table style="width:100%;font-size:12px">
+            <thead><tr><th>配信月</th><th>送信数</th><th>開封率</th><th>予約転換</th></tr></thead>
+            <tbody id="analytics-line-table"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <!-- Settings placeholder -->
+    <!-- Settings -->
     <div id="tab-settings" class="tab-pane">
-      <div class="card" style="text-align:center;padding:60px 20px;">
-        <div style="font-size:48px;margin-bottom:16px">⚙️</div>
-        <div style="font-size:18px;font-weight:600;color:var(--gold);margin-bottom:8px">設定</div>
-        <div style="color:var(--text-secondary)">ホテル情報・通知・連携サービスの設定ができます。</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="card">
+          <div class="card-title">🏨 ホテル基本情報</div>
+          <div class="settings-section">
+            <div class="settings-row"><label class="settings-label">ホテル名</label><input class="form-input" id="settings-hotel-name" placeholder="プレミアムホテル東京"></div>
+            <div class="settings-row"><label class="settings-label">メールアドレス</label><input class="form-input" id="settings-hotel-email" type="email" placeholder="info@hotel.jp"></div>
+            <div class="settings-row"><label class="settings-label">電話番号</label><input class="form-input" id="settings-hotel-phone" placeholder="03-0000-0000"></div>
+            <div class="settings-row"><label class="settings-label">所在地</label><input class="form-input" id="settings-hotel-address" placeholder="東京都千代田区..."></div>
+          </div>
+          <button class="btn btn-gold" onclick="saveHotelSettings()">保存する</button>
+        </div>
+        <div class="card">
+          <div class="card-title">💬 LINE連携設定</div>
+          <div class="settings-section">
+            <div style="margin-bottom:12px">
+              <span id="line-status-badge" style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:#fdeaea;color:var(--danger)">● 未連携</span>
+            </div>
+            <div class="settings-row"><label class="settings-label">Channel Secret</label><input class="form-input" id="settings-line-secret" type="password" placeholder="設定されていません"></div>
+            <div class="settings-row"><label class="settings-label">Access Token</label><input class="form-input" id="settings-line-token" type="password" placeholder="設定されていません"></div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px">LINE Developers コンソールから取得してください</div>
+          </div>
+          <button class="btn btn-gold" onclick="saveLineSettings()">LINE設定を保存</button>
+        </div>
+      </div>
+      <div class="card" style="margin-top:20px">
+        <div class="card-title">📋 プラン情報</div>
+        <div class="settings-row">
+          <label class="settings-label">現在のプラン</label>
+          <span class="plan-badge plan-lite" id="settings-plan-badge">LITE</span>
+        </div>
+        <div style="margin-top:12px;font-size:12px;color:var(--text-muted)">
+          プランのアップグレードはサポートまでお問い合わせください。<br>
+          email: support@omotenashi-cloud.jp
+        </div>
+      </div>
+      <div class="card" style="margin-top:20px">
+        <div class="card-title">🚀 プランアップグレード申請</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+          <div style="border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+            <div class="plan-badge plan-lite" style="display:block;margin-bottom:8px">LITE</div>
+            <div style="font-size:11px;color:var(--text-muted)">顧客50件</div>
+            <div style="font-size:13px;font-weight:700;color:var(--gold);margin-top:6px">無料</div>
+          </div>
+          <div style="border:2px solid var(--gold-dark);border-radius:8px;padding:14px;text-align:center;background:var(--border-gold)">
+            <div class="plan-badge plan-standard" style="display:block;margin-bottom:8px">STANDARD</div>
+            <div style="font-size:11px;color:var(--text-muted)">顧客500件・LINE連携</div>
+            <div style="font-size:13px;font-weight:700;color:var(--gold);margin-top:6px">¥9,800/月</div>
+          </div>
+          <div style="border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+            <div class="plan-badge plan-pro" style="display:block;margin-bottom:8px">PRO</div>
+            <div style="font-size:11px;color:var(--text-muted)">顧客2,000件・分析</div>
+            <div style="font-size:13px;font-weight:700;color:var(--gold);margin-top:6px">¥24,800/月</div>
+          </div>
+          <div style="border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+            <div class="plan-badge plan-platinum" style="display:block;margin-bottom:8px">PLATINUM</div>
+            <div style="font-size:11px;color:var(--text-muted)">無制限・専任サポート</div>
+            <div style="font-size:13px;font-weight:700;color:var(--gold);margin-top:6px">要お見積り</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div><label class="form-label">ご希望のプラン</label>
+            <select class="form-select" id="upgrade-plan">
+              <option>STANDARD（¥9,800/月）</option>
+              <option>PRO（¥24,800/月）</option>
+              <option>PLATINUM（要お見積り）</option>
+            </select>
+          </div>
+          <div><label class="form-label">担当者名</label>
+            <input class="form-input" id="upgrade-name" placeholder="山田 太郎">
+          </div>
+        </div>
+        <div style="margin-bottom:12px">
+          <label class="form-label">ご要望・ご質問（任意）</label>
+          <textarea class="form-textarea" id="upgrade-notes" style="min-height:60px" placeholder="ご質問やご要望があればご記入ください"></textarea>
+        </div>
+        <button class="btn btn-gold" onclick="submitUpgradeRequest()">申請する</button>
       </div>
     </div>
+
+      <!-- デモデータ管理 -->
+      <div class="card" style="margin-top:20px;border:1px dashed var(--border-gold);background:#fffdf5">
+        <div class="card-title">🛠️ デモデータ管理</div>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:4px">補助金審査デモ用のサンプルデータを本番DBに一括投入します。</p>
+        <p style="font-size:11px;color:var(--text-muted);margin-bottom:12px">※ 既存データがある場合はスキップされます（何度押しても安全です）</p>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <input class="form-input" id="seed-secret" type="hidden" value="UdaOw8oiHH08uq_dLND3">
+          <button class="btn btn-gold" id="seed-btn" onclick="runSeedDemo()">▶ デモデータを投入する</button>
+          <span id="seed-status" style="font-size:12px;color:var(--text-muted)"></span>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:8px">投入されるデータ：デモアカウント3件・顧客5件・予約5件・口コミ5件</div>
+        <hr style="margin:16px 0;border:none;border-top:1px solid var(--border)">
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:var(--danger)">🔄 デモデータをリセット</div>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:4px">現在ログイン中のアカウントのデータ（顧客・予約・口コミ）を全削除し、初期サンプルデータに戻します。</p>
+        <p style="font-size:11px;color:var(--danger);margin-bottom:12px">⚠️ この操作は元に戻せません。デモ本番前のリセット用です。</p>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-outline" id="reset-btn" style="color:var(--danger);border-color:var(--danger)" onclick="confirmDemoReset()">🗑️ データをリセットして再投入する</button>
+          <span id="reset-status" style="font-size:12px;color:var(--text-muted)"></span>
+        </div>
+      </div>
 
   </div><!-- /content -->
 </div><!-- /main -->
+
+<!-- Customer Detail Modal -->
+<div id="customer-detail-modal" class="modal-overlay">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('customer-detail-modal').classList.remove('open')">✕</button>
+    <div class="modal-title" id="cd-name-title">顧客詳細</div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <span style="font-size:20px;font-weight:700;color:var(--text-primary)" id="cd-name"></span>
+      <span class="rank-badge" id="cd-rank-badge"></span>
+    </div>
+    <div class="detail-grid">
+      <div class="detail-item"><label>累計宿泊数</label><span id="cd-stays"></span></div>
+      <div class="detail-item"><label>最終宿泊日</label><span id="cd-last"></span></div>
+      <div class="detail-item"><label>LTV（累計売上）</label><span id="cd-ltv"></span></div>
+      <div class="detail-item"><label>誕生日</label><span id="cd-birth"></span></div>
+      <div class="detail-item"><label>電話番号</label><span id="cd-tel"></span></div>
+      <div class="detail-item"><label>メール</label><span id="cd-email"></span></div>
+      <div class="detail-item"><label>ステータス</label><span id="cd-status"></span></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-gold" style="flex:1" onclick="document.getElementById('customer-detail-modal').classList.remove('open');switchTab('line',document.querySelectorAll('.nav-item')[2])">💬 LINE配信へ</button>
+      <button class="btn btn-outline" style="flex:1" onclick="showToast('メール送信機能はProプラン以上で対応予定です')">✉️ メールを送る</button>
+    </div>
+  </div>
+</div>
+
+<!-- LINE Send Confirm Modal -->
+<div id="line-send-modal" class="modal-overlay">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('line-send-modal').classList.remove('open')">✕</button>
+    <div class="modal-title">📤 LINE配信の送信確認</div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">配信対象</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text-primary)" id="line-confirm-segment"></div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">配信メッセージ</div>
+      <div style="background:#f5f7fa;border:1px solid var(--border-gold);border-radius:6px;padding:12px;font-size:13px;line-height:1.7;white-space:pre-wrap;max-height:240px;overflow-y:auto" id="line-confirm-text"></div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-outline" style="flex:1" onclick="document.getElementById('line-send-modal').classList.remove('open')">キャンセル</button>
+      <button class="btn btn-gold" style="flex:2" onclick="sendLineMessage()">📤 送信する</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reservation Detail / Edit Modal -->
+<div id="rsv-detail-modal" class="modal-overlay">
+  <div class="modal-box wide">
+    <button class="modal-close" onclick="document.getElementById('rsv-detail-modal').classList.remove('open')">✕</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div class="modal-title" style="margin-bottom:0" id="rd-modal-title">📅 予約詳細</div>
+      <button class="btn btn-outline" style="font-size:12px;padding:4px 14px" id="rd-edit-toggle" onclick="toggleRsvEdit()">✏️ 編集</button>
+    </div>
+
+    <!-- 表示モード -->
+    <div id="rd-view-mode">
+      <div class="detail-grid">
+        <div class="detail-item"><label>ゲスト名</label><span id="rd-name" style="font-size:15px;font-weight:700"></span></div>
+        <div class="detail-item"><label>ステータス</label><span id="rd-status"></span></div>
+        <div class="detail-item"><label>チェックイン</label><span id="rd-checkin"></span></div>
+        <div class="detail-item"><label>チェックアウト</label><span id="rd-checkout"></span></div>
+        <div class="detail-item"><label>部屋タイプ</label><span id="rd-room"></span></div>
+        <div class="detail-item"><label>人数</label><span id="rd-guests"></span></div>
+        <div class="detail-item"><label>メール</label><span id="rd-email"></span></div>
+        <div class="detail-item"><label>電話番号</label><span id="rd-phone"></span></div>
+      </div>
+      <div style="margin-bottom:16px">
+        <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">備考</div>
+        <div style="font-size:13px;color:var(--text-secondary);padding:8px 12px;background:var(--bg-card);border-radius:6px;min-height:36px" id="rd-notes"></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-gold" id="rd-line-btn">💬 LINE予約確認通知を送る</button>
+        <button class="btn btn-outline" onclick="document.getElementById('rsv-detail-modal').classList.remove('open')">閉じる</button>
+      </div>
+    </div>
+
+    <!-- 編集モード -->
+    <div id="rd-edit-mode" style="display:none">
+      <div class="detail-grid">
+        <div class="detail-item">
+          <label>ゲスト名 <span style="color:var(--danger)">*</span></label>
+          <input class="form-input" id="re-name" style="width:100%">
+        </div>
+        <div class="detail-item">
+          <label>ステータス</label>
+          <select class="form-select" id="re-status" style="width:100%">
+            <option value="confirmed">予約確定</option>
+            <option value="checked_in">チェックイン中</option>
+            <option value="checked_out">チェックアウト済</option>
+            <option value="cancelled">キャンセル</option>
+          </select>
+        </div>
+        <div class="detail-item">
+          <label>チェックイン <span style="color:var(--danger)">*</span></label>
+          <input class="form-input" id="re-checkin" type="date" style="width:100%">
+        </div>
+        <div class="detail-item">
+          <label>チェックアウト <span style="color:var(--danger)">*</span></label>
+          <input class="form-input" id="re-checkout" type="date" style="width:100%">
+        </div>
+        <div class="detail-item">
+          <label>部屋タイプ</label>
+          <input class="form-input" id="re-room" style="width:100%" placeholder="スイートルーム">
+        </div>
+        <div class="detail-item">
+          <label>人数</label>
+          <input class="form-input" id="re-guests" type="number" min="1" max="20" style="width:100%">
+        </div>
+        <div class="detail-item">
+          <label>メール</label>
+          <input class="form-input" id="re-email" type="email" style="width:100%">
+        </div>
+        <div class="detail-item">
+          <label>電話番号</label>
+          <input class="form-input" id="re-phone" style="width:100%">
+        </div>
+      </div>
+      <div style="margin-bottom:16px">
+        <label class="form-label">備考</label>
+        <textarea class="form-textarea" id="re-notes" style="min-height:60px" placeholder="アレルギー・特別リクエスト等"></textarea>
+      </div>
+      <div id="re-error" style="color:var(--danger);font-size:12px;margin-bottom:8px;display:none"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" style="flex:1" onclick="toggleRsvEdit()">キャンセル</button>
+        <button class="btn btn-gold" style="flex:2" id="re-save-btn" onclick="saveRsvEdit()">💾 変更を保存する</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Customer Delete Confirm Modal -->
+<div id="customer-delete-modal" class="modal-overlay">
+  <div class="modal-box" style="text-align:center;max-width:400px">
+    <div style="font-size:40px;margin-bottom:10px">🗑️</div>
+    <div class="modal-title">顧客を削除しますか？</div>
+    <p style="font-size:13px;color:var(--text-secondary);margin:10px 0 18px">
+      「<strong id="customer-delete-name"></strong>」を完全に削除します。<br>この操作は元に戻せません。
+    </p>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn btn-outline" onclick="document.getElementById('customer-delete-modal').classList.remove('open')">キャンセル</button>
+      <button class="btn" style="background:var(--danger);color:#fff;border-color:var(--danger)" onclick="customerDeleteExecute()">削除する</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reservation Delete Confirm Modal -->
+<div id="rsv-delete-modal" class="modal-overlay">
+  <div class="modal-box" style="text-align:center;max-width:400px">
+    <div style="font-size:40px;margin-bottom:10px">🗑️</div>
+    <div class="modal-title">予約を削除しますか？</div>
+    <p style="font-size:13px;color:var(--text-secondary);margin:10px 0 18px">
+      「<strong id="rsv-delete-name"></strong>」の予約を完全に削除します。<br>この操作は元に戻せません。
+    </p>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn btn-outline" onclick="document.getElementById('rsv-delete-modal').classList.remove('open')">キャンセル</button>
+      <button class="btn" style="background:var(--danger);color:#fff;border-color:var(--danger)" onclick="rsvDeleteExecute()">削除する</button>
+    </div>
+  </div>
+</div>
+
+<!-- Upgrade Modal (P3-4) -->
+<div id="upgrade-modal" class="modal-overlay">
+  <div class="modal-box" style="text-align:center;max-width:460px">
+    <button class="modal-close" onclick="document.getElementById('upgrade-modal').classList.remove('open')">✕</button>
+    <div style="font-size:52px;margin-bottom:12px">🔒</div>
+    <div class="modal-title" style="text-align:center">プランのアップグレードが必要です</div>
+    <p style="font-size:14px;color:var(--text-secondary);margin-bottom:4px">
+      「<span id="upgrade-modal-feature">この機能</span>」は
+      <strong style="color:var(--gold)" id="upgrade-modal-minplan">STANDARD</strong>
+      プラン以上でご利用いただけます。
+    </p>
+    <div style="background:var(--bg-card);border-radius:8px;padding:14px 16px;margin:16px 0;text-align:left">
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;font-weight:600">アップグレードで利用可能になる機能：</div>
+      <div id="upgrade-modal-list" style="font-size:13px;color:var(--text-secondary);line-height:2"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:10px">
+      <button class="btn btn-outline" style="flex:1" onclick="document.getElementById('upgrade-modal').classList.remove('open')">あとで</button>
+      <button class="btn btn-gold" style="flex:2" onclick="document.getElementById('upgrade-modal').classList.remove('open');switchTab('settings',document.querySelectorAll('.nav-item')[6])">⬆️ プランを変更する</button>
+    </div>
+    <div style="background:#fffbe8;border:1px solid var(--border-gold);border-radius:6px;padding:10px 12px;font-size:11px;color:var(--gold-dark)">
+      💡 <strong>デモで送信機能を試すには</strong>「旅館B（Standard）」でログインしてください。<br>
+      <button onclick="document.getElementById('upgrade-modal').classList.remove('open');fillDemoLogin('demo2@omotenashi.com','demo1234')" style="margin-top:8px;padding:5px 14px;background:var(--gold);color:#fff;border:none;border-radius:4px;font-size:11px;cursor:pointer;font-weight:700">♨️ 旅館B（Standard）でログインし直す</button>
+    </div>
+  </div>
+</div>
+
+<!-- Warmup overlay (P2-5) -->
+<div id="warmup-overlay">
+  <div class="warmup-spinner"></div>
+  <div class="warmup-msg">サーバーを起動しています...</div>
+  <div class="warmup-bar"><div class="warmup-bar-fill" id="warmup-bar-fill"></div></div>
+  <div class="warmup-sub" id="warmup-sub-msg">初回ログイン時のみ、最大30秒かかります。そのままお待ちください。</div>
+  <div style="font-size:11px;color:#b8860b;margin-top:8px">✅ 2回目以降は即座にログインできます</div>
+</div>
 
 <div id="toast">✓ 操作が完了しました</div>
 
@@ -919,6 +1543,11 @@ function switchTab(name, el) {
   document.getElementById('tab-' + name).classList.add('active');
   el.classList.add('active');
   document.getElementById('topbar-title').textContent = tabTitles[name];
+  if (name === 'reservation') rsvLoadList();
+  if (name === 'customers')  { loadCustomersFromAPI(); loadBirthdayMonthList(); }
+  if (name === 'review')     loadReviewsFromAPI();
+  if (name === 'analytics')  { applyPlanGating(); initAnalytics(); }
+  if (name === 'settings')   loadHotelSettings();
 }
 
 // ---- Customer Data ----
@@ -937,54 +1566,168 @@ const customers = [
 
 const rankClass = { VIP:'rank-vip', GOLD:'rank-gold', SILVER:'rank-silver', NORMAL:'rank-normal' };
 const statusColor = { 'チェックイン中':'var(--success)', '予約済':'var(--gold)', '在宅':'var(--text-muted)' };
+let _customerDisplayData = [];
 
 function renderCustomers(data) {
+  _customerDisplayData = data;
   const tbody = document.getElementById('customer-tbody');
-  tbody.innerHTML = data.map(c => `
+  tbody.innerHTML = data.map((c, idx) => `
     <tr>
       <td><strong>${c.name}</strong></td>
-      <td><span class="rank-badge ${rankClass[c.rank]}">${c.rank}</span></td>
-      <td>${c.stays}泊</td>
-      <td>${c.last}</td>
-      <td style="color:var(--text-secondary)">${c.tel}</td>
-      <td>${c.birthdayMD ? c.birthdayMD.replace('-', '/') : c.birth}</td>
-      <td style="color:var(--gold-light)">${c.ltv}</td>
-      <td><span class="status-dot" style="background:${statusColor[c.status]}"></span>${c.status}</td>
-      <td><button class="btn btn-outline" style="padding:4px 10px;font-size:11px" onclick="showToast('${c.name}様の詳細を開きました')">詳細</button></td>
+      <td><span class="rank-badge ${rankClass[c.rank] || 'rank-normal'}">${c.rank || 'NORMAL'}</span></td>
+      <td>${c.stays || 0}泊</td>
+      <td>${c.last || '—'}</td>
+      <td style="color:var(--text-secondary)">${c.tel || c.phone || '—'}</td>
+      <td>${c.birthdayMD ? c.birthdayMD.replace('-', '/') : (c.birth || '—')}</td>
+      <td style="color:var(--gold-light)">${c.ltv || '¥0'}</td>
+      <td><span class="status-dot" style="background:${statusColor[c.status] || 'var(--text-muted)'}"></span>${c.status || '在宅'}</td>
+      <td style="display:flex;gap:4px">
+        <button class="btn btn-outline" style="padding:4px 10px;font-size:11px" onclick="showCustomerDetail(${idx})">詳細</button>
+        ${c.id ? `<button class="rsv-action-btn" style="color:var(--danger);border-color:var(--danger)" onclick="customerDeleteConfirm('${c.id}','${c.name.replace(/'/g,'&#39;')}')">🗑️</button>` : ''}
+      </td>
     </tr>
   `).join('');
 }
 renderCustomers(customers);
 
 function filterCustomers(val) {
-  const filtered = customers.filter(c => c.name.includes(val) || c.tel.includes(val));
+  const src = _customerDisplayData.length ? _customerDisplayData : customers;
+  const filtered = src.filter(c =>
+    (c.name || '').includes(val) ||
+    (c.tel  || '').includes(val) ||
+    (c.phone|| '').includes(val)
+  );
   renderCustomers(filtered);
 }
 
+function customerDeleteConfirm(id, name) {
+  if (!rsvToken) { showToast('ログインが必要です'); return; }
+  document.getElementById('customer-delete-name').textContent = name;
+  document.getElementById('customer-delete-modal').dataset.targetId = id;
+  document.getElementById('customer-delete-modal').classList.add('open');
+}
+
+async function customerDeleteExecute() {
+  const modal = document.getElementById('customer-delete-modal');
+  const id = modal.dataset.targetId;
+  modal.classList.remove('open');
+  try {
+    const res = await rsvApi('/customers/' + id, { method: 'DELETE' });
+    if (res.ok || res.status === 204) {
+      showToast('顧客を削除しました');
+      loadCustomersFromAPI();
+    } else {
+      const d = await res.json().catch(() => ({}));
+      showToast('削除失敗: ' + (d.detail || 'エラー'));
+    }
+  } catch(e) { showToast('削除失敗: ' + e.message); }
+}
+
 // ---- Review list ----
-const reviews = [
-  { date:'2026/03/12', platform:'Google', rating:5, text:'スタッフの接客が素晴らしく、また来たいと思います。' },
-  { date:'2026/03/11', platform:'楽天', rating:4, text:'お部屋は綺麗で広かったです。朝食は少し種類が少なめ。' },
-  { date:'2026/03/10', platform:'じゃらん', rating:5, text:'記念日に利用しました。サプライズ演出をしていただき感動。' },
-  { date:'2026/03/09', platform:'一休', rating:3, text:'立地は最高ですが、アメニティが少し古い印象でした。' },
-  { date:'2026/03/08', platform:'Google', rating:4, text:'チェックインがスムーズでとても助かりました。' },
+// 口コミモックデータ（フォールバック用）
+const reviewsMock = [
+  { id:null, created_at:'2026/03/12', platform:'Google',  reviewer_name:'田中 美咲',   rating:5, content:'スタッフの接客が素晴らしく、また来たいと思います。' },
+  { id:null, created_at:'2026/03/11', platform:'楽天トラベル', reviewer_name:'山本 健太郎', rating:4, content:'お部屋は綺麗で広かったです。朝食は少し種類が少なめ。' },
+  { id:null, created_at:'2026/03/10', platform:'じゃらん',reviewer_name:'佐藤 由美',   rating:5, content:'記念日に利用しました。サプライズ演出をしていただき感動。' },
+  { id:null, created_at:'2026/03/09', platform:'一休.com', reviewer_name:'渡辺 雄大',   rating:3, content:'立地は最高ですが、アメニティが少し古い印象でした。' },
+  { id:null, created_at:'2026/03/08', platform:'Google',  reviewer_name:'伊藤 奈々',   rating:4, content:'チェックインがスムーズでとても助かりました。' },
 ];
 const stars = r => '★'.repeat(r) + '☆'.repeat(5-r);
-document.getElementById('review-list').innerHTML = reviews.map(r => `
-  <tr>
-    <td>${r.date}</td>
-    <td>${r.platform}</td>
-    <td style="color:var(--gold)">${stars(r.rating)}</td>
-    <td style="color:var(--text-secondary)">${r.text.substring(0,30)}...</td>
-    <td><button class="btn btn-gold" style="padding:4px 12px;font-size:11px" onclick="loadReview(\`${r.text}\`, ${r.rating})">返信作成</button></td>
-  </tr>
-`).join('');
 
-function loadReview(text, rating) {
-  switchTab('review', document.querySelectorAll('.nav-item')[3]);
+function renderReviewList(data, isMock) {
+  const tbody  = document.getElementById('review-list');
+  const table  = document.getElementById('review-list-table');
+  const empty  = document.getElementById('review-list-empty');
+  const count  = document.getElementById('review-list-count');
+  const gate   = document.getElementById('review-list-gate');
+  gate.style.display  = 'none';
+  if (!data.length) {
+    table.style.display = 'none';
+    empty.style.display = 'block';
+    count.textContent   = '';
+    return;
+  }
+  table.style.display = '';
+  empty.style.display = 'none';
+  const unreplied = data.filter(r => !r.reply).length;
+  count.textContent = unreplied > 0 ? `● 未返信 ${unreplied}件` : `● ${data.length}件`;
+  tbody.innerHTML = data.map(r => {
+    const dateStr = r.created_at ? r.created_at.substring(0, 10).replace(/-/g, '/') : '—';
+    const ratingNum = r.rating || 0;
+    const excerpt = (r.content || '').substring(0, 28) + ((r.content||'').length > 28 ? '...' : '');
+    const reviewerName = r.reviewer_name || 'お客様';
+    const platform = r.platform || '—';
+    const hasReply = !!r.reply;
+    return `<tr style="${hasReply ? 'opacity:.6' : ''}">
+      <td>${dateStr}</td>
+      <td>${platform}</td>
+      <td style="color:var(--gold);white-space:nowrap">${stars(ratingNum)}</td>
+      <td style="color:var(--text-secondary)">${reviewerName}</td>
+      <td style="color:var(--text-secondary)">${excerpt}</td>
+      <td style="white-space:nowrap">
+        ${hasReply
+          ? '<span style="font-size:11px;color:var(--success)">✓ 返信済</span>'
+          : `<button class="btn btn-gold" style="padding:4px 12px;font-size:11px"
+               onclick="loadReview(${JSON.stringify(r.content)},${ratingNum},${JSON.stringify(reviewerName)},${JSON.stringify(platform)},${JSON.stringify(r.id||null)})">返信作成</button>`
+        }
+      </td>
+    </tr>`;
+  }).join('');
+  if (isMock) count.textContent += '（サンプル）';
+}
+
+async function loadReviewsFromAPI() {
+  const loading = document.getElementById('review-list-loading');
+  const table   = document.getElementById('review-list-table');
+  const gate    = document.getElementById('review-list-gate');
+  loading.style.display = 'block';
+  table.style.display   = 'none';
+
+  if (!rsvToken) {
+    loading.style.display = 'none';
+    renderReviewList(reviewsMock, true);
+    return;
+  }
+  if (!requirePlan('standard')) {
+    loading.style.display = 'none';
+    table.style.display   = 'none';
+    gate.style.display    = 'block';
+    document.getElementById('review-list-count').textContent = '';
+    renderReviewList(reviewsMock, true); // モックを下に表示
+    return;
+  }
+  try {
+    const res = await rsvApi('/reviews/');
+    loading.style.display = 'none';
+    if (!res.ok) throw new Error('取得失敗');
+    const data = await res.json();
+    renderReviewList(data, false);
+  } catch(e) {
+    loading.style.display = 'none';
+    renderReviewList(reviewsMock, true);
+  }
+}
+
+// 初期描画（モック）
+renderReviewList(reviewsMock, true);
+
+function loadReview(text, rating, reviewerName, platform, reviewId) {
+  _currentReviewId = reviewId || null;
   document.getElementById('review-text').value = text;
-  setRating(rating);
-  generateReview();
+  setRating(rating || 4);
+  if (reviewerName) document.getElementById('reviewer-name').value = reviewerName;
+  if (platform) {
+    const sel = document.getElementById('review-platform');
+    const opt = Array.from(sel.options).find(o => o.text.includes(platform) || platform.includes(o.text));
+    if (opt) sel.value = opt.value;
+  }
+  // 保存ボタンの表示切替（DBに口コミIDがある場合のみ保存可）
+  const saveBtn = document.getElementById('review-save-btn');
+  if (saveBtn) saveBtn.style.display = reviewId ? 'flex' : 'none';
+  // フォームまでスクロール
+  document.querySelector('#tab-review .ai-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('review-text').focus();
+  showToast('口コミを読み込みました。「AIで返信文を生成する」を押してください。');
 }
 
 // ---- Star rating ----
@@ -1029,14 +1772,56 @@ function getSelectedLang(groupId) {
 
 // ---- Gemini API 呼び出し ----
 async function callGeminiAPI(endpoint, body) {
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
+  await ensureApiReady(null);
+  const token = localStorage.getItem('rsv_token');
+  if (!token) throw new Error('ログインが必要です。予約タブからログインしてください。');
+  const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+  const response = await fetch(API_BASE + endpoint, { method: 'POST', headers, body: JSON.stringify(body) });
+  if (response.status === 401) throw new Error('ログインが必要です。予約タブからログインしてください。');
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error || 'AIの生成に失敗しました。');
+  if (!response.ok) throw new Error(data.detail || data.error || 'AIの生成に失敗しました。');
   return data.text;
+}
+
+// SSEストリーミング版：口コミ返信に使用。outElにリアルタイム表示しfullTextを返す
+async function callGeminiAPIStream(endpoint, body, outEl) {
+  await ensureApiReady(null);
+  const token = localStorage.getItem('rsv_token');
+  if (!token) throw new Error('ログインが必要です。予約タブからログインしてください。');
+  const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+  const response = await fetch(API_BASE + endpoint, { method: 'POST', headers, body: JSON.stringify(body) });
+  if (response.status === 401) throw new Error('ログインが必要です。予約タブからログインしてください。');
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.detail || data.error || 'AIの生成に失敗しました。');
+  }
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let fullText = '';
+  outEl.classList.remove('empty');
+  outEl.textContent = '';
+  let buf = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, { stream: true });
+    const lines = buf.split('\n');
+    buf = lines.pop(); // 未完了行をバッファに残す
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const payload = line.slice(6).trim();
+      if (payload === '[DONE]') return fullText;
+      try {
+        const parsed = JSON.parse(payload);
+        if (parsed.error) throw new Error(parsed.error);
+        if (parsed.text) {
+          fullText += parsed.text;
+          outEl.textContent = fullText;
+        }
+      } catch (e) { /* 不完全なJSONは無視 */ }
+    }
+  }
+  return fullText;
 }
 
 function setLoading(outEl, btnEl, loading) {
@@ -1069,10 +1854,14 @@ async function generateLine() {
     const text = await callGeminiAPI('/api/generate-line', { segment, purpose, tone, extra, language });
     out.textContent = '';
     copyBtn.style.display = 'block';
+    document.getElementById('line-edit-area').value = text;
+    document.getElementById('line-edit-area').style.display = 'none';
+    document.getElementById('line-send-actions').style.display = 'flex';
     typeWriter(out, text, copyBtn);
   } catch (err) {
     out.classList.add('empty');
     out.textContent = '❌ エラー: ' + err.message;
+    document.getElementById('line-send-actions').style.display = 'none';
     showToast('生成に失敗しました: ' + err.message);
   } finally {
     setLoading(out, genBtn, false);
@@ -1096,20 +1885,22 @@ async function generateReview() {
   copyBtn.style.display = 'none';
 
   try {
-    const text = await callGeminiAPI('/api/generate-reply', {
+    const text = await callGeminiAPIStream('/api/generate-reply', {
       platform,
       rating: currentRating,
       reviewText,
       tone,
       reviewerName,
       language
-    });
-    out.textContent = '';
+    }, out);
     copyBtn.style.display = 'block';
-    typeWriter(out, text, copyBtn);
+    document.getElementById('review-edit-area').value = text;
+    document.getElementById('review-edit-area').style.display = 'none';
+    document.getElementById('review-send-actions').style.display = 'flex';
   } catch (err) {
     out.classList.add('empty');
     out.textContent = '❌ エラー: ' + err.message;
+    document.getElementById('review-send-actions').style.display = 'none';
     showToast('生成に失敗しました: ' + err.message);
   } finally {
     setLoading(out, genBtn, false);
@@ -1148,6 +1939,10 @@ function switchChannel(name, el) {
 
 // ---- Email Broadcast ----
 async function generateEmail() {
+  if (!requirePlan('standard')) {
+    showUpgradeModal('メール配信', 'standard');
+    return;
+  }
   const segment = document.getElementById('email-segment').value;
   const purpose = document.getElementById('email-purpose').value;
   const tone = document.querySelector('#channel-email .tone-pill.active').textContent;
@@ -1165,9 +1960,12 @@ async function generateEmail() {
   toEl.textContent = segment;
 
   try {
-    const response = await fetch('/api/generate-email', {
+    await ensureApiReady(null);
+    const token = localStorage.getItem('rsv_token');
+    if (!token) throw new Error('ログインが必要です。予約タブからログインしてください。');
+    const response = await fetch(API_BASE + '/api/generate-email', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({ segment, purpose, tone, extra, language })
     });
     const data = await response.json();
@@ -1189,6 +1987,7 @@ async function generateEmail() {
 
 // ---- Both (LINE + Email) ----
 async function generateBoth() {
+  if (!requirePlan('standard')) { showUpgradeModal('LINE＋メール両方送信', 'standard'); return; }
   const segment = document.getElementById('both-segment').value;
   const purpose = document.getElementById('both-purpose').value;
   const tone = document.querySelector('#channel-both .tone-pill.active').textContent;
@@ -1209,13 +2008,17 @@ async function generateBoth() {
   subjectEl.textContent = '...';
 
   try {
+    await ensureApiReady(null);
+    const token = localStorage.getItem('rsv_token');
+    if (!token) throw new Error('ログインが必要です。予約タブからログインしてください。');
+    const authHeaders = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
     const [lineRes, emailRes] = await Promise.all([
-      fetch('/api/generate-line', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+      fetch(API_BASE + '/api/generate-line', {
+        method: 'POST', headers: authHeaders,
         body: JSON.stringify({ segment, purpose, tone, extra, language })
       }),
-      fetch('/api/generate-email', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+      fetch(API_BASE + '/api/generate-email', {
+        method: 'POST', headers: authHeaders,
         body: JSON.stringify({ segment, purpose, tone, extra, language })
       })
     ]);
@@ -1330,8 +2133,8 @@ async function previewBirthdayMessage(customerName, rank) {
     preview.textContent = '✨ AIがメッセージを生成中...';
     preview.classList.add('generating');
     try {
-      const res = await fetch('/api/generate-birthday', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+      const res = await fetch(API_BASE + '/api/generate-birthday', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('rsv_token') || '') },
         body: JSON.stringify({ customerName, rank, coupon, couponExpiry: expiry, channel: 'line' })
       });
       const data = await res.json();
@@ -1355,8 +2158,8 @@ async function previewBirthdayMessage(customerName, rank) {
     preview.classList.add('generating');
     subjectEl.textContent = '生成中...';
     try {
-      const res = await fetch('/api/generate-birthday', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+      const res = await fetch(API_BASE + '/api/generate-birthday', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('rsv_token') || '') },
         body: JSON.stringify({ customerName, rank, coupon, couponExpiry: expiry, channel: 'email' })
       });
       const data = await res.json();
@@ -1379,16 +2182,1307 @@ async function previewBirthdayMessage(customerName, rank) {
 
 function confirmBirthdaySend() {
   if (!birthdayPreviewTarget) return;
+  if (!requirePlan('standard')) { showUpgradeModal('誕生日自動送信', 'standard'); return; }
   const ch = currentBdayChannel === 'email' ? 'メール' : 'LINE';
   showToast(`${birthdayPreviewTarget}さんへ誕生日${ch}を送信しました`);
   document.getElementById('birthday-send-btn').disabled = true;
   birthdayPreviewTarget = null;
 }
 
+// ダッシュボード日付初期化
+(function initDashboard() {
+  const now = new Date();
+  // 右上日付
+  const days = ['日','月','火','水','木','金','土'];
+  const dateStr = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日（${days[now.getDay()]}）`;
+  const el = document.getElementById('topbar-date');
+  if (el) el.textContent = dateStr;
+  // 1分ごとに日付更新
+  setInterval(() => {
+    const n = new Date();
+    const s = `${n.getFullYear()}年${n.getMonth()+1}月${n.getDate()}日（${days[n.getDay()]}）`;
+    if (el) el.textContent = s;
+  }, 60000);
+  const m = now.getMonth(); // 0-indexed
+  const y = now.getFullYear();
+  const heights = [60, 72, 55, 48, 80, 95];
+  const guests  = [2840, 3120, 2650, 2410, 3390, 3870];
+  const chart = document.getElementById('dashboard-bar-chart');
+  const labels = document.getElementById('dashboard-bar-labels');
+  if (chart && labels) {
+    chart.innerHTML = '';
+    labels.innerHTML = '';
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(y, m - i, 1);
+      const mo = d.getMonth() + 1;
+      const idx = 5 - i;
+      chart.innerHTML += `<div class="bar-group"><div class="bar" style="height:${heights[idx]}%"></div><div class="bar-label">${mo}月</div></div>`;
+      labels.innerHTML += `<span>${mo}月: ${guests[idx].toLocaleString()}名</span>`;
+    }
+  }
+  const thisM = m + 1;
+  const nextM = (m + 2) > 12 ? 1 : (m + 2);
+  const tm = document.getElementById('task-this-month');
+  const nm = document.getElementById('task-next-month');
+  if (tm) tm.textContent = `${thisM}月LINE配信メッセージ作成`;
+  if (nm) nm.textContent = `${nextM}月スタッフ研修資料準備`;
+})();
+
 // 初期化
 loadBirthdaySettings();
 renderBirthdayCustomers();
 
+// ======================================================
+// ---- Reservation Module ----
+// ======================================================
+const API_BASE = 'https://omotenashi-cloud.onrender.com';
+let rsvToken   = localStorage.getItem('rsv_token') || null;
+let rsvFilter   = '';
+let rsvAllData  = [];
+let rsvPage     = 0;       // 現在ページ（0始まり）
+const RSV_PAGE_SIZE = 10;  // 1ページあたりの表示件数
+let _apiReady  = false;
+
+// ---- P3-4 Plan gating ----
+const PLAN_LEVEL   = { lite:0, standard:1, pro:2, platinum:3 };
+const PLAN_LABEL   = { lite:'LITE', standard:'STANDARD', pro:'PRO', platinum:'PLATINUM' };
+const PLAN_COLOR   = { lite:'', standard:'var(--info)', pro:'#c75000', platinum:'var(--gold)' };
+let currentPlan    = localStorage.getItem('rsv_plan') || 'lite';
+
+const UPGRADE_FEATURES = {
+  standard: '✓ LINE実際の送信\n✓ メール配信\n✓ アナリティクス\n✓ 誕生日自動送信\n✓ 顧客500件登録',
+  pro:      '✓ STANDARDの全機能\n✓ API連携\n✓ 詳細アナリティクス\n✓ 顧客2,000件登録\n✓ 優先サポート',
+  platinum: '✓ PROの全機能\n✓ 顧客無制限\n✓ 複数施設管理\n✓ 専任サポート\n✓ SLA保証',
+};
+
+function requirePlan(minPlan) {
+  return (PLAN_LEVEL[currentPlan] || 0) >= (PLAN_LEVEL[minPlan] || 0);
+}
+
+function showUpgradeModal(feature, minPlan) {
+  document.getElementById('upgrade-modal-feature').textContent = feature;
+  document.getElementById('upgrade-modal-minplan').textContent = PLAN_LABEL[minPlan] || minPlan.toUpperCase();
+  document.getElementById('upgrade-modal-list').innerHTML =
+    (UPGRADE_FEATURES[minPlan] || '').split('\n').map(l => `<div>${l}</div>`).join('');
+  document.getElementById('upgrade-modal').classList.add('open');
+}
+
+function applyPlanGating() {
+  const plan  = currentPlan || 'lite';
+  const label = PLAN_LABEL[plan] || 'LITE';
+  // Topbar badge
+  const pb = document.getElementById('plan-badge');
+  if (pb) pb.textContent = label;
+  // Settings badge
+  const sb = document.getElementById('settings-plan-badge');
+  if (sb) { sb.textContent = label; sb.className = 'plan-badge plan-' + plan; }
+  // Analytics gate banner
+  const gate = document.getElementById('analytics-gate');
+  if (gate) gate.style.display = requirePlan('standard') ? 'none' : 'block';
+  // Email tab — add lock notice if needed
+  const emailPaneBtn = document.querySelector('#tab-line .ch-tab:nth-child(2)');
+  if (emailPaneBtn && !requirePlan('standard')) {
+    emailPaneBtn.title = 'STANDARDプラン以上で利用可能';
+  }
+}
+
+// デモガイド折りたたみ
+let _guideOpen = true;
+function toggleDemoGuide() {
+  _guideOpen = !_guideOpen;
+  const body  = document.getElementById('demo-guide-body');
+  const arrow = document.getElementById('demo-guide-arrow');
+  if (_guideOpen) {
+    body.classList.remove('collapsed');
+    arrow.textContent = '▼ 閉じる';
+  } else {
+    body.classList.add('collapsed');
+    arrow.textContent = '▶ 開く';
+  }
+}
+
+function updateDemoGuideBadge() {
+  const badge = document.getElementById('demo-login-status-badge');
+  if (!badge) return;
+  if (rsvToken) {
+    const name = localStorage.getItem('rsv_tenant_name') || '';
+    badge.textContent = '● ログイン中' + (name ? '：' + name : '');
+    badge.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// P3-4: プランゲーティング初期化
+applyPlanGating();
+updateDemoGuideBadge();
+
+// P3-1: デモログイン補助（ワンクリックで自動ログインまで完結）
+function fillDemoLogin(email, pass) {
+  document.getElementById('rsv-login-email').value = email;
+  document.getElementById('rsv-login-pass').value  = pass;
+  rsvLogin();
+}
+
+// P2-5: バックグラウンドウォームアップ（ページ読み込み時に即時実行）
+backgroundWarmup();
+// ログイン済みならダッシュボードを実データで更新
+if (rsvToken) loadDashboardStats();
+
+// ページ読み込み時にログイン状態を復元
+if (rsvToken) {
+  const savedEmail = localStorage.getItem('rsv_email') || '';
+  const savedName = localStorage.getItem('rsv_tenant_name') || '';
+  document.addEventListener('DOMContentLoaded', () => {
+    rsvShowLoggedIn(savedEmail);
+    if (savedName) {
+      document.getElementById('sidebar-hotel-name').textContent = savedName;
+      document.getElementById('sidebar-footer-name').textContent = savedName;
+      document.getElementById('topbar-user').textContent = '👤 ' + savedName;
+    }
+  });
+}
+
+const RSV_STATUS_LABEL = { confirmed:'確定', checked_in:'チェックイン中', checked_out:'チェックアウト済', cancelled:'キャンセル' };
+
+// Render無料プランのコールドスタート対策
+async function ensureApiReady(msgEl) {
+  if (_apiReady) return true;
+  if (msgEl) msgEl.textContent = '⏳ APIサーバーを起動中です...';
+  for (let i = 0; i < 12; i++) {
+    try {
+      const ctrl = new AbortController();
+      const tid  = setTimeout(() => ctrl.abort(), 5000);
+      const r    = await fetch(API_BASE + '/health', { signal: ctrl.signal });
+      clearTimeout(tid);
+      const d = await r.json();
+      if (d.status === 'ok') {
+        _apiReady = true;
+        if (msgEl) msgEl.textContent = '';
+        return true;
+      }
+    } catch(e) {}
+    await new Promise(r => setTimeout(r, 3000));
+  }
+  if (msgEl) msgEl.textContent = 'APIサーバーへの接続に失敗しました。再読み込みしてください。';
+  return false;
+}
+
+// P2-5: ページ読み込み時にバックグラウンドでウォームアップ
+async function backgroundWarmup() {
+  if (_apiReady) return;
+  for (let i = 0; i < 8; i++) {
+    try {
+      const ctrl = new AbortController();
+      const tid  = setTimeout(() => ctrl.abort(), 5000);
+      const r    = await fetch(API_BASE + '/health', { signal: ctrl.signal });
+      clearTimeout(tid);
+      const d = await r.json();
+      if (d.status === 'ok') { _apiReady = true; return; }
+    } catch(e) {}
+    await new Promise(r => setTimeout(r, 4000));
+  }
+}
+
+// P2-5: ログイン操作等に使うオーバーレイ付きウォームアップ
+async function ensureApiReadyWithUI() {
+  if (_apiReady) return true;
+  const overlay = document.getElementById('warmup-overlay');
+  const subMsg  = document.getElementById('warmup-sub-msg');
+  const barFill = document.getElementById('warmup-bar-fill');
+  overlay.classList.add('show');
+  let attempt = 0;
+  const maxAttempts = 10;
+  while (attempt < maxAttempts) {
+    try {
+      const ctrl = new AbortController();
+      const tid  = setTimeout(() => ctrl.abort(), 5000);
+      const r    = await fetch(API_BASE + '/health', { signal: ctrl.signal });
+      clearTimeout(tid);
+      const d = await r.json();
+      if (d.status === 'ok') {
+        _apiReady = true;
+        overlay.classList.remove('show');
+        return true;
+      }
+    } catch(e) {}
+    attempt++;
+    const pct = Math.min((attempt / maxAttempts) * 100, 90);
+    if (barFill) barFill.style.width = pct + '%';
+    if (subMsg) subMsg.textContent = `起動中... (${attempt * 5}秒経過 / 最大${maxAttempts * 5}秒)`;
+    await new Promise(r => setTimeout(r, 3000));
+  }
+  overlay.classList.remove('show');
+  return false;
+}
+
+async function rsvApi(path, options = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (rsvToken) headers['Authorization'] = 'Bearer ' + rsvToken;
+  const res = await fetch(API_BASE + path, { ...options, headers });
+  if (res.status === 401) { rsvToken = null; localStorage.removeItem('rsv_token'); rsvShowAuth(); throw new Error('認証が必要です'); }
+  return res;
+}
+
+function rsvShowAuth() {
+  document.getElementById('rsv-auth-banner').style.display = 'block';
+  document.getElementById('rsv-logged-in').style.display = 'none';
+}
+
+function rsvShowLoggedIn(email) {
+  document.getElementById('rsv-auth-banner').style.display = 'none';
+  const li = document.getElementById('rsv-logged-in');
+  li.style.display = 'flex';
+  document.getElementById('rsv-logged-email').textContent = email || '';
+}
+
+function rsvLogout() {
+  rsvToken    = null;
+  currentPlan = 'lite';
+  localStorage.removeItem('rsv_token');
+  localStorage.removeItem('rsv_email');
+  localStorage.removeItem('rsv_plan');
+  localStorage.removeItem('rsv_tenant_name');
+  _apiReady = false;
+  rsvShowAuth();
+  rsvRenderSample();
+  applyPlanGating();
+  updateDemoGuideBadge();
+  document.getElementById('sidebar-hotel-name').textContent = 'おもてなし\nクラウド';
+  document.getElementById('sidebar-footer-name').textContent = 'プレミアムホテル東京';
+  document.getElementById('topbar-user').textContent = '👤 管理者';
+}
+
+async function rsvLogin() {
+  const email = document.getElementById('rsv-login-email').value.trim();
+  const pass  = document.getElementById('rsv-login-pass').value;
+  const msg   = document.getElementById('rsv-auth-msg');
+  if (!email || !pass) { msg.textContent = 'メールとパスワードを入力してください'; return; }
+  if (!await ensureApiReadyWithUI()) return;
+  try {
+    const body = new URLSearchParams({ username: email, password: pass });
+    const res = await fetch(API_BASE + '/auth/login', { method: 'POST', body, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+    const data = await res.json();
+    if (!res.ok) { msg.textContent = data.detail || 'ログイン失敗'; return; }
+    rsvToken = data.access_token;
+    localStorage.setItem('rsv_token', rsvToken);
+    localStorage.setItem('rsv_email', email);
+    msg.textContent = '';
+    rsvShowLoggedIn(email);
+    // テナント名・プランをサイドバーに反映
+    try {
+      const me = await fetch(API_BASE + '/auth/me', { headers: { 'Authorization': 'Bearer ' + rsvToken } });
+      const info = await me.json();
+      if (info.name) {
+        localStorage.setItem('rsv_tenant_name', info.name);
+        document.getElementById('sidebar-hotel-name').textContent = info.name;
+        document.getElementById('sidebar-footer-name').textContent = info.name;
+        document.getElementById('topbar-user').textContent = '👤 ' + info.name;
+      }
+      if (info.plan) {
+        currentPlan = info.plan;
+        localStorage.setItem('rsv_plan', info.plan);
+        applyPlanGating();
+      }
+    } catch(e) {}
+    showToast('ログインしました');
+    updateDemoGuideBadge();
+    rsvLoadList();
+  } catch(e) { msg.textContent = 'エラー: ' + e.message; }
+}
+
+async function rsvRegister() {
+  const email = document.getElementById('rsv-login-email').value.trim();
+  const pass  = document.getElementById('rsv-login-pass').value;
+  const msg   = document.getElementById('rsv-auth-msg');
+  if (!email || !pass) { msg.textContent = 'メールとパスワードを入力してください'; return; }
+  if (!await ensureApiReadyWithUI()) return;
+  try {
+    const res = await fetch(API_BASE + '/auth/register', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: email.split('@')[0], email, password: pass })
+    });
+    const data = await res.json();
+    if (!res.ok) { msg.textContent = data.detail || '登録失敗'; return; }
+    msg.style.color = 'var(--success)';
+    msg.textContent = '登録完了。ログインしてください';
+    setTimeout(() => { msg.style.color = 'var(--danger)'; }, 3000);
+  } catch(e) { msg.textContent = 'エラー: ' + e.message; }
+}
+
+async function rsvLoadList() {
+  if (!rsvToken) { rsvShowAuth(); rsvRenderSample(); return; }
+  try {
+    const res = await rsvApi('/reservations/');
+    if (!res.ok) { rsvRenderSample(); return; }
+    rsvAllData = await res.json();
+    rsvPage    = 0; // 新規データ取得時は先頭ページに戻す
+    rsvRenderList(rsvAllData);
+  } catch(e) { rsvRenderSample(); }
+}
+
+function rsvRenderSample() {
+  const sample = [
+    { id:'1', guest_name:'田中 美咲', check_in:'2026-03-15', check_out:'2026-03-17', room_type:'スイートルーム', num_guests:2, status:'checked_in' },
+    { id:'2', guest_name:'山本 健太郎', check_in:'2026-03-20', check_out:'2026-03-22', room_type:'デラックスツイン', num_guests:2, status:'confirmed' },
+    { id:'3', guest_name:'佐藤 由美', check_in:'2026-03-10', check_out:'2026-03-12', room_type:'和室', num_guests:3, status:'checked_out' },
+    { id:'4', guest_name:'鈴木 一郎', check_in:'2026-03-18', check_out:'2026-03-19', room_type:'スタンダードダブル', num_guests:1, status:'confirmed' },
+    { id:'5', guest_name:'高橋 さくら', check_in:'2026-03-08', check_out:'2026-03-10', room_type:'露天風呂付き客室', num_guests:2, status:'checked_out' },
+  ];
+  rsvAllData = sample;
+  rsvRenderList(sample);
+  document.getElementById('rsv-auth-banner').style.display = 'block';
+}
+
+function rsvUpdateKpi(data) {
+  document.getElementById('rsv-kpi-total').textContent     = data.length;
+  document.getElementById('rsv-kpi-confirmed').textContent = data.filter(r => r.status === 'confirmed').length;
+  document.getElementById('rsv-kpi-checkin').textContent   = data.filter(r => r.status === 'checked_in').length;
+  document.getElementById('rsv-kpi-checkout').textContent  = data.filter(r => r.status === 'checked_out').length;
+}
+
+function rsvRenderList(data) {
+  rsvUpdateKpi(rsvAllData);
+  const filtered = rsvFilter ? data.filter(r => r.status === rsvFilter) : data;
+  const tbody  = document.getElementById('rsv-tbody');
+  const empty  = document.getElementById('rsv-empty');
+  const pgWrap = document.getElementById('rsv-pagination');
+  const pgInfo = document.getElementById('rsv-page-info');
+  const prevBtn = document.getElementById('rsv-prev-btn');
+  const nextBtn = document.getElementById('rsv-next-btn');
+
+  if (!filtered.length) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    pgWrap.style.display = 'none';
+    return;
+  }
+  empty.style.display = 'none';
+
+  // ページ境界補正
+  const totalPages = Math.ceil(filtered.length / RSV_PAGE_SIZE);
+  if (rsvPage >= totalPages) rsvPage = totalPages - 1;
+  if (rsvPage < 0) rsvPage = 0;
+
+  const start  = rsvPage * RSV_PAGE_SIZE;
+  const paged  = filtered.slice(start, start + RSV_PAGE_SIZE);
+
+  tbody.innerHTML = paged.map(r => `
+    <tr style="border-bottom:1px solid var(--border);transition:background .1s" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background=''">
+      <td style="padding:10px 10px;font-weight:600">${r.guest_name}</td>
+      <td style="padding:10px 10px;color:var(--text-secondary)">${r.check_in}</td>
+      <td style="padding:10px 10px;color:var(--text-secondary)">${r.check_out}</td>
+      <td style="padding:10px 10px">${r.room_type || '–'}</td>
+      <td style="padding:10px 10px;text-align:center">${r.num_guests}名</td>
+      <td style="padding:10px 10px"><span class="rsv-status ${r.status}">${RSV_STATUS_LABEL[r.status] || r.status}</span></td>
+      <td style="padding:10px 10px">
+        <button class="rsv-action-btn" style="margin-right:4px" onclick="showRsvDetail('${r.id}')">詳細</button>
+        ${r.status === 'confirmed' ? `<button class="rsv-action-btn" onclick="rsvUpdateStatus('${r.id}','checked_in')">チェックイン</button>` : ''}
+        ${r.status === 'checked_in' ? `<button class="rsv-action-btn" onclick="rsvUpdateStatus('${r.id}','checked_out')">チェックアウト</button>` : ''}
+        ${r.status !== 'cancelled' && r.status !== 'checked_out' ? `<button class="rsv-action-btn" style="color:var(--danger);margin-left:4px" onclick="rsvUpdateStatus('${r.id}','cancelled')">取消</button>` : ''}
+        <button class="rsv-action-btn" style="color:var(--danger);margin-left:4px;border-color:var(--danger)" onclick="rsvDeleteConfirm('${r.id}','${r.guest_name.replace(/'/g,'&#39;')}')">🗑️</button>
+      </td>
+    </tr>`).join('');
+
+  // ページネーションコントロール
+  if (totalPages <= 1) {
+    pgWrap.style.display = 'none';
+  } else {
+    pgWrap.style.display = 'flex';
+    pgInfo.textContent = `${start + 1}〜${Math.min(start + RSV_PAGE_SIZE, filtered.length)} 件表示 / 全 ${filtered.length} 件（${rsvPage + 1} / ${totalPages} ページ）`;
+    prevBtn.disabled = rsvPage === 0;
+    nextBtn.disabled = rsvPage >= totalPages - 1;
+  }
+}
+
+function rsvChangePage(delta) {
+  rsvPage += delta;
+  rsvRenderList(rsvAllData);
+  document.getElementById('rsv-tbody').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+async function rsvUpdateStatus(id, status) {
+  if (!rsvToken) { showToast('ログインが必要です'); rsvShowAuth(); return; }
+  try {
+    await rsvApi('/reservations/' + id, { method: 'PATCH', body: JSON.stringify({ status }) });
+    showToast('ステータスを更新しました');
+    rsvLoadList();
+  } catch(e) { showToast('更新失敗: ' + e.message); }
+}
+
+function rsvDeleteConfirm(id, name) {
+  if (!rsvToken) { showToast('ログインが必要です'); rsvShowAuth(); return; }
+  document.getElementById('rsv-delete-name').textContent = name;
+  document.getElementById('rsv-delete-modal').dataset.targetId = id;
+  document.getElementById('rsv-delete-modal').classList.add('open');
+}
+
+async function rsvDeleteExecute() {
+  const modal = document.getElementById('rsv-delete-modal');
+  const id = modal.dataset.targetId;
+  modal.classList.remove('open');
+  try {
+    const res = await rsvApi('/reservations/' + id, { method: 'DELETE' });
+    if (res.ok || res.status === 204) {
+      showToast('予約を削除しました');
+      rsvLoadList();
+    } else {
+      const d = await res.json().catch(() => ({}));
+      showToast('削除失敗: ' + (d.detail || 'エラー'));
+    }
+  } catch(e) { showToast('削除失敗: ' + e.message); }
+}
+
+function rsvSetFilter(status, el) {
+  rsvFilter = status;
+  rsvPage   = 0; // フィルター変更時は先頭ページに戻す
+  document.querySelectorAll('.rsv-filter').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  rsvRenderList(rsvAllData);
+}
+
+function rsvOpenForm() {
+  const today = new Date().toISOString().split('T')[0];
+  const tom = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+  document.getElementById('rsv-f-name').value = '';
+  document.getElementById('rsv-f-guests').value = '2';
+  document.getElementById('rsv-f-checkin').value = today;
+  document.getElementById('rsv-f-checkout').value = tom;
+  document.getElementById('rsv-f-room').value = '';
+  document.getElementById('rsv-f-email').value = '';
+  document.getElementById('rsv-f-phone').value = '';
+  document.getElementById('rsv-f-notes').value = '';
+  document.getElementById('rsv-form-err').textContent = '';
+  document.getElementById('rsv-modal').style.display = 'block';
+}
+
+function rsvCloseForm() { document.getElementById('rsv-modal').style.display = 'none'; }
+
+async function rsvSubmit() {
+  const name     = document.getElementById('rsv-f-name').value.trim();
+  const checkin  = document.getElementById('rsv-f-checkin').value;
+  const checkout = document.getElementById('rsv-f-checkout').value;
+  const errEl    = document.getElementById('rsv-form-err');
+  if (!name)     { errEl.textContent = 'ゲスト名は必須です'; return; }
+  if (!checkin)  { errEl.textContent = 'チェックイン日は必須です'; return; }
+  if (!checkout) { errEl.textContent = 'チェックアウト日は必須です'; return; }
+  if (checkout <= checkin) { errEl.textContent = 'チェックアウトはチェックインより後にしてください'; return; }
+
+  if (!rsvToken) { errEl.textContent = 'ログインが必要です'; rsvShowAuth(); return; }
+
+  const payload = {
+    guest_name:  name,
+    check_in:    checkin,
+    check_out:   checkout,
+    num_guests:  parseInt(document.getElementById('rsv-f-guests').value) || 1,
+    room_type:   document.getElementById('rsv-f-room').value || null,
+    guest_email: document.getElementById('rsv-f-email').value || null,
+    guest_phone: document.getElementById('rsv-f-phone').value || null,
+    notes:       document.getElementById('rsv-f-notes').value || null,
+  };
+  const btn = document.getElementById('rsv-submit-btn');
+  btn.disabled = true; btn.textContent = '登録中...';
+  try {
+    const res = await rsvApi('/reservations/', { method: 'POST', body: JSON.stringify(payload) });
+    if (!res.ok) { const d = await res.json(); errEl.textContent = d.detail || '登録失敗'; return; }
+    rsvCloseForm();
+    showToast('予約を登録しました');
+    rsvLoadList();
+  } catch(e) { errEl.textContent = 'エラー: ' + e.message; }
+  finally { btn.disabled = false; btn.textContent = '予約を登録する'; }
+}
+
+// ======================================================
+// ---- Customer API ----
+async function loadCustomersFromAPI() {
+  const loading = document.getElementById('customer-loading');
+  const error   = document.getElementById('customer-error');
+  const empty   = document.getElementById('customer-empty');
+  const table   = document.getElementById('customer-table');
+  const label   = document.getElementById('customer-count-label');
+  const skTbody = document.getElementById('customer-loading-tbody');
+
+  // Generate skeleton rows
+  if (skTbody) {
+    skTbody.innerHTML = Array(5).fill(`<tr class="skeleton-row">
+      <td><div class="skeleton skeleton-cell" style="width:80%"></div></td>
+      <td><div class="skeleton skeleton-cell" style="width:50px"></div></td>
+      <td><div class="skeleton skeleton-cell" style="width:30px"></div></td>
+      <td><div class="skeleton skeleton-cell" style="width:70%"></div></td>
+      <td><div class="skeleton skeleton-cell" style="width:70%"></div></td>
+      <td><div class="skeleton skeleton-cell" style="width:40px"></div></td>
+      <td><div class="skeleton skeleton-cell" style="width:70%"></div></td>
+      <td><div class="skeleton skeleton-cell" style="width:60px"></div></td>
+      <td><div class="skeleton skeleton-cell" style="width:60px"></div></td>
+    </tr>`).join('');
+  }
+  loading.style.display = 'block';
+  error.style.display = 'none';
+  empty.style.display = 'none';
+  table.style.display = 'none';
+  label.textContent = '読み込み中...';
+
+  if (!rsvToken) {
+    loading.style.display = 'none';
+    table.style.display = '';
+    renderCustomers(customers);
+    label.textContent = customers.length + '件（サンプルデータ）';
+    return;
+  }
+
+  try {
+    const res = await rsvApi('/customers/');
+    loading.style.display = 'none';
+    if (!res.ok) throw new Error('取得失敗');
+    const data = await res.json();
+    if (!data.length) {
+      empty.style.display = 'block';
+      label.textContent = '0件';
+    } else {
+      table.style.display = '';
+      const normalized = data.map(c => ({
+        id:        c.id,
+        name:      c.name || '—',
+        rank:      c.rank || 'NORMAL',
+        stays:     c.total_stays || 0,
+        last:      c.last_stay_date || '—',
+        tel:       c.phone || '—',
+        birth:     c.birthday ? c.birthday.substring(5).replace('-', '/') : '—',
+        birthdayMD: c.birthday ? c.birthday.substring(5) : null,
+        ltv:       c.ltv ? '¥' + Number(c.ltv).toLocaleString() : '¥0',
+        status:    c.status || '在宅',
+        email:     c.email || '—',
+      }));
+      renderCustomers(normalized);
+      label.textContent = data.length + '件';
+    }
+  } catch(e) {
+    loading.style.display = 'none';
+    table.style.display = '';
+    renderCustomers(customers);
+    label.textContent = customers.length + '件（サンプルデータ）';
+  }
+}
+
+// P2-2: 今月の誕生日顧客一覧
+async function loadBirthdayMonthList() {
+  const loading = document.getElementById('birthday-month-loading');
+  const empty   = document.getElementById('birthday-month-empty');
+  const table   = document.getElementById('birthday-month-table');
+  const title   = document.getElementById('birthday-month-title');
+  if (!loading) return;
+  const thisMonth = new Date().getMonth() + 1;
+  if (title) title.textContent = `🎂 ${thisMonth}月の誕生日顧客`;
+
+  if (!rsvToken) {
+    // ローカルデータでフォールバック
+    const targets = customers.filter(c => c.birthdayMD && c.birthdayMD.startsWith(String(thisMonth).padStart(2,'0') + '-'));
+    _renderBirthdayMonthList(targets.map(c => ({ name: c.name, birthday: `2026-${c.birthdayMD}`, email: c.tel, phone: c.tel })));
+    return;
+  }
+  loading.style.display = 'block';
+  table.style.display = 'none';
+  empty.style.display = 'none';
+  try {
+    const res = await rsvApi('/customers/birthdays?month=' + thisMonth);
+    loading.style.display = 'none';
+    if (!res.ok) throw new Error('取得失敗');
+    const data = await res.json();
+    _renderBirthdayMonthList(data);
+  } catch(e) {
+    loading.style.display = 'none';
+    empty.style.display = 'block';
+  }
+}
+
+function _renderBirthdayMonthList(data) {
+  const tbody = document.getElementById('birthday-month-tbody');
+  const table = document.getElementById('birthday-month-table');
+  const empty = document.getElementById('birthday-month-empty');
+  if (!data.length) { empty.style.display = 'block'; table.style.display = 'none'; return; }
+  table.style.display = '';
+  empty.style.display = 'none';
+  tbody.innerHTML = data.map((c, idx) => `
+    <tr>
+      <td><strong>${c.name}</strong></td>
+      <td>${c.birthday ? c.birthday.substring(5).replace('-', '/') : '—'}</td>
+      <td style="color:var(--text-secondary)">${c.email || '—'}</td>
+      <td style="color:var(--text-secondary)">${c.phone || '—'}</td>
+      <td><button class="btn btn-gold" style="padding:4px 10px;font-size:11px" onclick="generateBirthdayFor('${c.name}','${c.id||''}')">✨ AI文案</button></td>
+    </tr>
+  `).join('');
+}
+
+async function generateBirthdayFor(customerName, customerId) {
+  const settings = JSON.parse(localStorage.getItem(BIRTHDAY_STORAGE_KEY) || '{}');
+  const coupon   = settings.coupon || '次回宿泊10%OFF';
+  const expiry   = settings.expiry || 'お誕生月末まで';
+  showToast(`${customerName}様の誕生日メッセージを生成中...`);
+  try {
+    const text = await callGeminiAPI('/api/generate-birthday', { customerName, rank: 'NORMAL', coupon, couponExpiry: expiry, channel: 'line' });
+    // LINEタブに飛んでプレビュー表示
+    const preview = document.getElementById('birthday-preview');
+    if (preview) {
+      preview.classList.remove('empty');
+      preview.textContent = text;
+    }
+    switchTab('line', document.querySelectorAll('.nav-item')[2]);
+    showToast(`${customerName}様のAI文案を生成しました`);
+  } catch(e) {
+    showToast('生成失敗: ' + e.message);
+  }
+}
+
+async function generateAllBirthday() {
+  showToast('一括生成は送信機能実装後（Sprint 3）に対応予定です');
+}
+
+function showCustomerDetail(idx) {
+  const c = _customerDisplayData[idx];
+  if (!c) return;
+  document.getElementById('cd-name-title').textContent = c.name + ' 様';
+  document.getElementById('cd-name').textContent = c.name;
+  const rb = document.getElementById('cd-rank-badge');
+  rb.textContent = c.rank;
+  rb.className = 'rank-badge ' + (rankClass[c.rank] || 'rank-normal');
+  document.getElementById('cd-stays').textContent = (c.stays || 0) + '泊';
+  document.getElementById('cd-last').textContent  = c.last || '—';
+  document.getElementById('cd-ltv').textContent   = c.ltv || '—';
+  document.getElementById('cd-birth').textContent = c.birthdayMD ? c.birthdayMD.replace('-', '/') : (c.birth || '—');
+  document.getElementById('cd-tel').textContent   = c.tel || '—';
+  document.getElementById('cd-email').textContent = c.email || '—';
+  document.getElementById('cd-status').textContent = c.status || '—';
+  document.getElementById('customer-detail-modal').classList.add('open');
+}
+
+// ======================================================
+// ---- LINE send flow ----
+function toggleLineEdit() {
+  const out  = document.getElementById('line-output');
+  const edit = document.getElementById('line-edit-area');
+  const btn  = document.querySelector('#line-send-actions button:first-child');
+  if (edit.style.display === 'none' || !edit.style.display) {
+    edit.value = out.textContent;
+    out.style.display = 'none';
+    edit.style.display = 'block';
+    btn.textContent = '✅ 編集完了';
+  } else {
+    out.textContent = edit.value;
+    out.style.display = 'block';
+    edit.style.display = 'none';
+    btn.textContent = '✏️ 編集';
+  }
+}
+
+function copyLineText() {
+  const edit = document.getElementById('line-edit-area');
+  const out  = document.getElementById('line-output');
+  const text = (edit.style.display !== 'none' && edit.style.display !== '') ? edit.value : out.textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('クリップボードにコピーしました'));
+}
+
+function lineOpenSendConfirm() {
+  if (!requirePlan('standard')) {
+    showUpgradeModal('LINE実際の送信', 'standard');
+    return;
+  }
+  const edit    = document.getElementById('line-edit-area');
+  const out     = document.getElementById('line-output');
+  const text    = (edit.style.display !== 'none' && edit.style.display !== '') ? edit.value : out.textContent;
+  const segment = document.getElementById('line-segment').value;
+  if (!text || text.includes('配信目的とセグメントを選択')) { showToast('先にメッセージを生成してください'); return; }
+  document.getElementById('line-confirm-text').textContent = text;
+  document.getElementById('line-confirm-segment').textContent = segment;
+  document.getElementById('line-send-modal').classList.add('open');
+}
+
+async function sendLineMessage() {
+  document.getElementById('line-send-modal').classList.remove('open');
+  const segment = document.getElementById('line-segment').value;
+  showToast('LINE配信を送信しました（' + segment + '）');
+}
+
+// ======================================================
+// ---- Review reply flow ----
+function toggleReviewEdit() {
+  const out  = document.getElementById('review-output');
+  const edit = document.getElementById('review-edit-area');
+  const btn  = document.querySelector('#review-send-actions button:first-child');
+  if (edit.style.display === 'none' || !edit.style.display) {
+    edit.value = out.textContent;
+    out.style.display = 'none';
+    edit.style.display = 'block';
+    btn.textContent = '✅ 編集完了';
+  } else {
+    out.textContent = edit.value;
+    out.style.display = 'block';
+    edit.style.display = 'none';
+    btn.textContent = '✏️ 編集';
+  }
+}
+
+function copyReviewText() {
+  const edit = document.getElementById('review-edit-area');
+  const out  = document.getElementById('review-output');
+  const text = (edit.style.display !== 'none' && edit.style.display !== '') ? edit.value : out.textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('クリップボードにコピーしました'));
+}
+
+function postReviewReply() {
+  const edit = document.getElementById('review-edit-area');
+  const out  = document.getElementById('review-output');
+  const text = (edit.style.display !== 'none' && edit.style.display !== '') ? edit.value : out.textContent;
+  if (!text || text.includes('口コミ内容を入力して')) { showToast('先に返信文を生成してください'); return; }
+  showToast('📋 プラットフォームに返信を投稿してください（コピーして貼り付け）');
+}
+
+async function saveReviewReply() {
+  if (!_currentReviewId) { showToast('口コミ一覧から「返信作成」を押して口コミを選択してください'); return; }
+  if (!rsvToken)          { showToast('ログインが必要です'); return; }
+
+  const edit    = document.getElementById('review-edit-area');
+  const out     = document.getElementById('review-output');
+  const replyTx = (edit.style.display !== 'none' && edit.style.display !== '') ? edit.value : out.textContent;
+  if (!replyTx || replyTx.includes('口コミ内容を入力して')) { showToast('先に返信文を生成してください'); return; }
+
+  const btn    = document.getElementById('review-save-btn');
+  const status = document.getElementById('review-save-status');
+  btn.disabled = true;
+  btn.textContent = '保存中...';
+  status.style.display = 'block';
+  status.style.background = '#f5f5f5';
+  status.style.color = 'var(--text-muted)';
+  status.textContent = '保存中...';
+
+  try {
+    const res = await rsvApi(`/reviews/${_currentReviewId}/reply`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reply: replyTx })
+    });
+    if (res.ok) {
+      status.style.background = '#e8f5ee';
+      status.style.color = 'var(--success)';
+      status.textContent = '✅ 返信を保存しました。一覧に「返信済」と表示されます。';
+      showToast('返信をDBに保存しました');
+      btn.style.display = 'none';
+      _currentReviewId = null;
+      setTimeout(loadReviewsFromAPI, 800);
+    } else {
+      const d = await res.json().catch(() => ({}));
+      status.style.background = '#ffeaea';
+      status.style.color = 'var(--danger)';
+      status.textContent = '❌ 保存失敗: ' + (d.detail || res.status);
+    }
+  } catch(e) {
+    status.style.background = '#ffeaea';
+    status.style.color = 'var(--danger)';
+    status.textContent = '❌ 通信エラー: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 返信を保存する';
+  }
+}
+
+// ======================================================
+// ---- Reservation Detail / Edit Modal ----
+let _currentRsvId = null;
+let _currentReviewId = null; // 返信保存用: 口コミ一覧から「返信作成」したときに設定
+
+function showRsvDetail(id) {
+  const r = rsvAllData.find(x => String(x.id) === String(id));
+  if (!r) return;
+  _currentRsvId = r.id;
+  // 表示モードに戻す
+  document.getElementById('rd-view-mode').style.display = 'block';
+  document.getElementById('rd-edit-mode').style.display = 'none';
+  document.getElementById('rd-modal-title').textContent = '📅 予約詳細';
+  document.getElementById('rd-edit-toggle').textContent = '✏️ 編集';
+  document.getElementById('rd-edit-toggle').style.display = rsvToken ? 'inline-flex' : 'none';
+  // 表示フィールド
+  document.getElementById('rd-name').textContent     = r.guest_name;
+  document.getElementById('rd-status').textContent   = RSV_STATUS_LABEL[r.status] || r.status;
+  document.getElementById('rd-checkin').textContent  = r.check_in;
+  document.getElementById('rd-checkout').textContent = r.check_out;
+  document.getElementById('rd-room').textContent     = r.room_type || '—';
+  document.getElementById('rd-guests').textContent   = r.num_guests + '名';
+  document.getElementById('rd-email').textContent    = r.guest_email || '—';
+  document.getElementById('rd-phone').textContent    = r.guest_phone || '—';
+  document.getElementById('rd-notes').textContent    = r.notes || '（備考なし）';
+  const lineBtn = document.getElementById('rd-line-btn');
+  const hasLine = !!r.line_user_id;
+  lineBtn.disabled = !hasLine;
+  lineBtn.style.opacity = hasLine ? '1' : '0.45';
+  lineBtn.title   = hasLine ? '' : 'LINE未連携のためご利用いただけません';
+  lineBtn.onclick = () => lineNotifyRsv(r.id);
+  let lineNote = document.getElementById('rd-line-note');
+  if (!lineNote) {
+    lineNote = document.createElement('div');
+    lineNote.id = 'rd-line-note';
+    lineNote.style.cssText = 'font-size:11px;color:var(--text-muted);margin-top:6px';
+    lineBtn.parentNode.appendChild(lineNote);
+  }
+  lineNote.textContent = hasLine ? '' : '※ 顧客タブでLINE連携をすると通知送信が可能になります';
+  document.getElementById('rsv-detail-modal').classList.add('open');
+}
+
+function toggleRsvEdit() {
+  const r = rsvAllData.find(x => String(x.id) === String(_currentRsvId));
+  const viewEl = document.getElementById('rd-view-mode');
+  const editEl = document.getElementById('rd-edit-mode');
+  const isEdit = editEl.style.display !== 'none';
+  if (isEdit) {
+    // 編集→表示
+    viewEl.style.display = 'block';
+    editEl.style.display = 'none';
+    document.getElementById('rd-modal-title').textContent = '📅 予約詳細';
+    document.getElementById('rd-edit-toggle').textContent = '✏️ 編集';
+  } else {
+    // 表示→編集（フォームに現在値セット）
+    if (!r) return;
+    document.getElementById('re-name').value    = r.guest_name || '';
+    document.getElementById('re-status').value  = r.status || 'confirmed';
+    document.getElementById('re-checkin').value = r.check_in || '';
+    document.getElementById('re-checkout').value= r.check_out || '';
+    document.getElementById('re-room').value    = r.room_type || '';
+    document.getElementById('re-guests').value  = r.num_guests || 1;
+    document.getElementById('re-email').value   = r.guest_email || '';
+    document.getElementById('re-phone').value   = r.guest_phone || '';
+    document.getElementById('re-notes').value   = r.notes || '';
+    document.getElementById('re-error').style.display = 'none';
+    viewEl.style.display = 'none';
+    editEl.style.display = 'block';
+    document.getElementById('rd-modal-title').textContent = '✏️ 予約を編集';
+    document.getElementById('rd-edit-toggle').textContent = '← 戻る';
+  }
+}
+
+async function saveRsvEdit() {
+  if (!rsvToken) { showToast('ログインが必要です'); return; }
+  const errEl = document.getElementById('re-error');
+  const btn   = document.getElementById('re-save-btn');
+  const name  = document.getElementById('re-name').value.trim();
+  const ci    = document.getElementById('re-checkin').value;
+  const co    = document.getElementById('re-checkout').value;
+  if (!name)       { errEl.textContent = 'ゲスト名は必須です'; errEl.style.display = 'block'; return; }
+  if (!ci || !co)  { errEl.textContent = 'チェックイン/アウト日は必須です'; errEl.style.display = 'block'; return; }
+  if (ci >= co)    { errEl.textContent = 'チェックアウトはチェックインより後の日付を指定してください'; errEl.style.display = 'block'; return; }
+  errEl.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = '保存中...';
+  try {
+    const payload = {
+      guest_name:  name,
+      status:      document.getElementById('re-status').value,
+      check_in:    ci,
+      check_out:   co,
+      room_type:   document.getElementById('re-room').value.trim() || null,
+      num_guests:  parseInt(document.getElementById('re-guests').value) || 1,
+      guest_email: document.getElementById('re-email').value.trim() || null,
+      guest_phone: document.getElementById('re-phone').value.trim() || null,
+      notes:       document.getElementById('re-notes').value.trim() || null,
+    };
+    const res = await rsvApi('/reservations/' + _currentRsvId, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      errEl.textContent = '保存失敗: ' + (d.detail || 'エラー');
+      errEl.style.display = 'block';
+      return;
+    }
+    document.getElementById('rsv-detail-modal').classList.remove('open');
+    showToast('✅ 予約を更新しました');
+    rsvLoadList();
+  } catch(e) {
+    errEl.textContent = 'エラー: ' + e.message;
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 変更を保存する';
+  }
+}
+
+async function lineNotifyRsv(id) {
+  if (!rsvToken) { showToast('ログインが必要です'); return; }
+  if (!requirePlan('standard')) { showUpgradeModal('LINE予約確認通知', 'standard'); return; }
+  document.getElementById('rsv-detail-modal').classList.remove('open');
+  try {
+    const res = await rsvApi('/line/notify/reservation/' + id, { method: 'POST' });
+    const data = await res.json().catch(() => ({}));
+    if (data.status === 'sent') {
+      showToast('✅ LINE予約確認通知を送信しました');
+    } else if (data.status === 'skipped') {
+      showToast('⚠️ LINE未連携のためスキップされました');
+    } else if (!res.ok) {
+      showToast('LINE通知失敗: ' + (data.detail || 'エラー'));
+    } else {
+      showToast('LINE通知を送信しました');
+    }
+  } catch(e) {
+    showToast('LINE通知失敗: ' + e.message);
+  }
+}
+
+// ======================================================
+// ---- P2-1 Dashboard real data ----
+async function loadDashboardStats() {
+  if (!rsvToken) return; // ログイン未済はスキップ（モックのまま）
+  try {
+    const res = await rsvApi('/dashboard/stats');
+    if (!res.ok) return;
+    const d = await res.json();
+    // KPI cards
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set('dash-kpi-checkin',  d.checked_in_now ?? '—');
+    set('dash-kpi-monthly',  d.confirmed_this_month ?? '—');
+    set('dash-kpi-customers', d.total_customers ?? '—');
+    set('dash-kpi-checkout', d.checked_out_this_month ?? '—');
+    // Trend sub-labels (computed from monthly_data)
+    if (d.monthly_data && d.monthly_data.length >= 2) {
+      const last  = d.monthly_data[d.monthly_data.length - 1];
+      const prev  = d.monthly_data[d.monthly_data.length - 2];
+      const diff  = last.count - prev.count;
+      const sign  = diff >= 0 ? '▲' : '▼';
+      const color = diff >= 0 ? 'var(--success)' : 'var(--danger)';
+      const subEl = document.getElementById('dash-kpi-monthly-sub');
+      if (subEl) {
+        subEl.innerHTML = `<span style="color:${color}">${sign} ${Math.abs(diff)}件 vs 先月</span>`;
+        subEl.className = '';
+      }
+    }
+    // checkin sub
+    const checkinSub = document.getElementById('dash-kpi-checkin-sub');
+    if (checkinSub && d.checked_in_now != null) {
+      checkinSub.innerHTML = `<span style="color:var(--text-muted)">${d.checked_in_now > 0 ? '滞在中のゲストあり' : '現在空室'}</span>`;
+      checkinSub.className = '';
+    }
+    // customers sub
+    const custSub = document.getElementById('dash-kpi-customers-sub');
+    if (custSub && d.total_customers != null) {
+      custSub.innerHTML = `<span style="color:var(--text-muted)">累計登録顧客</span>`;
+      custSub.className = '';
+    }
+    // checkout sub
+    const coSub = document.getElementById('dash-kpi-checkout-sub');
+    if (coSub && d.checked_out_this_month != null) {
+      coSub.innerHTML = `<span style="color:var(--text-muted)">今月退館済み</span>`;
+      coSub.className = '';
+    }
+    // "実データ" badge on chart title
+    const chartTitle = document.querySelector('#tab-dashboard .card-title');
+    if (chartTitle && !chartTitle.querySelector('.data-badge')) {
+      chartTitle.innerHTML += '<span class="data-badge real">実データ</span>';
+    }
+    // Bar chart with count labels on top
+    const chart  = document.getElementById('dashboard-bar-chart');
+    const labels = document.getElementById('dashboard-bar-labels');
+    if (chart && d.monthly_data && d.monthly_data.length) {
+      const maxCount = Math.max(...d.monthly_data.map(m => m.count), 1);
+      chart.innerHTML  = '';
+      labels.innerHTML = '';
+      d.monthly_data.forEach(m => {
+        const h = Math.max(Math.round((m.count / maxCount) * 100), 4);
+        chart.innerHTML += `<div class="bar-group"><div class="bar-count">${m.count}</div><div class="bar" style="height:${h}%" title="${m.month}: ${m.count}件"></div><div class="bar-label">${m.month}</div></div>`;
+      });
+    }
+  } catch(e) {}
+}
+
+// ======================================================
+// ---- Analytics ----
+async function initAnalytics() {
+  // API から実データ取得試行
+  if (rsvToken) {
+    try {
+      const res = await rsvApi('/analytics/stats');
+      if (res.ok) {
+        const apiData = await res.json();
+        _drawAnalyticsCharts(
+          apiData.monthly_reservations,
+          apiData.monthly_reviews.map(r => ({ ...r, score: r.avg_rating })),
+          true
+        );
+        _fillAnalyticsLineTable(); // async, no await needed
+        return;
+      }
+    } catch(e) {}
+  }
+  // フォールバック: モックデータ
+  const now  = new Date();
+  const m    = now.getMonth();
+  const y    = now.getFullYear();
+  const mockRsv = [];
+  const mockRev = [];
+  const occRates    = [72, 78, 69, 65, 82, 87];
+  const reviewScores = [4.3, 4.5, 4.4, 4.6, 4.7, 4.8];
+  for (let i = 5; i >= 0; i--) {
+    const d  = new Date(y, m - i, 1);
+    const mo = d.getMonth() + 1;
+    const idx = 5 - i;
+    mockRsv.push({ month: `${mo}月`, count: Math.round(occRates[idx] * 1.2) });
+    mockRev.push({ month: `${mo}月`, score: reviewScores[idx] });
+  }
+  _drawAnalyticsCharts(mockRsv, mockRev, false);
+  _fillAnalyticsLineTable(); // async, no await needed
+}
+
+function _drawAnalyticsCharts(rsvData, revData, isReal) {
+  // Badge helper
+  const badgeCls = isReal ? 'real' : 'sample';
+  const badgeTxt = isReal ? '実データ' : 'サンプル';
+  const occCard = document.querySelector('#tab-analytics .analytics-grid .card');
+  const revCard = document.querySelectorAll('#tab-analytics .analytics-grid .card')[1];
+  [occCard, revCard].forEach(card => {
+    if (card && !card.querySelector('.data-badge')) {
+      const t = card.querySelector('.card-title');
+      if (t) t.innerHTML += `<span class="data-badge ${badgeCls}">${badgeTxt}</span>`;
+    }
+  });
+
+  const occChart  = document.getElementById('analytics-occ-chart');
+  const occLabels = document.getElementById('analytics-occ-labels');
+  if (occChart && rsvData && rsvData.length) {
+    const maxRsv = Math.max(...rsvData.map(d => d.count), 1);
+    occChart.innerHTML = '';
+    occLabels.innerHTML = '';
+    rsvData.forEach(d => {
+      const h = Math.max(Math.round((d.count / maxRsv) * 100), 4);
+      occChart.innerHTML += `<div class="mini-bar-col-wrap" title="${d.month}: ${d.count}件"><div class="mini-bar-val">${d.count}</div><div class="mini-bar-col" style="height:${h}%"></div></div>`;
+      occLabels.innerHTML += `<span>${d.month}</span>`;
+    });
+  }
+  const revChart  = document.getElementById('analytics-review-chart');
+  const revLabels = document.getElementById('analytics-review-labels');
+  if (revChart && revData && revData.length) {
+    revChart.innerHTML  = '';
+    revLabels.innerHTML = '';
+    revData.forEach(d => {
+      const score = d.avg_rating ?? d.score ?? null;
+      const h     = score ? Math.max(Math.round((score / 5) * 100), 4) : 4;
+      const color = !score ? '#ccc' : score >= 4.5 ? '#4caf82' : score >= 4.0 ? 'var(--gold-dark)' : '#e0a020';
+      const label = score ? `★${score.toFixed(1)}` : '—';
+      revChart.innerHTML  += `<div class="mini-bar-col-wrap" title="${d.month}: ${label}"><div class="mini-bar-val" style="color:${color}">${label}</div><div class="mini-bar-col" style="height:${h}%;background:${color}"></div></div>`;
+      revLabels.innerHTML += `<span>${d.month}</span>`;
+    });
+  }
+  // Update KPI row with computed values when real data is available
+  if (isReal && rsvData && rsvData.length) {
+    const last  = rsvData[rsvData.length - 1];
+    const prev  = rsvData[rsvData.length - 2];
+    const items = document.querySelectorAll('#tab-analytics .kpi-trend-item');
+    if (items[0]) {
+      // Occupancy: show count comparison trend
+      const diff = last.count - (prev?.count || 0);
+      const sign = diff >= 0 ? '▲' : '▼';
+      const color = diff >= 0 ? 'var(--success)' : 'var(--danger)';
+      const subEl = items[0].querySelector('.sub');
+      if (subEl) subEl.innerHTML = `<span style="color:${color}">${sign} ${Math.abs(diff)}件 vs 先月</span>`;
+    }
+    if (revData && revData.length && items[3]) {
+      const latestScore = revData[revData.length - 1]?.avg_rating ?? revData[revData.length - 1]?.score;
+      if (latestScore) {
+        const valEl = items[3].querySelector('.val');
+        if (valEl) valEl.textContent = `★${latestScore.toFixed(1)}`;
+      }
+    }
+  }
+}
+
+async function _fillAnalyticsLineTable() {
+  const lineTable = document.getElementById('analytics-line-table');
+  if (!lineTable) return;
+
+  // モックデータ（フォールバック用）
+  const now = new Date();
+  const mockMonths = [
+    now.getMonth() <= 1 ? now.getMonth() + 11 : now.getMonth() - 1,
+    now.getMonth() === 0 ? 12 : now.getMonth(),
+    now.getMonth() + 1,
+  ];
+  const mockRows = [
+    { mo: mockMonths[0] + '月', send: 2790, open: '75.6%', conv: '8.2%', real: false },
+    { mo: mockMonths[1] + '月', send: 2812, open: '68.9%', conv: '6.8%', real: false },
+    { mo: mockMonths[2] + '月', send: 2847, open: '72.3%', conv: '4.1%', real: false },
+  ];
+
+  const renderRows = (rows) => {
+    lineTable.innerHTML = rows.map(d =>
+      `<tr>
+        <td>${d.mo}</td>
+        <td>${d.real ? `<strong>${(d.send||0).toLocaleString()}件</strong>` : `${(d.send||0).toLocaleString()}件`}</td>
+        <td style="color:${d.open ? 'var(--success)' : 'var(--text-muted)'}">
+          ${d.open ?? '<span style="font-size:10px;color:var(--text-muted)">推定値なし</span>'}
+        </td>
+        <td>${d.conv ?? '<span style="font-size:10px;color:var(--text-muted)">—</span>'}</td>
+      </tr>`
+    ).join('');
+  };
+
+  if (!rsvToken) { renderRows(mockRows); return; }
+
+  try {
+    const res = await rsvApi('/analytics/line-stats');
+    if (!res.ok) throw new Error('取得失敗');
+    const data = await res.json();
+    if (!data.monthly_line || !data.monthly_line.length) throw new Error('データなし');
+
+    // 実データ取得成功: カウントは実データ、開封率/転換率はフォールバック
+    const mockRates = [['75.6%','8.2%'],['68.9%','6.8%'],['72.3%','4.1%']];
+    const realRows = data.monthly_line.map((d, i) => ({
+      mo:   d.month,
+      send: d.count,
+      open: d.open_rate ?? mockRates[i]?.[0] ?? '—',
+      conv: d.conv_rate ?? mockRates[i]?.[1] ?? '—',
+      real: true,
+    }));
+
+    // テーブルタイトルにバッジ
+    const lineCard = document.querySelector('#tab-analytics .card:has(#analytics-line-table)') ||
+                     [...document.querySelectorAll('#tab-analytics .card')].find(c => c.querySelector('#analytics-line-table'));
+    if (lineCard) {
+      const t = lineCard.querySelector('.card-title');
+      if (t && !t.querySelector('.data-badge')) {
+        t.innerHTML += '<span class="data-badge real">配信数:実データ</span>';
+      }
+    }
+    renderRows(realRows);
+  } catch(e) {
+    renderRows(mockRows); // フォールバック: サンプル表示
+  }
+}
+
+// ======================================================
+// ---- Settings ----
+async function loadHotelSettings() {
+  const saved = JSON.parse(localStorage.getItem('hotel_settings') || '{}');
+  document.getElementById('settings-hotel-name').value    = saved.name    || (localStorage.getItem('rsv_tenant_name') || '');
+  document.getElementById('settings-hotel-email').value   = saved.email   || '';
+  document.getElementById('settings-hotel-phone').value   = saved.phone   || '';
+  document.getElementById('settings-hotel-address').value = saved.address || '';
+
+  // LINE接続状態を取得して表示
+  if (rsvToken) {
+    try {
+      const r = await rsvApi('/line/status');
+      const res = await r.json().catch(() => ({}));
+      const badge = document.getElementById('line-status-badge');
+      if (res && res.webhook_ready) {
+        badge.style.background = '#e6f9ed';
+        badge.style.color = '#1a7f3c';
+        badge.textContent = '● 連携済み';
+      } else if (res && (res.access_token_set || res.channel_secret_set)) {
+        badge.style.background = '#fff8e1';
+        badge.style.color = '#b45309';
+        badge.textContent = '● 設定不完全';
+      } else {
+        badge.style.background = '#fdeaea';
+        badge.style.color = 'var(--danger)';
+        badge.textContent = '● 未連携';
+      }
+    } catch (e) { /* 取得失敗は静かにスキップ */ }
+  }
+}
+
+function saveHotelSettings() {
+  const name    = document.getElementById('settings-hotel-name').value.trim();
+  const email   = document.getElementById('settings-hotel-email').value.trim();
+  const phone   = document.getElementById('settings-hotel-phone').value.trim();
+  const address = document.getElementById('settings-hotel-address').value.trim();
+  localStorage.setItem('hotel_settings', JSON.stringify({ name, email, phone, address }));
+  if (name) {
+    document.getElementById('sidebar-hotel-name').textContent  = name;
+    document.getElementById('sidebar-footer-name').textContent = name;
+  }
+  showToast('ホテル情報を保存しました');
+}
+
+function saveLineSettings() {
+  showToast('LINE設定を保存しました（本番適用はサーバー管理者が行います）');
+}
+
+async function runSeedDemo() {
+  const secret = document.getElementById('seed-secret').value.trim();
+  if (!secret) { showToast('シークレットキーを入力してください'); return; }
+  const btn    = document.getElementById('seed-btn');
+  const status = document.getElementById('seed-status');
+  btn.disabled = true;
+  status.textContent = '投入中...';
+  status.style.color = 'var(--text-muted)';
+  try {
+    const res  = await fetch(API_BASE + '/admin/seed-demo?secret=' + encodeURIComponent(secret), { method: 'POST' });
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 403) {
+      status.textContent = '❌ シークレットキーが違います';
+      status.style.color = 'var(--danger)';
+    } else if (data.status === 'ok') {
+      const c = data.created?.length || 0;
+      const u = data.updated?.length || 0;
+      const s = data.skipped?.length || 0;
+      status.textContent = `✅ 完了（新規:${c}件 更新:${u}件 スキップ:${s}件）`;
+      status.style.color = 'var(--success)';
+      showToast('デモデータの投入が完了しました');
+    } else {
+      status.textContent = '❌ ' + (data.detail || 'エラーが発生しました');
+      status.style.color = 'var(--danger)';
+    }
+  } catch(e) {
+    status.textContent = '❌ 通信エラー: ' + e.message;
+    status.style.color = 'var(--danger)';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function confirmDemoReset() {
+  if (!confirm('現在のアカウントのデータ（顧客・予約・口コミ）を全削除してサンプルデータに戻します。\n本当に実行しますか？')) return;
+  runDemoReset();
+}
+
+async function runDemoReset() {
+  const btn    = document.getElementById('reset-btn');
+  const status = document.getElementById('reset-status');
+  btn.disabled = true;
+  status.textContent = 'リセット中...';
+  status.style.color = 'var(--text-muted)';
+  try {
+    const secret = document.getElementById('seed-secret').value.trim();
+    const res  = await fetch(API_BASE + '/admin/reset-demo?secret=' + encodeURIComponent(secret), {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + rsvToken }
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 401 || res.status === 403) {
+      status.textContent = '❌ 認証エラー（ログインし直してください）';
+      status.style.color = 'var(--danger)';
+    } else if (data.status === 'ok') {
+      status.textContent = `✅ リセット完了（顧客${data.deleted_customers || 0}件・予約${data.deleted_reservations || 0}件・口コミ${data.deleted_reviews || 0}件 削除→再投入）`;
+      status.style.color = 'var(--success)';
+      showToast('デモデータをリセットしました');
+      // Reload visible data
+      setTimeout(() => { rsvLoadList(); loadCustomersFromAPI(); loadDashboardStats(); }, 600);
+    } else {
+      status.textContent = '❌ ' + (data.detail || 'エラーが発生しました');
+      status.style.color = 'var(--danger)';
+    }
+  } catch(e) {
+    status.textContent = '❌ 通信エラー: ' + e.message;
+    status.style.color = 'var(--danger)';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function submitUpgradeRequest() {
+  const plan  = document.getElementById('upgrade-plan').value;
+  const name  = document.getElementById('upgrade-name').value.trim();
+  const notes = document.getElementById('upgrade-notes').value.trim();
+  if (!name) { showToast('担当者名を入力してください'); return; }
+  showToast(`${plan}のアップグレード申請を送信しました。担当者より3営業日以内にご連絡します。`);
+}
+
+// ======================================================
 // ---- Toast ----
 function showToast(msg) {
   const t = document.getElementById('toast');

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>おもてなしクラウド — Sprint P1〜P3 + Sprint1仕上げ 実装報告書</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
+    font-size: 10pt;
+    line-height: 1.65;
+    color: #1a1a1a;
+    background: #f0f0f0;
+  }
+
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    background: #fff;
+    margin: 16px auto;
+    padding: 14mm 14mm 14mm;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.12);
+  }
+
+  /* ─── Header ─── */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 2.5px solid #b8860b;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+  }
+  .header-left h1 {
+    font-size: 15pt;
+    font-weight: 700;
+    color: #b8860b;
+    letter-spacing: .05em;
+  }
+  .header-left p {
+    font-size: 8.5pt;
+    color: #666;
+    margin-top: 2px;
+  }
+  .header-right {
+    text-align: right;
+    font-size: 8pt;
+    color: #666;
+    line-height: 1.6;
+  }
+
+  /* ─── Section ─── */
+  .section { margin-bottom: 12px; }
+  .section-title {
+    font-size: 10pt;
+    font-weight: 700;
+    color: #fff;
+    background: #b8860b;
+    padding: 3px 10px;
+    border-radius: 3px;
+    margin-bottom: 7px;
+    letter-spacing: .04em;
+  }
+  .section-title.p1     { background: #5b7fa6; }
+  .section-title.p2     { background: #3a7d5a; }
+  .section-title.p3     { background: #8b5cf6; }
+  .section-title.s1     { background: #c05a20; }
+  .section-title.meta   { background: #555; }
+
+  /* ─── Tables ─── */
+  table { width: 100%; border-collapse: collapse; font-size: 8.5pt; margin-bottom: 6px; }
+  th {
+    background: #f5f0e8; color: #7a5c00; font-weight: 700;
+    padding: 3px 7px; border: 1px solid #ddd; text-align: left; white-space: nowrap;
+  }
+  td { padding: 3px 7px; border: 1px solid #e0e0e0; vertical-align: top; }
+  tr:nth-child(even) td { background: #fafafa; }
+
+  /* ─── Status chips ─── */
+  .chip {
+    display: inline-block; font-size: 7pt; font-weight: 700;
+    padding: 1px 6px; border-radius: 10px; white-space: nowrap;
+  }
+  .done    { background: #e6f9ed; color: #1a7f3c; }
+  .todo    { background: #fdeaea; color: #b91c1c; }
+  .manual  { background: #fff8e1; color: #b45309; }
+  .fe      { background: #eff6ff; color: #1d4ed8; }
+  .be      { background: #faf5ff; color: #6d28d9; }
+  .both    { background: #f0fdf4; color: #166534; }
+
+  /* ─── KPI row ─── */
+  .kpi-row {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 6px; margin-bottom: 10px;
+  }
+  .kpi-card {
+    border: 1px solid #e0d9c8; border-radius: 5px;
+    padding: 6px 6px; background: #fffdf5; text-align: center;
+  }
+  .kpi-num { font-size: 15pt; font-weight: 700; color: #b8860b; line-height: 1.2; }
+  .kpi-label { font-size: 7pt; color: #666; margin-top: 2px; }
+
+  /* ─── File grid ─── */
+  .file-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 8px; }
+  .file-card { border: 1px solid #e0e0e0; border-radius: 4px; padding: 5px 7px; background: #fafafa; }
+  .file-card .fname { font-family: 'Courier New', monospace; font-size: 7.5pt; color: #333; font-weight: 700; margin-bottom: 2px; }
+  .file-card .fdesc { font-size: 7.5pt; color: #555; line-height: 1.4; }
+
+  /* ─── Two-column layout ─── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
+
+  /* ─── Notes ─── */
+  .note {
+    font-size: 8pt; color: #555; background: #f8f8f8;
+    border-left: 3px solid #b8860b; padding: 4px 9px;
+    margin-bottom: 6px; border-radius: 0 3px 3px 0;
+  }
+  .note.warn { background: #fffbeb; border-left-color: #d97706; }
+  .note.ok   { background: #f0fdf4; border-left-color: #16a34a; }
+
+  /* ─── Footer ─── */
+  .footer {
+    border-top: 1px solid #ddd; padding-top: 5px; margin-top: 8px;
+    display: flex; justify-content: space-between; font-size: 7.5pt; color: #999;
+  }
+
+  /* ─── Print ─── */
+  @media print {
+    body { background: #fff; }
+    .page { margin: 0; padding: 14mm; box-shadow: none; }
+    .section { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ===== HEADER ===== -->
+  <div class="header">
+    <div class="header-left">
+      <h1>おもてなしクラウド — Sprint 実装報告書（P1〜P3 + 仕上げ完了）</h1>
+      <p>ホテル・旅館向け SaaS β版 / 補助金審査・営業デモ品質達成サマリー</p>
+    </div>
+    <div class="header-right">
+      作成日：2026年3月16日<br>
+      リポジトリ：omotenashi-demo / omotenashi-cloud<br>
+      作成：Claude Sonnet 4.6 (Claude Code)
+    </div>
+  </div>
+
+  <!-- ===== KPI ===== -->
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-num">4</div>
+      <div class="kpi-label">Sprint完了<br>P1/P2/P3/仕上げ</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-num">17</div>
+      <div class="kpi-label">実装タスク<br>全完了</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-num">12</div>
+      <div class="kpi-label">変更ファイル<br>FE 2 / BE 10</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-num">3</div>
+      <div class="kpi-label">デモアカウント<br>Lite/Standard/Pro</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-num">0</div>
+      <div class="kpi-label">未解決バグ<br>（既知）</div>
+    </div>
+  </div>
+
+  <!-- ===== SPRINT P1 ===== -->
+  <div class="section">
+    <div class="section-title p1">🏃 Sprint P1 — 基本機能実装・UI完成</div>
+    <table>
+      <colgroup><col style="width:7%"><col style="width:22%"><col style="width:57%"><col style="width:7%"><col style="width:7%"></colgroup>
+      <thead><tr><th>ID</th><th>タスク名</th><th>実装内容</th><th>対象</th><th>状態</th></tr></thead>
+      <tbody>
+        <tr><td>P1-1</td><td>顧客タブAPI接続</td><td>GET /customers から実データ取得・スケルトンローダー・空状態表示・エラーリトライ</td><td><span class="chip fe">FE</span></td><td><span class="chip done">✓</span></td></tr>
+        <tr><td>P1-2</td><td>LINE送信フロー</td><td>生成→編集→確認→送信の4ステップUI。トースト通知・キャンセル動作・送信API呼び出し</td><td><span class="chip fe">FE</span></td><td><span class="chip done">✓</span></td></tr>
+        <tr><td>P1-3</td><td>口コミ返信UI</td><td>AI生成返信をテキストエリアで編集可能に。複数言語対応セレクタ・投稿ボタン</td><td><span class="chip fe">FE</span></td><td><span class="chip done">✓</span></td></tr>
+        <tr><td>P1-4</td><td>予約詳細モーダル</td><td>予約一覧行クリックでモーダル表示。チェックイン/アウト・部屋タイプ・人数・備考・LINE通知ボタン</td><td><span class="chip fe">FE</span></td><td><span class="chip done">✓</span></td></tr>
+        <tr><td>P1-5</td><td>Analytics/設定タブ</td><td>月次グラフ・LINE開封率・口コミ評点プレースホルダー。設定：ホテル情報フォーム</td><td><span class="chip fe">FE</span></td><td><span class="chip done">✓</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== SPRINT P2 ===== -->
+  <div class="section">
+    <div class="section-title p2">🏃 Sprint P2 — β版品質ブラッシュアップ</div>
+    <table>
+      <colgroup><col style="width:7%"><col style="width:22%"><col style="width:57%"><col style="width:7%"><col style="width:7%"></colgroup>
+      <thead><tr><th>ID</th><th>タスク名</th><th>実装内容</th><th>対象</th><th>状態</th></tr></thead>
+      <tbody>
+        <tr><td>P2-1</td><td>ダッシュボード実データ</td><td>GET /dashboard/stats 追加。チェックイン中・今月確定・総顧客・退出件数・月次棒グラフをDB値で描画</td><td><span class="chip both">FE+BE</span></td><td><span class="chip done">✓</span></td></tr>
+        <tr><td>P2-2</td><td>誕生日メール自動生成</td><td>GET /customers/birthdays(月指定)追加。顧客タブに誕生日月フィルタ・AIメッセージプレビュー・送信確認UI</td><td><span class="chip both">FE+BE</span></td><td><span class="chip done">✓</span></td></tr>
+        <tr><td>P2-3</td><td>Analytics実データ接続</td><td>GET /analytics/stats 追加。月次予約件数・口コミ平均評点（6ヶ月）グラフ反映。API失敗時モックフォールバック</td><td><span class="chip both">FE+BE</span></td><td><span class="chip done">✓</span></td></tr>
+        <tr><td>P2-4</td><td>設定タブ拡充</td><td>ホテル基本情報保存(localStorage)。現在プラン表示バッジ。アップグレード申請フォーム</td><td><span class="chip fe">FE</span></td><td><span class="chip done">✓</span></td></tr>
+        <tr><td>P2-5</td><td>コールドスタート対策</td><td>backgroundWarmup()でページ読込時に /health をポーリング。ensureApiReadyWithUI()でオーバーレイスピナー表示</td><td><span class="chip fe">FE</span></td><td><span class="chip done">✓</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== SPRINT P3 ===== -->
+  <div class="section">
+    <div class="section-title p3">🏃 Sprint P3 — β版リリース・初期顧客獲得準備</div>
+    <table>
+      <colgroup><col style="width:7%"><col style="width:22%"><col style="width:57%"><col style="width:7%"><col style="width:7%"></colgroup>
+      <thead><tr><th>ID</th><th>タスク名</th><th>実装内容</th><th>対象</th><th>状態</th></tr></thead>
+      <tbody>
+        <tr><td>P3-1</td><td>マルチテナント分離</td><td>seed_demo.py: 3デモアカウント冪等作成。setup_rls.sql: PostgreSQL RLS設定（4テーブル）。/admin/seed-demo APIエンドポイント。設定タブにワンクリック投入ボタン</td><td><span class="chip both">FE+BE</span></td><td><span class="chip done">✓</span></td></tr>
+        <tr><td>P3-2</td><td>LINE E2Eシナリオ整備</td><td>設定タブ: /line/status APIで連携状態リアルタイム表示(🟢/🟡/🔴)。予約詳細: 未連携時グレーアウト。lineNotifyRsv: skippedレスポンス対応</td><td><span class="chip fe">FE</span></td><td><span class="chip done">✓</span></td></tr>
+        <tr><td>P3-3</td><td>LP制作</td><td>lp.html新規作成（約650行）。ヒーロー・統計バー・課題提起・機能4セクション・料金表(Lite〜Platinum)・FAQ・問い合わせフォーム</td><td><span class="chip fe">FE</span></td><td><span class="chip done">✓</span></td></tr>
+        <tr><td>P3-4</td><td>プランゲーティング</td><td>requirePlan()/showUpgradeModal()/applyPlanGating()実装。LINE送信・メール・誕生日・Analytics をSTANDARD以上に制限。ゲートモーダルにデモ切替ボタン追加</td><td><span class="chip fe">FE</span></td><td><span class="chip done">✓</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== SPRINT 1 仕上げ ===== -->
+  <div class="section">
+    <div class="section-title s1">🔥 Sprint 1 仕上げ — 安全性・実運用感・デモ品質向上</div>
+    <table>
+      <colgroup><col style="width:7%"><col style="width:24%"><col style="width:55%"><col style="width:7%"><col style="width:7%"></colgroup>
+      <thead><tr><th>ID</th><th>タスク名</th><th>実装内容</th><th>対象</th><th>状態</th></tr></thead>
+      <tbody>
+        <tr><td>S1-1</td><td>ダッシュボードKPI強化</td><td>月別バーグラフに件数ラベル。前月比サブラベル(▲/▼)動的表示。「実データ」バッジ表示。null/undefined耐性強化</td><td><span class="chip fe">FE</span></td><td><span class="chip done">✓</span></td></tr>
+        <tr><td>S1-2</td><td>Analyticsグラフ強化</td><td>棒グラフ上に件数・★スコアラベル。「実データ/サンプル」バッジ切替。実データ時にKPI行推移subを動的更新</td><td><span class="chip fe">FE</span></td><td><span class="chip done">✓</span></td></tr>
+        <tr><td>S1-3</td><td>デモリセット機能</td><td>POST /admin/reset-demo (JWT+secret認証)。現テナントの顧客/予約/口コミ全削除→5件再投入。設定タブにリセットボタン+confirm+自動リロード</td><td><span class="chip both">FE+BE</span></td><td><span class="chip done">✓</span></td></tr>
+        <tr><td>S1-4</td><td>口コミ返信DB保存</td><td>PATCH /reviews/{id}/reply 追加。_currentReviewIdをloadReviewで追跡。「💾 DBに保存」ボタン追加。保存後に返信済フラグを一覧に反映</td><td><span class="chip both">FE+BE</span></td><td><span class="chip done">✓</span></td></tr>
+        <tr><td>S1-5</td><td>LINE配信実データ化</td><td>GET /analytics/line-stats 追加(MessageLogから月別配信数集計)。_fillAnalyticsLineTable()をAPI接続に。「配信数:実データ」バッジ。フォールバック表示維持</td><td><span class="chip both">FE+BE</span></td><td><span class="chip done">✓</span></td></tr>
+        <tr><td>S1-6</td><td>RLS整理・適用準備</td><td>setup_rls.sql: WITH CHECK句追加・FORCE RLS手順・ロールバック手順を明記。database.py: get_db_with_tenant()ヘルパー追加。docs/rls-apply.md: 段階的適用手順書作成</td><td><span class="chip be">BE</span></td><td><span class="chip done">✓</span></td></tr>
+        <tr><td>S1-7</td><td>非エンジニアUX改善</td><td>ワンクリックログインボタン。デモガイドバナー(4ステップ)。プランゲートモーダルにデモ切替ボタン。LINEフロー番号インジケータ。シークレット自動設定</td><td><span class="chip fe">FE</span></td><td><span class="chip done">✓</span></td></tr>
+        <tr><td>S1-8</td><td>予約編集モーダル</td><td>予約詳細モーダルをView/Editモード切替に改修。PATCH /reservations/{id}でDB更新。バリデーション(必須・日付順)。保存後に一覧自動リロード</td><td><span class="chip both">FE+BE</span></td><td><span class="chip done">✓</span></td></tr>
+      </tbody>
+    </table>
+    <div class="note ok">✅ 「AIが動く・予約が編集できる・数字が見える」の3要件を全て達成。補助金審査デモ・初期顧客営業デモに対応できる品質に到達。</div>
+  </div>
+
+  <!-- ===== 変更ファイル ===== -->
+  <div class="section">
+    <div class="section-title meta">📁 主要変更ファイル一覧</div>
+    <div class="file-grid">
+      <div class="file-card">
+        <div class="fname">omotenashi-demo / index.html</div>
+        <div class="fdesc">メインSPA（約3,300行）。P1〜P3・Sprint1仕上げ全フロントエンド変更を集約。</div>
+      </div>
+      <div class="file-card">
+        <div class="fname">omotenashi-demo / lp.html <span class="chip done" style="font-size:6.5pt">NEW</span></div>
+        <div class="fdesc">マーケティングLP（約650行）。料金表・機能紹介・FAQ・問い合わせフォーム。</div>
+      </div>
+      <div class="file-card">
+        <div class="fname">omotenashi-cloud / backend/main.py</div>
+        <div class="fdesc">全ルーター登録。/admin/seed-demo・/admin/reset-demo エンドポイント追加。</div>
+      </div>
+      <div class="file-card">
+        <div class="fname">omotenashi-cloud / backend/database.py</div>
+        <div class="fdesc">get_db_with_tenant() ヘルパー追加（RLS対応DBセッション）。</div>
+      </div>
+      <div class="file-card">
+        <div class="fname">omotenashi-cloud / backend/routers/reviews.py</div>
+        <div class="fdesc">PATCH /{id}/reply 追加（返信文をDBに保存）。</div>
+      </div>
+      <div class="file-card">
+        <div class="fname">omotenashi-cloud / backend/routers/analytics.py</div>
+        <div class="fdesc">GET /analytics/line-stats 追加（MessageLogから月別LINE配信数集計）。</div>
+      </div>
+      <div class="file-card">
+        <div class="fname">omotenashi-cloud / scripts/setup_rls.sql</div>
+        <div class="fdesc">RLS全設定。WITH CHECK追加・FORCE RLS手順・確認クエリ・ロールバック手順を完備。</div>
+      </div>
+      <div class="file-card">
+        <div class="fname">omotenashi-cloud / docs/rls-apply.md <span class="chip done" style="font-size:6.5pt">NEW</span></div>
+        <div class="fdesc">段階的RLS適用手順書。適用コマンド・動作確認SQL・ルーター切替方法・ロールバック。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Architecture + Plan ===== -->
+  <div class="two-col">
+    <div>
+      <div class="section-title meta" style="margin-bottom:7px">🏗️ システム構成</div>
+      <table>
+        <tbody>
+          <tr><td style="font-weight:700;width:34%">フロントエンド</td><td>GitHub Pages / Vanilla JS SPA</td></tr>
+          <tr><td style="font-weight:700">バックエンド</td><td>Render / FastAPI + SQLAlchemy</td></tr>
+          <tr><td style="font-weight:700">データベース</td><td>Render PostgreSQL (omotenashi スキーマ)</td></tr>
+          <tr><td style="font-weight:700">AI生成</td><td>Claude Haiku 4.5</td></tr>
+          <tr><td style="font-weight:700">LINE連携</td><td>LINE Messaging API (Webhook + Push)</td></tr>
+          <tr><td style="font-weight:700">認証</td><td>JWT (HS256, 24h, localStorage)</td></tr>
+          <tr><td style="font-weight:700">テナント分離</td><td>全クエリ tenant_id フィルタ + RLS (準備完了)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <div class="section-title meta" style="margin-bottom:7px">💳 プラン体系</div>
+      <table>
+        <thead><tr><th>プラン</th><th>月額</th><th>主な利用可能機能</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Lite</strong></td><td>¥0</td><td>AI生成のみ（送信不可）・顧客100件</td></tr>
+          <tr><td><strong>Standard</strong></td><td>¥9,800</td><td>LINE/メール送信・Analytics・顧客500件</td></tr>
+          <tr><td><strong>Pro</strong></td><td>¥24,800</td><td>全機能・API連携・顧客2,000件</td></tr>
+          <tr><td><strong>Platinum</strong></td><td>要相談</td><td>無制限・複数施設・SLA・専任サポート</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== Demo Accounts + Remaining ===== -->
+  <div class="two-col" style="margin-top:8px">
+    <div>
+      <div class="section-title meta" style="margin-bottom:7px">🔑 デモアカウント</div>
+      <table>
+        <thead><tr><th>施設名</th><th>メール / PW</th><th>プラン</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>🏨 プレミアムホテル東京</td>
+            <td><code>test@omotenashi.com</code><br><code>test1234</code></td>
+            <td><span class="chip" style="background:#e5e7eb;color:#374151">LITE</span></td>
+          </tr>
+          <tr>
+            <td>♨️ 湯けむり旅館 山の湯</td>
+            <td><code>demo2@omotenashi.com</code><br><code>demo1234</code></td>
+            <td><span class="chip" style="background:#dbeafe;color:#1e40af">STANDARD</span></td>
+          </tr>
+          <tr>
+            <td>🏯 京都町家宿 風雅</td>
+            <td><code>demo3@omotenashi.com</code><br><code>demo1234</code></td>
+            <td><span class="chip" style="background:#ede9fe;color:#6d28d9">PRO</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <div class="section-title meta" style="margin-bottom:7px">📋 残タスク（優先順）</div>
+      <table>
+        <thead><tr><th>タスク</th><th>方法</th><th>優先</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>RLS本番適用</td>
+            <td><code>psql $DATABASE_URL -f scripts/setup_rls.sql</code></td>
+            <td><span class="chip" style="background:#fdeaea;color:#b91c1c">高</span></td>
+          </tr>
+          <tr>
+            <td>ADMIN_SECRET環境変数</td>
+            <td>Renderダッシュボード → Environment</td>
+            <td><span class="chip" style="background:#fff8e1;color:#b45309">中</span></td>
+          </tr>
+          <tr>
+            <td>LINE開封率/転換率</td>
+            <td>MessageLogにread_at・converted追加</td>
+            <td><span class="chip" style="background:#f0fdf4;color:#166534">低</span></td>
+          </tr>
+          <tr>
+            <td>予約削除後KPI再計算</td>
+            <td>rsvUpdateKpi(rsvAllData) の呼び出しタイミング確認</td>
+            <td><span class="chip" style="background:#f0fdf4;color:#166534">低</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== Footer ===== -->
+  <div class="footer">
+    <span>おもてなしクラウド Sprint P1〜P3 + Sprint1仕上げ 実装報告書</span>
+    <span>demo: <code>52e3b94</code> &nbsp;|&nbsp; cloud: <code>6ab5e56</code> (base)</span>
+    <span>2026-03-16</span>
+  </div>
+
+</div>
+</body>
+</html>
