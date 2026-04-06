@@ -984,6 +984,7 @@ function loadReview(text, rating) {
   switchTab('review', document.querySelectorAll('.nav-item')[3]);
   document.getElementById('review-text').value = text;
   setRating(rating);
+  generateReview();
 }
 
 // ---- Star rating ----
