@@ -1668,7 +1668,7 @@ function renderReviewList(data, isMock) {
         ${hasReply
           ? '<span style="font-size:11px;color:var(--success)">✓ 返信済</span>'
           : `<button class="btn btn-gold" style="padding:4px 12px;font-size:11px"
-               onclick="loadReview(${JSON.stringify(r.content)},${ratingNum},${JSON.stringify(reviewerName)},${JSON.stringify(platform)},${JSON.stringify(r.id||null)})">返信作成</button>`
+               onclick='loadReview(${JSON.stringify(r.content)},${ratingNum},${JSON.stringify(reviewerName)},${JSON.stringify(platform)},${JSON.stringify(r.id||null)})'>返信作成</button>`
         }
       </td>
     </tr>`;
