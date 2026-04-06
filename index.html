@@ -228,6 +228,10 @@
   .rsv-action-btn { padding:3px 10px;border-radius:4px;border:1px solid var(--border);background:#fff;font-size:11px;cursor:pointer;color:var(--text-secondary);transition:all .15s; }
   .rsv-action-btn:hover { background:var(--bg-hover); }
 
+  /* Selected review row */
+  .review-row-selected td { background: var(--border-gold) !important; }
+  tr.review-row-selected:hover td { background: var(--border-gold) !important; }
+
   /* Skeleton loader */
   .skeleton { background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:4px; }
   @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
@@ -1651,14 +1655,14 @@ function renderReviewList(data, isMock) {
   empty.style.display = 'none';
   const unreplied = data.filter(r => !r.reply).length;
   count.textContent = unreplied > 0 ? `● 未返信 ${unreplied}件` : `● ${data.length}件`;
-  tbody.innerHTML = data.map(r => {
+  tbody.innerHTML = data.map((r, idx) => {
     const dateStr = r.created_at ? r.created_at.substring(0, 10).replace(/-/g, '/') : '—';
     const ratingNum = r.rating || 0;
     const excerpt = (r.content || '').substring(0, 28) + ((r.content||'').length > 28 ? '...' : '');
     const reviewerName = r.reviewer_name || 'お客様';
     const platform = r.platform || '—';
     const hasReply = !!r.reply;
-    return `<tr style="${hasReply ? 'opacity:.6' : ''}">
+    return `<tr id="review-row-${idx}" style="${hasReply ? 'opacity:.6' : ''}">
       <td>${dateStr}</td>
       <td>${platform}</td>
       <td style="color:var(--gold);white-space:nowrap">${stars(ratingNum)}</td>
@@ -1668,7 +1672,7 @@ function renderReviewList(data, isMock) {
         ${hasReply
           ? '<span style="font-size:11px;color:var(--success)">✓ 返信済</span>'
           : `<button class="btn btn-gold" style="padding:4px 12px;font-size:11px"
-               onclick='loadReview(${JSON.stringify(r.content)},${ratingNum},${JSON.stringify(reviewerName)},${JSON.stringify(platform)},${JSON.stringify(r.id||null)})'>返信作成</button>`
+               onclick='loadReview(${JSON.stringify(r.content)},${ratingNum},${JSON.stringify(reviewerName)},${JSON.stringify(platform)},${JSON.stringify(r.id||null)},${idx})'>返信作成</button>`
         }
       </td>
     </tr>`;
@@ -1711,7 +1715,13 @@ async function loadReviewsFromAPI() {
 // 初期描画（モック）
 renderReviewList(reviewsMock, true);
 
-function loadReview(text, rating, reviewerName, platform, reviewId) {
+function loadReview(text, rating, reviewerName, platform, reviewId, rowIdx) {
+  // 選択行のハイライト
+  document.querySelectorAll('#review-list tr').forEach(tr => tr.classList.remove('review-row-selected'));
+  if (rowIdx !== undefined && rowIdx !== null) {
+    const row = document.getElementById('review-row-' + rowIdx);
+    if (row) row.classList.add('review-row-selected');
+  }
   _currentReviewId = reviewId || null;
   document.getElementById('review-text').value = text;
   setRating(rating || 4);
@@ -1867,6 +1877,22 @@ async function generateLine() {
   }
 }
 
+// ---- Review AI (Demo mock reply) ----
+function buildMockReply(reviewerName, platform, rating, reviewText) {
+  const name = reviewerName || 'お客様';
+  const isHigh = rating >= 4;
+  const hasCritique = /換気|古|少な|不満|残念|改善|気になり/.test(reviewText);
+  const highTemplates = [
+    `${name}、この度は温かいお言葉をいただき、誠にありがとうございます。\n\nスタッフ一同、お客様にご満足いただけたと知り大変嬉しく存じます。${hasCritique ? 'ご指摘いただいた点につきましては、今後の改善に向けて真摯に取り組んでまいります。' : 'またのご来訪を心よりお待ち申し上げております。'}\n\n${platform}にご投稿いただきましたこと、重ねて御礼申し上げます。またのお越しを楽しみにしております。`,
+    `${name}、ご宿泊いただきまして誠にありがとうございます。\n\n素晴らしいご評価をいただき、スタッフ一同大変励みになっております。お客様のご満足がスタッフ全員の喜びでございます。${hasCritique ? 'いただいたご意見は今後のサービス向上に活かしてまいります。' : ''}\n\nまたのご利用を心よりお待ちしております。`,
+  ];
+  const lowTemplates = [
+    `${name}、この度はご宿泊いただき、またご貴重なご意見をお寄せいただき誠にありがとうございます。\n\nご不便・ご不満をおかけしましたこと、深くお詫び申し上げます。いただいたご意見を真摯に受け止め、サービス品質の向上に努めてまいります。\n\nより良いご滞在をご提供できますよう精進してまいりますので、またの機会にお越しいただけますと幸いでございます。`,
+  ];
+  const pool = isHigh ? highTemplates : lowTemplates;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
 // ---- Review AI ----
 async function generateReview() {
   const reviewText = document.getElementById('review-text').value;
@@ -1882,6 +1908,20 @@ async function generateReview() {
 
   setLoading(out, genBtn, true);
   copyBtn.style.display = 'none';
+
+  // ログインなしの場合はデモ用モック生成
+  if (!rsvToken) {
+    await new Promise(r => setTimeout(r, 1400));
+    const mockText = buildMockReply(reviewerName, platform, currentRating, reviewText);
+    out.classList.remove('empty', 'generating');
+    out.textContent = '';
+    typeWriter(out, mockText, copyBtn);
+    document.getElementById('review-edit-area').value = mockText;
+    document.getElementById('review-edit-area').style.display = 'none';
+    document.getElementById('review-send-actions').style.display = 'flex';
+    setLoading(out, genBtn, false);
+    return;
+  }
 
   try {
     const text = await callGeminiAPIStream('/api/generate-reply', {
@@ -2234,7 +2274,7 @@ renderBirthdayCustomers();
 // ======================================================
 // ---- Reservation Module ----
 // ======================================================
-const API_BASE = 'https://omotenashi-cloud.onrender.com';
+const API_BASE = 'https://omotenashi-cloud-production.up.railway.app';
 let rsvToken   = localStorage.getItem('rsv_token') || null;
 let rsvFilter   = '';
 let rsvAllData  = [];
